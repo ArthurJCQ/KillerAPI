@@ -47,7 +47,9 @@ jobs:
         run: composer install
 
       - name: Check Symfony requirements
-        run: vendor/bin/requirements-checker
+        run: curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | sudo -E bash
+          & sudo apt install symfony-cli
+          & vendor/bin/requirements-checker
 
       - name: PHPCS
         run: make phpcs
@@ -56,4 +58,4 @@ jobs:
         run: make phpstan
 
       - name: Api Tests
-        run: cp .env.test .env && bin/console do:mi:mi && make functionnal-tests
+        run: cp .env.test .env & bin/console do:mi:mi & make functionnal-tests
