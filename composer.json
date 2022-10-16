@@ -1,4 +1,6 @@
 {
+    "name": "KillerAPI",
+    "description": "API of the KillerParty App",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
