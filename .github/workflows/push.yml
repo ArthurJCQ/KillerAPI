@@ -1,0 +1,55 @@
+name: KillerAPI push actions
+on: [push]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        php-versions: [ '8.1' ]
+    services:
+      postgresql:
+        image: postgres:13-alpine
+        env:
+          POSTGRES_PASSWORD: testpass
+        ports:
+          - 5432:5432
+    steps:
+      - name: Copy repo
+        uses: actions/checkout@v2
+
+      - name: Setup PHP, extensions and composer with shivammathur/setup-php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, dom, filter, gd, iconv, json, mbstring
+        env:
+          update: true
+
+      - name: Check PHP Version
+        run: php -v
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install
+
+      - name: Check Symfony requirements
+        run: vendor/bin/requirements-checker
+
+      - name: PHPCS
+        run: make phpcs
+
+      - name: PHPStan
+        run: make phpstan
+
+      - name: Api Tests
+        run: cp .env.test .env && bin/console do:mi:mi && make functionnal-tests

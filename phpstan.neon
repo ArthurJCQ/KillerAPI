@@ -1,0 +1,5 @@
+parameters:
+    excludePaths:
+        - %currentWorkingDirectory%/tests/_support/_generated/*
+        - %currentWorkingDirectory%/tests/_support/*.php
+    checkGenericClassInNonGenericObjectType: false

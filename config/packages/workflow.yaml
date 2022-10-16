@@ -1,0 +1,23 @@
+framework:
+    workflows:
+        room_lifecycle:
+            type: 'state_machine'
+            marking_store:
+                type: 'method'
+                property: 'status'
+            supports:
+                - App\Entity\Room
+            initial_marking: PENDING
+            places:
+                - PENDING
+                - IN_GAME
+                - ENDED
+            transitions:
+                start_game:
+                    guard: "is_granted('ROLE_ADMIN')"
+                    from: PENDING
+                    to: IN_GAME
+                end_game:
+                    guard: "is_granted('ROLE_ADMIN')"
+                    from: IN_GAME
+                    to: ENDED
