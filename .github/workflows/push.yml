@@ -47,10 +47,10 @@ jobs:
         run: composer install
 
       - name: PHPCS
-        run: make phpcs
+        run: make phpcs-ci
 
       - name: PHPStan
-        run: make phpstan
+        run: make phpstan-ci
 
       - name: Api Tests
         run: cp .env.test .env & bin/console do:mi:mi & make functionnal-tests
