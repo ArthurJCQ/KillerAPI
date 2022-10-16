@@ -46,11 +46,6 @@ jobs:
       - name: Install Composer dependencies
         run: composer install
 
-      - name: Check Symfony requirements
-        run: curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | sudo -E bash
-          & sudo apt install symfony-cli
-          & symfony check:requirements
-
       - name: PHPCS
         run: make phpcs
 
