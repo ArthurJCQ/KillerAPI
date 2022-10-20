@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace App\UseCase;
 
 use App\Entity\Player;
+use App\Exception\NotEnoughMissionsInRoomException;
+use App\Exception\NotEnoughPlayersInRoomException;
 use App\Exception\PlayerNotInRoomException;
 use App\Repository\PlayerRepository;
+use App\Repository\RoomRepository;
 use Symfony\Component\Security\Core\Security;
 
 class PlayerTransfersRoleAdminUseCase
 {
-    public function __construct(private PlayerRepository $playerRepository, private Security $security)
+    public function __construct(private readonly Security $security)
     {
     }
 
@@ -21,20 +24,23 @@ class PlayerTransfersRoleAdminUseCase
         $playerSession = $this->security->getUser();
 
         if (!$playerSession->getRoom()) {
-            throw new PlayerNotInRoomException('Player is not in any room.');
+            return;
         }
-
-        $playerSession->setRoles([Player::ROLE_PLAYER]);
 
         // if user in session is different from user to update, it means user in session is granting admin rights to
         // the user to update.
         if ($player instanceof Player && $player->getId() !== $playerSession->getId()) {
+            $playerSession->setRoles([Player::ROLE_PLAYER]);
             $player->setRoles([Player::ROLE_ADMIN]);
+
+            return;
         }
 
-        $playersByRoom = $this->playerRepository->findPlayersByRoom($playerSession->getRoom());
+        $playersByRoom = $player->getRoom()?->getPlayers();
 
-        dump($playersByRoom);
+        if (\count($playersByRoom) <= 1) {
+            throw new NotEnoughPlayersInRoomException('Not enough players in room to transfer ADMIN role.');
+        }
 
         /** @var Player[] $eligibleAdmins */
         $eligibleAdmins = array_filter(
@@ -44,6 +50,7 @@ class PlayerTransfersRoleAdminUseCase
 
         shuffle($eligibleAdmins);
 
+        $playerSession->setRoles([Player::ROLE_PLAYER]);
         $eligibleAdmins[0]->setRoles([Player::ROLE_ADMIN]);
     }
 }

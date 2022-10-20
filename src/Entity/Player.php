@@ -164,7 +164,7 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->target;
     }
 
-    public function setTarget(?self $target): self
+    public function setTarget(?Player $target): self
     {
         $this->target = $target;
 

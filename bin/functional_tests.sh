@@ -13,4 +13,4 @@ export APP_ENV="test"
 rm -rf var/cache/*
 
 # run tests
-php vendor/bin/codecept run $@
+php vendor/bin/codecept run Api $@

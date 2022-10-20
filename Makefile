@@ -25,7 +25,11 @@ phpcs-ci: prepare-ci
 
 .PHONY: unit-tests
 unit-tests:
-	@vendor/bin/phpunit --exclude-group functional
+	@vendor/bin/codecept run Unit
+
+.PHONY: unit-tests
+unit-tests-ci: prepare-ci
+	@vendor/bin/codecept run Unit --xml $(PWD)/$(REPORTS_DIR)/unit-tests.xml
 
 .PHONY: functional-tests
 functional-tests:

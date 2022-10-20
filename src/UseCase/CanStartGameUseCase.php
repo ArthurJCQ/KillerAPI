@@ -26,7 +26,13 @@ class CanStartGameUseCase
         $missions = [];
 
         foreach ($players as $player) {
-            $missions[] = $player->getAuthoredMissionsInRoom();
+            $playerMissionsInRoom = $player->getAuthoredMissionsInRoom();
+
+            if (!$playerMissionsInRoom) {
+                continue;
+            }
+
+            $missions[] = $playerMissionsInRoom;
         }
 
         $missionsByPlayer = $this->missionRepository->getMissionsByRoomAndAuthor($room);
