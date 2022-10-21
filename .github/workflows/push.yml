@@ -46,11 +46,14 @@ jobs:
       - name: Install Composer dependencies
         run: composer install
 
+      - name: Unit Tests
+        run: make unit-tests-ci
+
+      - name: Api Tests
+        run: cp .env.test .env & bin/console do:mi:mi & make functionnal-tests-ci
+
       - name: PHPCS
         run: make phpcs-ci
 
       - name: PHPStan
         run: make phpstan-ci
-
-      - name: Api Tests
-        run: cp .env.test .env & bin/console do:mi:mi & make functionnal-tests

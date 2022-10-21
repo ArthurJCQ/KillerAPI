@@ -22,7 +22,6 @@
         "symfony/dotenv": "^6.1.0",
         "symfony/expression-language": "6.1.*",
         "symfony/flex": "^2",
-        "symfony/form": "6.1.*",
         "symfony/framework-bundle": "^6.1.1",
         "symfony/mercure-bundle": "^0.3.5",
         "symfony/property-access": "6.1.*",
