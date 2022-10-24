@@ -11,6 +11,3 @@ modules:
         - Symfony:
               app_path: 'src'
               environment: test
-        - Doctrine2:
-              depends: Symfony
-              cleanup: true
