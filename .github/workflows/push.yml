@@ -11,7 +11,7 @@ jobs:
       postgresql:
         image: postgres:13-alpine
         env:
-          POSTGRES_PASSWORD: testpass
+          POSTGRES_PASSWORD: 112358
           POSTGRES_USER: killer
         ports:
           - 5432:5432
