@@ -12,7 +12,7 @@ jobs:
         image: postgres:13-alpine
         env:
           POSTGRES_PASSWORD: testpass
-          POSTGRES_USER: killer_test
+          POSTGRES_USER: killer
         ports:
           - 5432:5432
     steps:
@@ -49,12 +49,12 @@ jobs:
 
       - name: Unit Tests
         run: make unit-tests-ci
-#
-#      - name: Create Database
-#        run: cp .env.test .env & bin/console do:da:cr & bin/console do:mi:mi
+
+      - name: Create Database
+        run: cp .env.test .env & bin/console do:da:cr & bin/console do:mi:mi
 
       - name: Api Tests
-        run: cp .env.test .env & bin/console do:da:cr & bin/console do:mi:mi & make functional-tests-ci
+        run: cp .env.test .env & make functional-tests-ci
 
       - name: PHPCS
         run: make phpcs-ci
