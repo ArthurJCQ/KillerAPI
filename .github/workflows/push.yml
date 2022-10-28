@@ -12,6 +12,7 @@ jobs:
         image: postgres:13-alpine
         env:
           POSTGRES_PASSWORD: testpass
+          POSTGRES_USER: killer_test
         ports:
           - 5432:5432
     steps:
@@ -48,6 +49,9 @@ jobs:
 
       - name: Unit Tests
         run: make unit-tests-ci
+
+      - name: Create Database
+        run: bin/console do:da:cr && bin/console do:mi:mi
 
       - name: Api Tests
         run: cp .env.test .env & bin/console do:mi:mi & make functionnal-tests-ci
