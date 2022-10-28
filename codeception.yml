@@ -12,3 +12,5 @@ extensions:
 params:
     - .env
     - .env.test
+coverage:
+    enabled: true

@@ -9,6 +9,7 @@
         "php": ">=8.1",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "ext-xdebug": "*",
         "doctrine/annotations": "^1.0",
         "doctrine/doctrine-bundle": "^2.7",
         "doctrine/doctrine-migrations-bundle": "^3.2",
@@ -32,7 +33,7 @@
         "symfony/serializer": "6.1.*",
         "symfony/validator": "6.1.*",
         "symfony/workflow": "6.1.*",
-        "symfony/yaml": "^6.1.0"
+        "symfony/yaml": "^6.1.0",
     },
     "require-dev": {
         "codeception/codeception": "^5.0",
@@ -42,6 +43,7 @@
         "codeception/module-rest": "^3.3",
         "codeception/module-symfony": "^3.1",
         "phpmd/phpmd": "^2.12",
+        "phpspec/prophecy-phpunit": "^2.0",
         "phpstan/phpstan": "^1.7",
         "phpunit/phpunit": "^9.5",
         "roave/security-advisories": "dev-latest",

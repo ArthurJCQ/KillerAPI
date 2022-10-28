@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Validator;
 
-use App\Exception\ValidationException;
+use App\Api\Exception\ValidationException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 

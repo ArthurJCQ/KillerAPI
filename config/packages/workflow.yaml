@@ -6,7 +6,7 @@ framework:
                 type: 'method'
                 property: 'status'
             supports:
-                - App\Entity\Room
+                - App\Domain\Room\Entity\Room
             initial_marking: PENDING
             places:
                 - PENDING

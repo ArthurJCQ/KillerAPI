@@ -27,6 +27,10 @@ phpcs-ci: prepare-ci
 unit-tests:
 	@vendor/bin/codecept run Unit
 
+.PHONY: unit-tests-coverage
+unit-tests-coverage:
+	XDEBUG_MODE=coverage php -dauto_prepend_file=bin/xdebug_coverage_filter.php vendor/bin/codecept run Unit --coverage
+
 .PHONY: unit-tests
 unit-tests-ci: prepare-ci
 	@vendor/bin/codecept run Unit --xml $(PWD)/$(REPORTS_DIR)/unit-tests.xml

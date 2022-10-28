@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Api;
 
-use App\Entity\Room;
+use App\Domain\Room\Entity\Room;
 use App\Tests\ApiTester;
 
 class RoomControllerCest

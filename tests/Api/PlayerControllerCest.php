@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Api;
 
-use App\Entity\Player;
-use App\Entity\Room;
-use App\Enum\PlayerStatus;
+use App\Domain\Player\Entity\Player;
+use App\Domain\Player\Enum\PlayerStatus;
+use App\Domain\Room\Entity\Room;
 use App\Tests\ApiTester;
 
 class PlayerControllerCest
