@@ -33,7 +33,7 @@
         "symfony/serializer": "6.1.*",
         "symfony/validator": "6.1.*",
         "symfony/workflow": "6.1.*",
-        "symfony/yaml": "^6.1.0",
+        "symfony/yaml": "^6.1.0"
     },
     "require-dev": {
         "codeception/codeception": "^5.0",
