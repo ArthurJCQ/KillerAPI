@@ -51,8 +51,8 @@ jobs:
       - name: Unit Tests
         run: make unit-tests-ci
 
-      - name: Create Database
-        run: cp .env.test .env & bin/console do:da:cr & bin/console do:mi:mi
+      - name: Execute migrations
+        run: cp .env.test .env & bin/console do:mi:mi
 
       - name: Api Tests
         run: cp .env.test .env & make functional-tests-ci
