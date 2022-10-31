@@ -21,7 +21,7 @@ phpcs:
 
 .PHONY: phpcs-ci
 phpcs-ci: prepare-ci
-	vendor/bin/phpcs --report=checkstyle --report-file=$(REPORTS_DIR)/phpcs.xml --standard=phpcs.xml.dist --extensions=php src tests
+	vendor/bin/phpcs --report=checkstyle --report-file=$(REPORTS_DIR)/phpcs.xml --standard=phpcs.xml --extensions=php --ignore=*/tests/bootstrap.php src tests
 
 .PHONY: unit-tests
 unit-tests:
