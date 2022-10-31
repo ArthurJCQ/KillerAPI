@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Mission\UseCase;
+namespace App\Domain\Room\UseCase;
 
 use App\Domain\Mission\Entity\Mission;
 use App\Domain\Player\Entity\Player;
@@ -10,13 +10,13 @@ use App\Domain\Player\Exception\PlayerNotFoundException;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\Exception\NotEnoughMissionsInRoomException;
 
-class DispatchMissionsUseCase
+class DispatchMissionsUseCase implements RoomUseCase
 {
     public function execute(Room $room): void
     {
         $players = $room->getPlayers()->toArray();
 
-        usort($players, static fn($player) => \count($player->getAuthoredMissionsInRoom() ?? []));
+        usort($players, static fn($player) => \count($player->getAuthoredMissionsInRoom()));
 
         $missions = [];
 

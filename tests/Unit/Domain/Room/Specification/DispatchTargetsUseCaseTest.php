@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Domain\Player\UseCase;
+namespace App\Tests\Unit\Domain\Room\Specification;
 
 use App\Domain\Player\Entity\Player;
-use App\Domain\Player\UseCase\DispatchTargetsUseCase;
 use App\Domain\Room\Entity\Room;
+use App\Domain\Room\UseCase\DispatchTargetsUseCase;
 use Doctrine\Common\Collections\ArrayCollection;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -15,7 +15,7 @@ class DispatchTargetsUseCaseTest extends \Codeception\Test\Unit
 {
     use ProphecyTrait;
 
-    private readonly DispatchTargetsUseCase $dispatchTargetsUseCase;
+    private DispatchTargetsUseCase $dispatchTargetsUseCase;
 
     protected function setUp(): void
     {

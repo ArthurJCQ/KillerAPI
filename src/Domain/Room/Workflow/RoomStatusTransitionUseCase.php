@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Room\UseCase;
+namespace App\Domain\Room\Workflow;
 
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\Exception\CanNotApplyRoomTransitionException;
@@ -17,7 +17,7 @@ class RoomStatusTransitionUseCase
     {
     }
 
-    public function execute(Room $room, string $roomStatus): void
+    public function executeTransition(Room $room, string $roomStatus): void
     {
         $transition = match ($roomStatus) {
             Room::IN_GAME => self::START_GAME_TRANSITION,
@@ -28,7 +28,10 @@ class RoomStatusTransitionUseCase
         try {
             $transitionSuccess = $this->roomLifecycleStateMachine->can($room, $transition);
         } catch (\DomainException $e) {
-            throw new CanNotApplyRoomTransitionException(sprintf('Could not update room status : %s', $e->getMessage()));
+            throw new CanNotApplyRoomTransitionException(sprintf(
+                'Could not update room status : %s',
+                $e->getMessage(),
+            ));
         }
 
         if (!$transitionSuccess) {

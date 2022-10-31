@@ -17,9 +17,9 @@ class PlayerTransfersRoleAdminUseCaseTest extends \Codeception\Test\Unit
 {
     use ProphecyTrait;
 
-    private readonly ObjectProphecy $security;
+    private ObjectProphecy $security;
 
-    private readonly PlayerTransfersRoleAdminUseCase $playerTransfersRoleAdminUseCase;
+    private PlayerTransfersRoleAdminUseCase $playerTransfersRoleAdminUseCase;
 
     protected function setUp(): void
     {
@@ -89,7 +89,6 @@ class PlayerTransfersRoleAdminUseCaseTest extends \Codeception\Test\Unit
         $this->expectException(NotEnoughPlayersInRoomException::class);
 
         $this->playerTransfersRoleAdminUseCase->execute($adminPlayer->reveal());
-
     }
 
     public function testNoRoom(): void

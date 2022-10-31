@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Player\UseCase;
+namespace App\Domain\Room\UseCase;
 
 use App\Domain\Room\Entity\Room;
 
-class DispatchTargetsUseCase
+final class DispatchTargetsUseCase implements RoomUseCase
 {
     public function execute(Room $room): void
     {

@@ -8,13 +8,14 @@ use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
-class RoomDenormalizer implements DenormalizerInterface
+final class RoomDenormalizer implements DenormalizerInterface
 {
     public function __construct(private readonly RoomRepository $roomRepository)
     {
     }
 
-    public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Room
+    /** @param array<string, string> $context */
+    public function denormalize(mixed $data, string $type, string $format = null, array $context = []): ?Room
     {
         return $this->roomRepository->findOneBy(['code' => $data]);
     }

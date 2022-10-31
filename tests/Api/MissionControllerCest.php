@@ -10,19 +10,19 @@ class MissionControllerCest
 {
     public function _before(ApiTester $I): void
     {
-        $I->sendPost('player', json_encode(['name' => 'John']));
+        $I->sendPost('player', (string) json_encode(['name' => 'John']));
     }
 
     public function testCreateMissionFailWithoutRoom(ApiTester $I): void
     {
-        $I->sendPost('mission', json_encode(['content' => 'mission']));
+        $I->sendPost('mission', (string) json_encode(['content' => 'mission']));
         $I->seeResponseCodeIs(400);
     }
 
     public function testCreateMission(ApiTester $I): void
     {
         $I->sendPost('room');
-        $I->sendPost('mission', json_encode(['content' => 'mission']));
+        $I->sendPost('mission', (string) json_encode(['content' => 'mission']));
         $I->seeResponseCodeIsSuccessful();
     }
 }

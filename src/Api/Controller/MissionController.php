@@ -9,7 +9,7 @@ use App\Domain\Mission\Entity\Mission;
 use App\Domain\Mission\MissionRepository;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
-use App\Infrastructure\Persistence\Doctrine\DoctrinePersistenceAdapter;
+use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Serializer\KillerSerializer;
 use App\Validator\KillerValidator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -27,7 +27,7 @@ class MissionController extends AbstractController
 {
     public function __construct(
         private readonly MissionRepository $missionRepository,
-        private readonly DoctrinePersistenceAdapter $persistenceAdapter,
+        private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly HubInterface $hub,
         private readonly KillerSerializer $serializer,
         private readonly KillerValidator $validator,

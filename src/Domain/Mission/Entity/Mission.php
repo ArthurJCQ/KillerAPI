@@ -29,11 +29,11 @@ class Mission
     #[ORM\ManyToOne(targetEntity: Player::class, cascade: ['persist'], inversedBy: 'authoredMissions')]
     #[ORM\JoinColumn(name: 'user_authored_missions')]
     #[Groups(['get-mission', 'get-player'])]
-    private Player $author;
+    private ?Player $author;
 
     #[ORM\ManyToOne(targetEntity: Room::class, cascade: ['persist'], inversedBy: 'missions')]
     #[ORM\JoinColumn(name: 'room_missions')]
-    private Room $room;
+    private ?Room $room;
 
     public function getId(): int
     {
@@ -59,12 +59,12 @@ class Mission
         return $this;
     }
 
-    public function getAuthor(): Player
+    public function getAuthor(): ?Player
     {
         return $this->author;
     }
 
-    public function setAuthor(Player $author): self
+    public function setAuthor(?Player $author): self
     {
         $this->author = $author;
 

@@ -9,7 +9,7 @@ use App\Domain\Room\RoomRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 /** @extends DoctrineBaseRepository<Room> */
-final class DoctrineRoomRepositoryDoctrine extends DoctrineBaseRepository implements RoomRepository
+final class DoctrineRoomRepository extends DoctrineBaseRepository implements RoomRepository
 {
     public function __construct(EntityManagerInterface $entityManager)
     {

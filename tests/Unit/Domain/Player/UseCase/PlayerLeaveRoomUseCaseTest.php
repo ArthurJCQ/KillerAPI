@@ -20,9 +20,9 @@ class PlayerLeaveRoomUseCaseTest extends \Codeception\Test\Unit
 {
     use ProphecyTrait;
 
-    private readonly ObjectProphecy $playerTransfersRoleAdminUseCase;
-    private readonly ObjectProphecy $playerKilledUseCase;
-    private readonly ObjectProphecy $roomRepository;
+    private ObjectProphecy $playerTransfersRoleAdminUseCase;
+    private ObjectProphecy $playerKilledUseCase;
+    private ObjectProphecy $roomRepository;
 
     private PlayerLeaveRoomUseCase $playerLeaveRoomUseCase;
 
@@ -53,7 +53,7 @@ class PlayerLeaveRoomUseCaseTest extends \Codeception\Test\Unit
 
         $this->playerKilledUseCase->execute($player1->reveal())->shouldBeCalledOnce();
 
-        $player1->getRoom()->shouldBeCalledOnce()->willReturn($room->reveal());
+        $player1->getRoom()->shouldBeCalledTimes(2)->willReturn($room->reveal());
         $player1->setStatus(PlayerStatus::ALIVE)->shouldBeCalledOnce();
         $player1->isAdmin()->shouldBeCalledOnce()->willReturn(true);
         $player1->setRoles([Player::ROLE_PLAYER])->shouldBeCalledOnce();
@@ -74,7 +74,7 @@ class PlayerLeaveRoomUseCaseTest extends \Codeception\Test\Unit
 
         $this->playerKilledUseCase->execute($player->reveal())->shouldBeCalledOnce();
 
-        $player->getRoom()->shouldBeCalledTimes(2)->willReturn($room->reveal());
+        $player->getRoom()->shouldBeCalledTimes(3)->willReturn($room->reveal());
         $player->setStatus(PlayerStatus::ALIVE)->shouldBeCalledOnce();
         $player->isAdmin()->shouldBeCalledOnce()->willReturn(false);
         $player->setRoles([Player::ROLE_PLAYER])->shouldBeCalledOnce();

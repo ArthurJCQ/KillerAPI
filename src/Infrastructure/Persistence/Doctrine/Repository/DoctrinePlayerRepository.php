@@ -10,7 +10,7 @@ use App\Domain\Room\Entity\Room;
 use Doctrine\ORM\EntityManagerInterface;
 
 /** @extends DoctrineBaseRepository<Player> */
-final class DoctrinePlayerRepositoryDoctrine extends DoctrineBaseRepository implements PlayerRepository
+final class DoctrinePlayerRepository extends DoctrineBaseRepository implements PlayerRepository
 {
     public function __construct(protected EntityManagerInterface $entityManager)
     {

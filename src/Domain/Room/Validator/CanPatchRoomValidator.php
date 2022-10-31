@@ -6,9 +6,9 @@ namespace App\Domain\Room\Validator;
 
 use App\Domain\Player\Validator\PlayerCanJoinRoom;
 use App\Domain\Room\Entity\Room;
-use Symfony\Component\Form\Exception\UnexpectedTypeException;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
+use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 class CanPatchRoomValidator extends ConstraintValidator
 {

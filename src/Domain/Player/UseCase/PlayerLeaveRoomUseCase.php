@@ -8,7 +8,7 @@ use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Room\RoomRepository;
 
-class PlayerLeaveRoomUseCase
+class PlayerLeaveRoomUseCase implements PlayerUseCase
 {
     public function __construct(
         private readonly PlayerTransfersRoleAdminUseCase $playerTransfersRoleAdminUseCase,
@@ -19,9 +19,13 @@ class PlayerLeaveRoomUseCase
 
     public function execute(Player $player): void
     {
-        $playersByRoom = $player->getRoom()?->getPlayers();
+        if (!$player->getRoom()) {
+            return;
+        }
 
-        if ($playersByRoom && \count($playersByRoom) === 1) {
+        $playersByRoom = $player->getRoom()->getPlayers();
+
+        if (\count($playersByRoom) === 1) {
             $this->roomRepository->remove($player->getRoom());
         }
 

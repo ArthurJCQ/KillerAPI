@@ -9,8 +9,8 @@ use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\Factory\RoomFactory;
 use App\Domain\Room\RoomRepository;
-use App\Domain\Room\UseCase\RoomStatusTransitionUseCase;
-use App\Infrastructure\Persistence\Doctrine\DoctrinePersistenceAdapter;
+use App\Domain\Room\Workflow\RoomStatusTransitionUseCase;
+use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Serializer\KillerSerializer;
 use App\Validator\KillerValidator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,7 +32,7 @@ class RoomController extends AbstractController
 {
     public function __construct(
         private readonly RoomRepository $roomRepository,
-        private readonly DoctrinePersistenceAdapter $persistenceAdapter,
+        private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly RoomStatusTransitionUseCase $roomStatusTransitionUseCase,
         private readonly HubInterface $hub,
         private readonly KillerSerializer $serializer,
@@ -79,7 +79,7 @@ class RoomController extends AbstractController
 
         if (isset($data['status'])) {
             try {
-                $this->roomStatusTransitionUseCase->execute($room, $data['status']);
+                $this->roomStatusTransitionUseCase->executeTransition($room, $data['status']);
             } catch (\DomainException $e) {
                 throw new BadRequestHttpException($e->getMessage());
             }

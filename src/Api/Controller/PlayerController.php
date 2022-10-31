@@ -7,10 +7,9 @@ namespace App\Api\Controller;
 use App\Api\Exception\ValidationException;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\PlayerRepository;
-use App\Domain\Player\Service\PlayerService;
+use App\Domain\Player\Service\PlayerUpdater;
 use App\Domain\Player\UseCase\DeletePlayerUseCase;
-use App\Infrastructure\Persistence\Doctrine\DoctrinePersistenceAdapter;
-use App\Infrastructure\Persistence\Doctrine\Repository\DoctrinePlayerRepositoryDoctrine;
+use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Serializer\KillerSerializer;
 use App\Validator\KillerValidator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,7 +21,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
@@ -34,9 +32,8 @@ class PlayerController extends AbstractController
 {
     public function __construct(
         private readonly PlayerRepository $playerRepository,
-        private readonly DoctrinePersistenceAdapter $persistenceAdapter,
-        private readonly UserPasswordHasherInterface $userPasswordHasher,
-        private readonly PlayerService $playerService,
+        private readonly PersistenceAdapterInterface $persistenceAdapter,
+        private readonly PlayerUpdater $playerUpdater,
         private readonly DeletePlayerUseCase $deletePlayerUseCase,
         private readonly HubInterface $hub,
         private readonly KillerSerializer $serializer,
@@ -49,11 +46,11 @@ class PlayerController extends AbstractController
     public function createPlayer(Request $request): JsonResponse
     {
         $player = $this->serializer->deserialize(
-            $request->getContent(),
+            (string) $request->getContent(),
             Player::class,
             [AbstractNormalizer::GROUPS => 'post-player'],
         );
-        $player->setPassword($this->generatePassword($player));
+        $player->setPassword('tempP@$$w0rd');
 
         try {
             $this->validator->validate($player);
@@ -119,7 +116,7 @@ class PlayerController extends AbstractController
 
         try {
             // TODO: Pre update event ?
-            $this->playerService->handleUpdate($data, $player);
+            $this->playerUpdater->handleUpdate($data, $player);
         } catch (\DomainException $e) {
             throw new BadRequestHttpException($e->getMessage());
         }
@@ -173,10 +170,5 @@ class PlayerController extends AbstractController
         ));
 
         return $this->json(null, Response::HTTP_NO_CONTENT);
-    }
-
-    private function generatePassword(Player $player): string
-    {
-        return $this->userPasswordHasher->hashPassword($player, '@tempP@ssw0rd');
     }
 }

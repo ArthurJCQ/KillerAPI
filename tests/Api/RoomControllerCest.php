@@ -11,7 +11,7 @@ class RoomControllerCest
 {
     public function _before(ApiTester $I): void
     {
-        $I->sendPost('player', json_encode(['name' => 'John']));
+        $I->sendPost('player', (string) json_encode(['name' => 'John']));
         $I->sendPost('room');
     }
 
@@ -22,8 +22,9 @@ class RoomControllerCest
 
     public function testPatchRoom(ApiTester $I): void
     {
+        /** @var int $roomId */
         $roomId = $I->grabFromRepository(Room::class, 'id', ['name' => 'John\'s room']);
-        $I->sendPatch(sprintf('room/%d', $roomId), json_encode(['name' => 'new name']));
+        $I->sendPatch(sprintf('room/%d', $roomId), (string) json_encode(['name' => 'new name']));
         $I->seeInRepository(Room::class, ['name' => 'new name']);
 
         $I->seeResponseCodeIsSuccessful();
@@ -31,9 +32,10 @@ class RoomControllerCest
 
     public function testUpdateRoomNotEnoughPlayers(ApiTester $I): void
     {
+        /** @var int $roomId */
         $roomId = $I->grabFromRepository(Room::class, 'id', ['name' => 'John\'s room']);
 
-        $I->sendPatch(sprintf('room/%d', $roomId), json_encode(['status' => 'IN_GAME']));
+        $I->sendPatch(sprintf('room/%d', $roomId), (string) json_encode(['status' => 'IN_GAME']));
         $I->seeResponseCodeIs(400);
     }
 }

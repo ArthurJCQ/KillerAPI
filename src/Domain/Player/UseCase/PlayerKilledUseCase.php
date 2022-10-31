@@ -8,7 +8,7 @@ use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Exception\PlayerHasNoKillerOrTargetException;
 use App\Domain\Room\Entity\Room;
 
-class PlayerKilledUseCase
+class PlayerKilledUseCase implements PlayerUseCase
 {
     public function execute(Player $player): void
     {

@@ -6,6 +6,7 @@ namespace App\Domain\Player\Subscriber;
 
 use App\Domain\Mission\MissionRepository;
 use App\Domain\Player\Entity\Player;
+use App\Domain\Player\Service\PasswordRandomizer;
 use App\Domain\Room\Entity\Room;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,12 +15,13 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
-class PlayerDoctrineSubscriber implements EventSubscriberInterface
+final class PlayerDoctrineSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private readonly MissionRepository $missionRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly TokenStorageInterface $tokenStorage,
+        private readonly PasswordRandomizer $randomizePassword,
     ) {
     }
 
@@ -42,6 +44,18 @@ class PlayerDoctrineSubscriber implements EventSubscriberInterface
         }
     }
 
+    public function prePersist(LifecycleEventArgs $args): void
+    {
+        $player = $args->getObject();
+
+        if (!$player instanceof Player) {
+            return;
+        }
+
+        $this->randomizePassword->generate($player);
+    }
+
+    // TODO
     // NOT SURE IT REALLY WORKS (Test are failing for instance. User is reauthenticated in controllers as well for now).
     public function postUpdate(LifecycleEventArgs $args): void
     {
@@ -65,6 +79,6 @@ class PlayerDoctrineSubscriber implements EventSubscriberInterface
 
     public function getSubscribedEvents(): array
     {
-        return [Events::preRemove, Events::postUpdate];
+        return [Events::preRemove, Events::postUpdate, Events::prePersist];
     }
 }

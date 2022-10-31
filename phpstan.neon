@@ -1,4 +1,9 @@
+includes:
+    - vendor/jangregor/phpstan-prophecy/extension.neon
 parameters:
+    bootstrapFiles:
+        - tests/_support/_generated/ApiTesterActions.php
+        - tests/_support/ApiTester.php
     excludePaths:
         - %currentWorkingDirectory%/tests/_support/_generated/*
         - %currentWorkingDirectory%/tests/_support/*.php

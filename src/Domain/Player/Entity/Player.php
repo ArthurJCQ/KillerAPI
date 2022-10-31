@@ -78,10 +78,6 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['me'])]
     private ?Mission $assignedMission = null;
 
-    #[SerializedName('missions')]
-    #[Groups(['me'])]
-    private ?array $authoredMissionsInRoom = null;
-
     public function __construct()
     {
         $this->authoredMissions = new ArrayCollection();
@@ -216,7 +212,7 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
         if (!$this->authoredMissions->contains($authoredMission)) {
             $this->authoredMissions[] = $authoredMission;
             $authoredMission->setAuthor($this);
-            $this->room->addMission($authoredMission);
+            $this->room?->addMission($authoredMission);
         }
 
         return $this;
@@ -246,7 +242,10 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getAuthoredMissionsInRoom(): ?array
+    /** @return Mission[] */
+    #[SerializedName('missions')]
+    #[Groups(['me'])]
+    public function getAuthoredMissionsInRoom(): array
     {
         $missions = [];
 
@@ -263,6 +262,6 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isAdmin(): bool
     {
-        return array_search('ROLE_ADMIN', $this->roles, true);
+        return (bool) array_search('ROLE_ADMIN', $this->roles, true);
     }
 }

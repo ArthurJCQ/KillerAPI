@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Domain\Player\Validator;
 
 use App\Domain\Player\Entity\Player;
-use App\Infrastructure\Persistence\Doctrine\Repository\DoctrinePlayerRepositoryDoctrine;
+use App\Domain\Player\PlayerRepository;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 class PlayerCanRenameValidator extends ConstraintValidator
 {
-    public function __construct(private DoctrinePlayerRepositoryDoctrine $playerRepository)
+    public function __construct(private readonly PlayerRepository $playerRepository)
     {
     }
 

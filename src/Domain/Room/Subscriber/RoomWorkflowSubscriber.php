@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Domain\Room\Subscriber;
 
 use App\Domain\Room\Entity\Room;
-use App\Domain\Room\UseCase\CanStartGameUseCase;
+use App\Domain\Room\Specification\GameCanStartSpecification;
 use App\Domain\Room\UseCase\StartGameUseCase;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Workflow\Event\CompletedEvent;
 use Symfony\Component\Workflow\Event\GuardEvent;
 
-class RoomWorkflowSubscriber implements EventSubscriberInterface
+final class RoomWorkflowSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private CanStartGameUseCase $canStartGameUseCase,
+        private GameCanStartSpecification $gameCanStartSpecification,
         private StartGameUseCase $startGameUseCase,
     ) {
     }
@@ -24,11 +24,11 @@ class RoomWorkflowSubscriber implements EventSubscriberInterface
         /** @var Room $room */
         $room = $event->getSubject();
 
-        try {
-            $this->canStartGameUseCase->execute($room);
-        } catch (\DomainException $e) {
-            $event->setBlocked(true, sprintf('Can not start the game : %s', $e->getMessage()));
+        if ($this->gameCanStartSpecification->isSatisfiedBy($room)) {
+            return;
         }
+
+        $event->setBlocked(true, 'Can not start the game : Not enough player or mission in room.');
     }
 
     public function completedStartGame(CompletedEvent $event): void

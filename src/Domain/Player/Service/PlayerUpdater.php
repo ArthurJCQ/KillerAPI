@@ -10,7 +10,7 @@ use App\Domain\Player\UseCase\PlayerKilledUseCase;
 use App\Domain\Player\UseCase\PlayerLeaveRoomUseCase;
 use App\Domain\Player\UseCase\PlayerTransfersRoleAdminUseCase;
 
-class PlayerService
+class PlayerUpdater
 {
     public function __construct(
         private readonly PlayerLeaveRoomUseCase $playerLeaveRoomUseCase,

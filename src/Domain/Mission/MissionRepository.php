@@ -9,6 +9,7 @@ use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
 use App\Infrastructure\Persistence\BaseRepository;
 
+/** @extends BaseRepository<Mission> */
 interface MissionRepository extends BaseRepository
 {
     /** @return ?Mission[] */

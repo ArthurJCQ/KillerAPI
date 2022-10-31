@@ -8,6 +8,7 @@ use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
 use App\Infrastructure\Persistence\BaseRepository;
 
+/** @extends BaseRepository<Player> */
 interface PlayerRepository extends BaseRepository
 {
     /** @return Player[] */

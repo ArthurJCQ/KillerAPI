@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace App\Domain\Room\UseCase;
 
-use App\Domain\Mission\UseCase\DispatchMissionsUseCase;
-use App\Domain\Player\UseCase\DispatchTargetsUseCase;
 use App\Domain\Room\Entity\Room;
-use App\Infrastructure\Persistence\Doctrine\DoctrinePersistenceAdapter;
+use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 
-class StartGameUseCase
+final class StartGameUseCase implements RoomUseCase
 {
     public function __construct(
-        private DispatchTargetsUseCase $dispatchTargetsUseCase,
-        private DispatchMissionsUseCase $dispatchMissionsUseCase,
-        private DoctrinePersistenceAdapter $persistenceAdapter,
+        private readonly DispatchTargetsUseCase $dispatchTargetsUseCase,
+        private readonly DispatchMissionsUseCase $dispatchMissionsUseCase,
+        private readonly PersistenceAdapterInterface $persistenceAdapter,
     ) {
     }
 

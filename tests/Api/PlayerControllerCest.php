@@ -13,7 +13,7 @@ class PlayerControllerCest
 {
     public function _before(ApiTester $I): void
     {
-        $I->sendPost('player', json_encode(['name' => 'John']));
+        $I->sendPost('player', (string) json_encode(['name' => 'John']));
         $I->seeAuthentication();
     }
 
@@ -33,7 +33,7 @@ class PlayerControllerCest
 
     public function testPatchPlayer(ApiTester $I): void
     {
-        $I->sendPatch('player', json_encode(['name' => 'Hey']));
+        $I->sendPatch('player', (string) json_encode(['name' => 'Hey']));
         $I->seeInRepository(Player::class, ['name' => 'Hey']);
         $I->dontSeeInRepository(Player::class, ['name' => 'John']);
 
@@ -49,7 +49,7 @@ class PlayerControllerCest
     public function testPlayerJoinRoom(ApiTester $I): void
     {
         $I->haveInRepository(Room::class, ['code' => 'XXXXX', 'name' => 'John\'s room']);
-        $I->sendPatch('player', json_encode(['room' => 'XXXXX']));
+        $I->sendPatch('player', (string) json_encode(['room' => 'XXXXX']));
 
         $I->seeInRepository(Player::class, ['name' => 'John', 'room' => ['code' => 'XXXXX']]);
 
@@ -63,13 +63,13 @@ class PlayerControllerCest
         $player->setStatus(PlayerStatus::KILLED);
         $I->flushToDatabase();
 
-        $I->sendPatch('player', json_encode(['room' => 'XXXXX']));
+        $I->sendPatch('player', (string) json_encode(['room' => 'XXXXX']));
         $I->seeInRepository(
             Player::class,
             ['name' => 'John', 'status' => PlayerStatus::KILLED->value, 'room' => ['code' => 'XXXXX']],
         );
 
-        $I->sendPatch('player', json_encode(['room' => null]));
+        $I->sendPatch('player', (string) json_encode(['room' => null]));
         $I->seeInRepository(Player::class, ['name' => 'John', 'status' => PlayerStatus::ALIVE->value, 'room' => null]);
 
         $I->seeResponseCodeIsSuccessful();

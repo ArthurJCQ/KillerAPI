@@ -8,7 +8,7 @@ use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Exception\NotEnoughPlayersInRoomException;
 use Symfony\Component\Security\Core\Security;
 
-class PlayerTransfersRoleAdminUseCase
+class PlayerTransfersRoleAdminUseCase implements PlayerUseCase
 {
     public function __construct(private readonly Security $security)
     {
@@ -32,9 +32,9 @@ class PlayerTransfersRoleAdminUseCase
             return;
         }
 
-        $playersByRoom = $player->getRoom()?->getPlayers()->toArray();
+        $playersByRoom = $playerSession->getRoom()->getPlayers()->toArray();
 
-        if (\count($playersByRoom) <= 1) {
+        if (!$playersByRoom || \count($playersByRoom) <= 1) {
             throw new NotEnoughPlayersInRoomException('Not enough players in room to transfer ADMIN role.');
         }
 

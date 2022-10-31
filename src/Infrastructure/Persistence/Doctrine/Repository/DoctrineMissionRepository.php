@@ -11,7 +11,7 @@ use App\Domain\Room\Entity\Room;
 use Doctrine\ORM\EntityManagerInterface;
 
 /** @extends DoctrineBaseRepository<Mission> */
-final class DoctrineMissionRepositoryDoctrine extends DoctrineBaseRepository implements MissionRepository
+final class DoctrineMissionRepository extends DoctrineBaseRepository implements MissionRepository
 {
     public function __construct(EntityManagerInterface $entityManager)
     {

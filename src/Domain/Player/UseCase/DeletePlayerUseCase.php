@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Domain\Player\UseCase;
 
 use App\Domain\Player\Entity\Player;
-use App\Infrastructure\Persistence\Doctrine\DoctrinePersistenceAdapter;
-use App\Infrastructure\Persistence\Doctrine\Repository\DoctrinePlayerRepositoryDoctrine;
+use App\Domain\Player\PlayerRepository;
+use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 
-class DeletePlayerUseCase
+final class DeletePlayerUseCase implements PlayerUseCase
 {
     public function __construct(
-        private PlayerLeaveRoomUseCase           $playerLeaveRoomUseCase,
-        private DoctrinePlayerRepositoryDoctrine $playerRepository,
-        private DoctrinePersistenceAdapter       $persistenceAdapter,
+        private readonly PlayerLeaveRoomUseCase $playerLeaveRoomUseCase,
+        private readonly PlayerRepository $playerRepository,
+        private readonly PersistenceAdapterInterface $persistenceAdapter,
     ) {
     }
 

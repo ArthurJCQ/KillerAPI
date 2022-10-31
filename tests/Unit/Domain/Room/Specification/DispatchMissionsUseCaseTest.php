@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Domain\Mission\UseCase;
+namespace App\Tests\Unit\Domain\Room\Specification;
 
 use App\Domain\Mission\Entity\Mission;
-use App\Domain\Mission\UseCase\DispatchMissionsUseCase;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
+use App\Domain\Room\UseCase\DispatchMissionsUseCase;
 use Doctrine\Common\Collections\ArrayCollection;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Prophecy\Prophecy\ObjectProphecy;
 
 class DispatchMissionsUseCaseTest extends \Codeception\Test\Unit
 {
@@ -18,7 +19,7 @@ class DispatchMissionsUseCaseTest extends \Codeception\Test\Unit
 
     private const DISPATCH_ITERATION = 100;
 
-    private readonly DispatchMissionsUseCase $dispatchMissionsUseCase;
+    private DispatchMissionsUseCase $dispatchMissionsUseCase;
 
     protected function setUp(): void
     {
@@ -46,6 +47,7 @@ class DispatchMissionsUseCaseTest extends \Codeception\Test\Unit
         $mission1Player2 = $this->prophesize(Mission::class);
         $mission2Player2 = $this->prophesize(Mission::class);
 
+        /** @var Room|ObjectProphecy $room */
         $room = $this->prophesize(Room::class);
 
         $player1->getAuthoredMissionsInRoom()
@@ -62,7 +64,7 @@ class DispatchMissionsUseCaseTest extends \Codeception\Test\Unit
 
         $player3->getAuthoredMissionsInRoom()
             ->shouldBeCalled()
-            ->willReturn(null);
+            ->willReturn([]);
         $player3->getTarget()->shouldBeCalled()->willReturn($player1);
         $player3->setAssignedMission(Argument::any())->shouldBeCalled();
 
