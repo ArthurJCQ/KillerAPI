@@ -21,3 +21,8 @@ services:
             - '../src/Kernel.php'
 
     Symfony\Component\Security\Http\Authenticator\AuthenticatorInterface: '@security.authenticator.json_login'
+
+when@test:
+    services:
+        mercure.hub.default:
+            class: App\Tests\Api\Stubs\MercureHubStub

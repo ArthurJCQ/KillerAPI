@@ -62,10 +62,10 @@ class PlayerController extends AbstractController
 
         $this->playerAuthenticator->authenticate($player);
 
-//        $this->hub->publish(new Update(
-//            sprintf('room/%s', $player->getRoom()),
-//            $this->serializer->serialize($player, [AbstractNormalizer::GROUPS => 'get-player']),
-//        ));
+        $this->hub->publish(new Update(
+            sprintf('room/%s', $player->getRoom()),
+            $this->serializer->serialize($player, [AbstractNormalizer::GROUPS => 'get-player']),
+        ));
 
         return $this->json(
             $player,
@@ -122,10 +122,10 @@ class PlayerController extends AbstractController
         $this->persistenceAdapter->flush();
 
         // TODO: publish event for previous room if there is one
-//        $this->hub->publish(new Update(
-//            sprintf('room/%s', $player->getRoom()),
-//            $this->serializer->serialize($player, [AbstractNormalizer::GROUPS => 'get-player']),
-//        ));
+        $this->hub->publish(new Update(
+            sprintf('room/%s', $player->getRoom()),
+            $this->serializer->serialize($player, [AbstractNormalizer::GROUPS => 'get-player']),
+        ));
 
         return $this->json($player, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'get-player']);
     }
@@ -136,12 +136,12 @@ class PlayerController extends AbstractController
     {
         $this->playerRepository->remove($player);
 
-//        $room = $player->getRoom();
+        $room = $player->getRoom();
 
-//        $this->hub->publish(new Update(
-//            sprintf('room/%s', $room),
-//            $this->serializer->serialize($player, [AbstractNormalizer::GROUPS => 'get-player']),
-//        ));
+        $this->hub->publish(new Update(
+            sprintf('room/%s', $room),
+            $this->serializer->serialize($player, [AbstractNormalizer::GROUPS => 'get-player']),
+        ));
 
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }

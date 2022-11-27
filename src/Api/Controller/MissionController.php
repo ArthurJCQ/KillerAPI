@@ -64,7 +64,7 @@ class MissionController extends AbstractController
         $this->missionRepository->store($mission);
         $this->persistenceAdapter->flush();
 
-//        $this->hub->publish(new Update(sprintf('room/%s', $mission->getAuthor()?->getRoom())));
+        $this->hub->publish(new Update(sprintf('room/%s', $mission->getAuthor()?->getRoom())));
 
         return $this->json($mission, Response::HTTP_CREATED, [], [AbstractNormalizer::GROUPS => 'get-mission']);
     }
