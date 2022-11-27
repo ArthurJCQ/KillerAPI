@@ -19,8 +19,8 @@ class EnoughMissionInRoomSpecification implements RoomSpecification
     {
         $players = $room->getPlayers();
 
-        $playersWithAuthoredMissions = $this->missionRepository->getMissionsByRoomAndAuthor($room);
+        $playersWithAuthoredMissions = $this->missionRepository->getMissionAuthorsByRoom($room);
 
-        return \count($playersWithAuthoredMissions) > 1 && (\count($room->getMissions()) < \count($players));
+        return \count($playersWithAuthoredMissions) > 1 && (\count($room->getMissions()) >= \count($players));
     }
 }

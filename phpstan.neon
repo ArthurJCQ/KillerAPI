@@ -8,3 +8,5 @@ parameters:
         - %currentWorkingDirectory%/tests/_support/_generated/*
         - %currentWorkingDirectory%/tests/_support/*.php
     checkGenericClassInNonGenericObjectType: false
+    ignoreErrors:
+        - '#^Cannot call method [a-z]+\(\) on Psr\\Log\\LoggerInterface\|null\.$#'

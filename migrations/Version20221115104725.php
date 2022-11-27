@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20221015183421 extends AbstractMigration
+final class Version20221115104725 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -45,15 +45,15 @@ final class Version20221015183421 extends AbstractMigration
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE SCHEMA public');
-        $this->addSql('ALTER TABLE player DROP CONSTRAINT FK_98197A65E7EA086E');
-        $this->addSql('ALTER TABLE mission DROP CONSTRAINT FK_9067F23CB76D9DC4');
-        $this->addSql('ALTER TABLE player DROP CONSTRAINT FK_98197A65D96FB922');
-        $this->addSql('ALTER TABLE player DROP CONSTRAINT FK_98197A654E6F28D5');
-        $this->addSql('ALTER TABLE mission DROP CONSTRAINT FK_9067F23C941714BA');
-        $this->addSql('ALTER TABLE player DROP CONSTRAINT FK_98197A65CA6CFF46');
         $this->addSql('DROP SEQUENCE mission_id_seq CASCADE');
         $this->addSql('DROP SEQUENCE player_id_seq CASCADE');
         $this->addSql('DROP SEQUENCE room_id_seq CASCADE');
+        $this->addSql('ALTER TABLE mission DROP CONSTRAINT FK_9067F23CB76D9DC4');
+        $this->addSql('ALTER TABLE mission DROP CONSTRAINT FK_9067F23C941714BA');
+        $this->addSql('ALTER TABLE player DROP CONSTRAINT FK_98197A65CA6CFF46');
+        $this->addSql('ALTER TABLE player DROP CONSTRAINT FK_98197A65D96FB922');
+        $this->addSql('ALTER TABLE player DROP CONSTRAINT FK_98197A654E6F28D5');
+        $this->addSql('ALTER TABLE player DROP CONSTRAINT FK_98197A65E7EA086E');
         $this->addSql('DROP TABLE mission');
         $this->addSql('DROP TABLE player');
         $this->addSql('DROP TABLE room');

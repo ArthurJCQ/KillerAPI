@@ -33,7 +33,11 @@ class Mission
 
     #[ORM\ManyToOne(targetEntity: Room::class, cascade: ['persist'], inversedBy: 'missions')]
     #[ORM\JoinColumn(name: 'room_missions')]
+    #[Groups(['get-mission', 'get-player'])]
     private ?Room $room;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isAssigned = false;
 
     public function getId(): int
     {
@@ -79,6 +83,18 @@ class Mission
     public function setRoom(?Room $room): self
     {
         $this->room = $room;
+
+        return $this;
+    }
+
+    public function isAssigned(): bool
+    {
+        return $this->isAssigned;
+    }
+
+    public function setIsAssigned(bool $isAssigned): self
+    {
+        $this->isAssigned = $isAssigned;
 
         return $this;
     }

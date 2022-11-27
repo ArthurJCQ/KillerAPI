@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace App\Domain\Player\Subscriber;
 
-use App\Domain\Mission\MissionRepository;
 use App\Domain\Player\Entity\Player;
+use App\Domain\Player\Enum\PlayerStatus;
+use App\Domain\Player\Event\PlayerKilledEvent;
 use App\Domain\Player\Service\PasswordRandomizer;
+use App\Domain\Player\UseCase\PlayerLeaveRoomUseCase;
 use App\Domain\Room\Entity\Room;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class PlayerDoctrineSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private readonly MissionRepository $missionRepository,
-        private readonly EntityManagerInterface $entityManager,
-        private readonly TokenStorageInterface $tokenStorage,
         private readonly PasswordRandomizer $randomizePassword,
+        private readonly PlayerLeaveRoomUseCase $playerLeaveRoomUseCase,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -33,15 +33,7 @@ final class PlayerDoctrineSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $playerRoom = $player->getRoom();
-
-        if (!$playerRoom || $playerRoom->getStatus() !== Room::PENDING) {
-            return;
-        }
-
-        foreach ($player->getAuthoredMissions() as $mission) {
-            $this->missionRepository->remove($mission);
-        }
+        $this->playerLeaveRoomUseCase->execute($player);
     }
 
     public function prePersist(LifecycleEventArgs $args): void
@@ -55,9 +47,7 @@ final class PlayerDoctrineSubscriber implements EventSubscriberInterface
         $this->randomizePassword->generate($player);
     }
 
-    // TODO
-    // NOT SURE IT REALLY WORKS (Test are failing for instance. User is reauthenticated in controllers as well for now).
-    public function postUpdate(LifecycleEventArgs $args): void
+    public function preUpdate(PreUpdateEventArgs $args): void
     {
         $player = $args->getObject();
 
@@ -65,20 +55,17 @@ final class PlayerDoctrineSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $uow = $this->entityManager->getUnitOfWork();
-        $changeSet = $uow->getEntityChangeSet($player);
-
-        // If roles have been changed, symfony deauthenticate the user.
-        if (!isset($changeSet['roles'])) {
-            return;
+        if ($args->hasChangedField('room') && $args->getOldValue('room') instanceof Room) {
+            $this->playerLeaveRoomUseCase->execute($player, $args->getOldValue('room'));
         }
 
-        // Should we rather do it on post flush ? If so, can't do it in a subscriber
-        $this->tokenStorage->setToken(new UsernamePasswordToken($player, 'main', $player->getRoles()));
+        if ($args->hasChangedField('status') && $args->getNewValue('status') === PlayerStatus::KILLED) {
+            $this->eventDispatcher->dispatch(new PlayerKilledEvent($player), PlayerKilledEvent::NAME);
+        }
     }
 
     public function getSubscribedEvents(): array
     {
-        return [Events::preRemove, Events::postUpdate, Events::prePersist];
+        return [Events::preRemove, Events::preUpdate, Events::prePersist];
     }
 }

@@ -15,6 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -23,9 +24,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[PlayerCanJoinRoom]
 class Player implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    public const ROLE_PLAYER = 'ROLE_PLAYER';
-    public const ROLE_ADMIN = 'ROLE_ADMIN';
-
     #[ORM\Id]
     #[ORM\Column(type: 'integer', unique: true)]
     #[ORM\GeneratedValue(strategy: "AUTO")]
@@ -39,8 +37,7 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
 
     /** @var string[] */
     #[ORM\Column(type: 'json')]
-    #[Groups(['get-player', 'get-room', 'me', 'patch-player'])]
-    private array $roles = [];
+    private array $roles = ['ROLE_USER'];
 
     #[ORM\Column(
         type: 'string',
@@ -73,7 +70,7 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: Mission::class)]
     private Collection $authoredMissions;
 
-    #[ORM\OneToOne(targetEntity: Mission::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(targetEntity: Mission::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'user_assigned_mission')]
     #[Groups(['me'])]
     private ?Mission $assignedMission = null;
@@ -121,7 +118,7 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
-        $roles[] = self::ROLE_PLAYER;
+        $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
     }
@@ -165,6 +162,14 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setTarget(?Player $target): self
     {
+        if ($this->target instanceof self && !$target) {
+            $this->target->setKiller(null);
+        }
+
+        if ($target instanceof self) {
+            $target->setKiller($this);
+        }
+
         $this->target = $target;
 
         return $this;
@@ -243,7 +248,7 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /** @return Mission[] */
-    #[SerializedName('missions')]
+    #[SerializedName('authoredMissions')]
     #[Groups(['me'])]
     public function getAuthoredMissionsInRoom(): array
     {
@@ -258,10 +263,5 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $missions;
-    }
-
-    public function isAdmin(): bool
-    {
-        return (bool) array_search('ROLE_ADMIN', $this->roles, true);
     }
 }

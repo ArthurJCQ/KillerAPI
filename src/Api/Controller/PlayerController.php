@@ -7,11 +7,12 @@ namespace App\Api\Controller;
 use App\Api\Exception\ValidationException;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\PlayerRepository;
-use App\Domain\Player\Service\PlayerUpdater;
-use App\Domain\Player\UseCase\DeletePlayerUseCase;
+use App\Domain\Player\Security\PlayerAuthenticator;
+use App\Domain\Player\Security\PlayerVoter;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Serializer\KillerSerializer;
 use App\Validator\KillerValidator;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,8 +23,6 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
@@ -33,12 +32,10 @@ class PlayerController extends AbstractController
     public function __construct(
         private readonly PlayerRepository $playerRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
-        private readonly PlayerUpdater $playerUpdater,
-        private readonly DeletePlayerUseCase $deletePlayerUseCase,
         private readonly HubInterface $hub,
         private readonly KillerSerializer $serializer,
         private readonly KillerValidator $validator,
-        private readonly TokenStorageInterface $tokenStorage,
+        private readonly PlayerAuthenticator $playerAuthenticator,
     ) {
     }
 
@@ -50,6 +47,8 @@ class PlayerController extends AbstractController
             Player::class,
             [AbstractNormalizer::GROUPS => 'post-player'],
         );
+
+        // random password is set on prePersist event. Here is just for validation. To remove if possible.
         $player->setPassword('tempP@$$w0rd');
 
         try {
@@ -61,8 +60,7 @@ class PlayerController extends AbstractController
         $this->playerRepository->store($player);
         $this->persistenceAdapter->flush();
 
-
-        $this->tokenStorage->setToken(new UsernamePasswordToken($player, 'main', $player->getRoles()));
+        $this->playerAuthenticator->authenticate($player);
 
 //        $this->hub->publish(new Update(
 //            sprintf('room/%s', $player->getRoom()),
@@ -90,35 +88,19 @@ class PlayerController extends AbstractController
     }
 
     #[Route('/{id}', name: 'get_player', methods: [Request::METHOD_GET])]
-    public function getPlayerById(?Player $player): JsonResponse
+    public function getPlayerById(Player $player): JsonResponse
     {
-        if (!$player) {
-            throw new NotFoundHttpException('Player not found');
-        }
-
         return $this->json($player, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'get-player']);
     }
 
-    #[Route(name: 'patch_player', methods: [Request::METHOD_PATCH])]
-    public function patchPlayer(Request $request): JsonResponse
+    #[Route('/{id}', name: 'patch_player', methods: [Request::METHOD_PATCH])]
+    #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player')]
+    public function patchPlayer(Request $request, Player $player): JsonResponse
     {
-        $player = $this->getUser();
-
-        if (!$player instanceof Player) {
-            throw new NotFoundHttpException('Player not found');
-        }
-
         $data = $request->toArray();
 
-        if (isset($data['role']) && !$this->isGranted(Player::ROLE_ADMIN)) {
+        if (isset($data['role']) && $player !== $player->getRoom()?->getAdmin()) {
             throw new UnauthorizedHttpException('Can not update player role with non admin player');
-        }
-
-        try {
-            // TODO: Pre update event ?
-            $this->playerUpdater->handleUpdate($data, $player);
-        } catch (\DomainException $e) {
-            throw new BadRequestHttpException($e->getMessage());
         }
 
         $this->serializer->deserialize(
@@ -139,9 +121,6 @@ class PlayerController extends AbstractController
 
         $this->persistenceAdapter->flush();
 
-        // TODO Find a solution to do it in a post flush event
-        $this->tokenStorage->setToken(new UsernamePasswordToken($player, 'main', $player->getRoles()));
-
         // TODO: publish event for previous room if there is one
 //        $this->hub->publish(new Update(
 //            sprintf('room/%s', $player->getRoom()),
@@ -151,23 +130,18 @@ class PlayerController extends AbstractController
         return $this->json($player, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'get-player']);
     }
 
-    #[Route(name: 'delete_player', methods: [Request::METHOD_DELETE])]
-    public function deletePlayer(): JsonResponse
+    #[Route('/{id}', name: 'delete_player', methods: [Request::METHOD_DELETE])]
+    #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player')]
+    public function deletePlayer(Player $player): JsonResponse
     {
-        $player = $this->getUser();
+        $this->playerRepository->remove($player);
 
-        if (!$player instanceof Player) {
-            throw new NotFoundHttpException('Player not found');
-        }
+//        $room = $player->getRoom();
 
-        $room = $player->getRoom();
-
-        $this->deletePlayerUseCase->execute($player);
-
-        $this->hub->publish(new Update(
-            sprintf('room/%s', $room),
-            $this->serializer->serialize($player, [AbstractNormalizer::GROUPS => 'get-player']),
-        ));
+//        $this->hub->publish(new Update(
+//            sprintf('room/%s', $room),
+//            $this->serializer->serialize($player, [AbstractNormalizer::GROUPS => 'get-player']),
+//        ));
 
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }

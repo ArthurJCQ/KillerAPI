@@ -37,7 +37,7 @@ final class DoctrineMissionRepository extends DoctrineBaseRepository implements 
     }
 
     /** @return Mission[] */
-    public function getMissionsByRoomAndAuthor(Room $room): array
+    public function getMissionAuthorsByRoom(Room $room): array
     {
         /** @var Mission[] */
         return $this->repository->createQueryBuilder('m')
@@ -45,7 +45,7 @@ final class DoctrineMissionRepository extends DoctrineBaseRepository implements 
             ->join('a.room', 'r')
             ->where('r = :room')
             ->setParameter('room', $room)
-            ->groupBy('m.author')
+            ->groupBy('m.id, m.author')
             ->getQuery()
             ->getArrayResult();
     }

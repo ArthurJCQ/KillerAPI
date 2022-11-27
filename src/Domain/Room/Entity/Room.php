@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
@@ -30,7 +31,7 @@ class Room
     private int $id;
 
     #[ORM\Column(type: 'string', length: 5)]
-    #[Groups(['get-room', 'me', 'get-player'])]
+    #[Groups(['get-room', 'me', 'get-player', 'get-mission'])]
     #[Assert\Length(exactly: 5)]
     private string $code;
 
@@ -47,6 +48,10 @@ class Room
     #[ORM\OneToMany(mappedBy: 'room', targetEntity: Player::class)]
     #[Groups('get-room')]
     private Collection $players;
+
+    #[ORM\OneToOne(targetEntity: Player::class)]
+    #[Groups(['get-room'])]
+    private ?Player $admin = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
@@ -197,6 +202,18 @@ class Room
                 $mission->setRoom(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getAdmin(): ?Player
+    {
+        return $this->admin;
+    }
+
+    public function setAdmin(?Player $admin): self
+    {
+        $this->admin = $admin;
 
         return $this;
     }

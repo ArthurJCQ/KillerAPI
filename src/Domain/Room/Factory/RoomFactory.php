@@ -25,6 +25,7 @@ class RoomFactory
         return (new Room())
             ->setCode(strtoupper($this->randomStringGenerator->alphanumeric(5)))
             ->setName(sprintf("%s's room", $player->getName()))
+            ->setAdmin($player)
             ->addPlayer($player);
     }
 }

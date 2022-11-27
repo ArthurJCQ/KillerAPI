@@ -51,12 +51,12 @@ class EnoughMissionInRoomSpecificationTest extends \Codeception\Test\Unit
             $mission3->reveal(),
         ]));
 
-        $this->missionRepository->getMissionsByRoomAndAuthor($room->reveal())->shouldBeCalledOnce()->willReturn([
+        $this->missionRepository->getMissionAuthorsByRoom($room->reveal())->shouldBeCalledOnce()->willReturn([
             $mission1->reveal(),
             $mission2->reveal(),
         ]);
 
-        $this->assertFalse($this->enoughMissionInRoomSpecification->isSatisfiedBy($room->reveal()));
+        $this->assertTrue($this->enoughMissionInRoomSpecification->isSatisfiedBy($room->reveal()));
     }
 
     public function notEnoughMissions(): void
@@ -77,7 +77,7 @@ class EnoughMissionInRoomSpecificationTest extends \Codeception\Test\Unit
             $mission2->reveal(),
         ]));
 
-        $this->missionRepository->getMissionsByRoomAndAuthor($room->reveal())->shouldBeCalledOnce()->willReturn([
+        $this->missionRepository->getMissionAuthorsByRoom($room->reveal())->shouldBeCalledOnce()->willReturn([
             $mission1->reveal(),
             $mission2->reveal(),
         ]);
@@ -105,7 +105,7 @@ class EnoughMissionInRoomSpecificationTest extends \Codeception\Test\Unit
             $mission3->reveal(),
         ]));
 
-        $this->missionRepository->getMissionsByRoomAndAuthor($room->reveal())->shouldBeCalledOnce()->willReturn([
+        $this->missionRepository->getMissionAuthorsByRoom($room->reveal())->shouldBeCalledOnce()->willReturn([
             $mission1->reveal(),
         ]);
 

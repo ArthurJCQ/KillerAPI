@@ -7,11 +7,13 @@ namespace App\Api\Controller;
 use App\Api\Exception\ValidationException;
 use App\Domain\Mission\Entity\Mission;
 use App\Domain\Mission\MissionRepository;
+use App\Domain\Mission\Security\MissionVoter;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Serializer\KillerSerializer;
 use App\Validator\KillerValidator;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -67,7 +69,15 @@ class MissionController extends AbstractController
         return $this->json($mission, Response::HTTP_CREATED, [], [AbstractNormalizer::GROUPS => 'get-mission']);
     }
 
+    #[Route('/{id}', name: 'get-mission', methods: [Request::METHOD_GET])]
+    #[IsGranted(MissionVoter::VIEW_MISSION, subject: 'mission')]
+    public function getMission(Mission $mission): JsonResponse
+    {
+        return $this->json($mission, Response::HTTP_OK, [AbstractNormalizer::GROUPS => 'get-mission']);
+    }
+
     #[Route('/{id}', name: 'patch_mission', methods: [Request::METHOD_PATCH])]
+    #[IsGranted(MissionVoter::EDIT_MISSION, subject: 'mission')]
     public function patchMission(Request $request, Mission $mission): JsonResponse
     {
         $this->serializer->deserialize(
@@ -99,6 +109,7 @@ class MissionController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete_mission', methods: [Request::METHOD_DELETE])]
+    #[IsGranted(MissionVoter::EDIT_MISSION, subject: 'mission')]
     public function deleteMission(Mission $mission): JsonResponse
     {
         $this->missionRepository->remove($mission);

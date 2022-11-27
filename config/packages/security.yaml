@@ -29,17 +29,16 @@ security:
             # switch_user: true
 
     role_hierarchy:
-        ROLE_ADMIN: ROLE_PLAYER
+        ROLE_ADMIN: ROLE_USER
 
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
          - { path: ^/player, roles: PUBLIC_ACCESS, method: [POST] }
-         - { path: ^/player, roles: ROLE_PLAYER, method: [GET, PATCH, PUT, DELETE] }
-         - { path: ^/room, roles: ROLE_ADMIN, method: [PATCH, PUT, DELETE] }
-         - { path: ^/room, roles: ROLE_PLAYER }
-         - { path: ^/mission, roles: ROLE_PLAYER }
+         - { path: ^/player, roles: ROLE_USER }
+         - { path: ^/room, roles: ROLE_USER }
+         - { path: ^/mission, roles: ROLE_USER }
 
 when@test:
     security:

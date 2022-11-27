@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Room\Validator;
 
-use App\Domain\Player\Validator\PlayerCanJoinRoom;
 use App\Domain\Room\Entity\Room;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -15,7 +14,7 @@ class CanPatchRoomValidator extends ConstraintValidator
     public function validate(mixed $room, Constraint $constraint): void
     {
         if (!$constraint instanceof CanPatchRoom) {
-            throw new UnexpectedTypeException($constraint, PlayerCanJoinRoom::class);
+            throw new UnexpectedTypeException($constraint, CanPatchRoom::class);
         }
 
         if (!$room instanceof Room) {

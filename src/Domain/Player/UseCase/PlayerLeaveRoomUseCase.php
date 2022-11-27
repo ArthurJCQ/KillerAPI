@@ -5,40 +5,34 @@ declare(strict_types=1);
 namespace App\Domain\Player\UseCase;
 
 use App\Domain\Player\Entity\Player;
-use App\Domain\Player\Enum\PlayerStatus;
+use App\Domain\Player\Event\PlayerLeftRoomEvent;
+use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class PlayerLeaveRoomUseCase implements PlayerUseCase
 {
     public function __construct(
-        private readonly PlayerTransfersRoleAdminUseCase $playerTransfersRoleAdminUseCase,
-        private readonly PlayerKilledUseCase $playerKilledUseCase,
         private readonly RoomRepository $roomRepository,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
-    public function execute(Player $player): void
+    public function execute(Player $player, ?Room $oldRoom = null): void
     {
-        if (!$player->getRoom()) {
+        if (!$oldRoom) {
             return;
         }
 
-        $playersByRoom = $player->getRoom()->getPlayers();
+        $playersByRoom = $oldRoom->getPlayers();
 
         if (\count($playersByRoom) === 1) {
-            $this->roomRepository->remove($player->getRoom());
+            // If no player left after this one, remove room, player will be automatically reset.
+            $this->roomRepository->remove($oldRoom);
+
+            return;
         }
 
-        // Player leaving is considered as killed.
-        $this->playerKilledUseCase->execute($player);
-
-        // Reset to ALIVE and ROLE_PLAYER in his next room
-        $player->setStatus(PlayerStatus::ALIVE);
-
-        if ($player->isAdmin()) {
-            $this->playerTransfersRoleAdminUseCase->execute($player);
-        }
-
-        $player->setRoles([Player::ROLE_PLAYER]);
+        $this->eventDispatcher->dispatch(new PlayerLeftRoomEvent($player, $oldRoom), PlayerLeftRoomEvent::NAME);
     }
 }

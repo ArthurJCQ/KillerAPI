@@ -18,5 +18,5 @@ interface MissionRepository extends BaseRepository
     public function countMissionByRoom(Room $room): int;
 
     /** @return Mission[] */
-    public function getMissionsByRoomAndAuthor(Room $room): array;
+    public function getMissionAuthorsByRoom(Room $room): array;
 }
