@@ -1,0 +1,17 @@
+import: 
+  - recipe/symfony.php
+
+config:
+  repository: 'git@github.com:ArthurJCQ/KillerAPI.git'
+
+hosts:
+  api.killerparty.app:
+    remote_user: ubuntu
+    deploy_path: '~/api-killer'
+
+tasks:
+  build:
+    - run: uptime  
+
+after:
+  deploy:failed: deploy:unlock

@@ -29,6 +29,7 @@
         "symfony/property-access": "6.1.*",
         "symfony/property-info": "6.1.*",
         "symfony/proxy-manager-bridge": "6.1.*",
+        "symfony/requirements-checker": "^2.0",
         "symfony/runtime": "^6.1.1",
         "symfony/security-bundle": "6.1.*",
         "symfony/serializer": "6.1.*",
@@ -43,6 +44,7 @@
         "codeception/module-doctrine2": "^3.0",
         "codeception/module-rest": "^3.3",
         "codeception/module-symfony": "^3.1",
+        "deployer/deployer": "^7.0",
         "doctrine/doctrine-fixtures-bundle": "^3.4",
         "jangregor/phpstan-prophecy": "^1.0",
         "phpmd/phpmd": "^2.12",
@@ -56,6 +58,7 @@
         "symfony/maker-bundle": "^1.43",
         "symfony/phpunit-bridge": "^6.1",
         "symfony/stopwatch": "6.1.*",
+        "symfony/twig-bundle": "6.1.*",
         "symfony/web-profiler-bundle": "6.1.*"
     },
     "config": {
@@ -92,7 +95,8 @@
     "scripts": {
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
-            "assets:install %PUBLIC_DIR%": "symfony-cmd"
+            "assets:install %PUBLIC_DIR%": "symfony-cmd",
+            "requirements-checker": "script"
         },
         "post-install-cmd": [
             "@auto-scripts"
