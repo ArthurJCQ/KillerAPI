@@ -10,7 +10,7 @@ class MissionControllerCest
 {
     public function _before(ApiTester $I): void
     {
-        $I->sendPost('player', (string) json_encode(['name' => 'John']));
+        $I->createAdminAndUpdateHeaders($I);
     }
 
     public function testCreateMissionFailWithoutRoom(ApiTester $I): void

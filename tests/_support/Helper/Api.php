@@ -4,24 +4,46 @@ declare(strict_types=1);
 
 namespace App\Tests\Helper;
 
-use App\Domain\Player\Entity\Player;
 use App\Tests\ApiTester;
 use Codeception\Module;
-use Symfony\Bundle\FrameworkBundle\Test\TestBrowserToken;
 
 class Api extends Module
 {
-    public function logInPlayer(Player $player, ApiTester $I): void
+    public const ADMIN = 'Admin';
+
+    private array $players = [];
+
+    public function createPlayerAndUpdateHeaders(ApiTester $I, string $name): void
     {
-//        var_dump($this->getModule('Symfony')->client->getCookieJar()->all());
+        $response = json_decode($I->sendPost('/player', (string) json_encode(['name' => $name])), true);
 
-        $token = new TestBrowserToken($player->getRoles(), $player, 'test');
-        $I->grabService('security.untracked_token_storage')->setToken($token);
+        if (!is_array($response) || !isset($response['token'])) {
+            return;
+        }
 
-        $session = $I->grabService('session.factory')->createSession();
-        $session->set('_security_test', serialize($token));
-        $session->save();
+        $this->players[$name] = $response['token'];
+        $this->setJwtHeader($I, $name);
+    }
 
-        $I->setCookie($session->getName(), $session->getId());
+    public function createAdminAndUpdateHeaders(ApiTester $I): void
+    {
+        $response = json_decode($I->sendPost('/player', (string) json_encode(['name' => self::ADMIN])), true);
+
+        if (!is_array($response) || !isset($response['token'])) {
+            return;
+        }
+
+        $this->players[self::ADMIN] = $response['token'];
+        $this->setJwtHeader($I, self::ADMIN);
+    }
+
+    public function setAdminJwtHeader(ApiTester $I): void
+    {
+        $this->setJwtHeader($I, self::ADMIN);
+    }
+
+    public function setJwtHeader(ApiTester $I, string $name): void
+    {
+        $I->haveHttpHeader('Authorization', sprintf('Bearer %s', $this->players[$name]));
     }
 }

@@ -15,7 +15,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -27,11 +26,11 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\Column(type: 'integer', unique: true)]
     #[ORM\GeneratedValue(strategy: "AUTO")]
-    #[Groups(['get-player', 'get-room', 'get-mission'])]
+    #[Groups(['get-player', 'create-player', 'get-room', 'get-mission'])]
     private int $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['get-player', 'get-room', 'me', 'post-player', 'patch-player'])]
+    #[Groups(['get-player', 'create-player', 'get-room', 'me', 'post-player', 'patch-player'])]
     #[Assert\Length(min: 2)]
     private string $name;
 
@@ -45,12 +44,12 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
         enumType: PlayerStatus::class,
         options: ['default' => PlayerStatus::ALIVE],
     )]
-    #[Groups(['get-player', 'get-room', 'me', 'patch-player'])]
+    #[Groups(['get-player', 'create-player', 'get-room', 'me', 'patch-player'])]
     private PlayerStatus $status = PlayerStatus::ALIVE;
 
     #[ORM\ManyToOne(targetEntity: Room::class, cascade: ['persist'], inversedBy: 'players')]
     #[ORM\JoinColumn(name: 'room_players', referencedColumnName: 'id')]
-    #[Groups(['get-player', 'me', 'patch-player'])]
+    #[Groups(['get-player', 'create-player', 'me', 'patch-player'])]
     private ?Room $room = null;
 
     #[ORM\OneToOne(mappedBy: 'killer', targetEntity: self::class, cascade: ['persist'])]
@@ -74,6 +73,8 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\JoinColumn(name: 'user_assigned_mission')]
     #[Groups(['me'])]
     private ?Mission $assignedMission = null;
+
+    private string $token = '';
 
     public function __construct()
     {
@@ -263,5 +264,18 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $missions;
+    }
+
+    #[Groups(['create-player'])]
+    public function getToken(): string
+    {
+        return $this->token;
+    }
+
+    public function setToken(string $token): self
+    {
+        $this->token = $token;
+
+        return $this;
     }
 }

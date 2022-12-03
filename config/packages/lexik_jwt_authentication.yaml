@@ -1,0 +1,8 @@
+lexik_jwt_authentication:
+    secret_key: '%env(resolve:JWT_SECRET_KEY)%'
+    public_key: '%env(resolve:JWT_PUBLIC_KEY)%'
+    pass_phrase: '%env(JWT_PASSPHRASE)%'
+    # 1 month ttl
+    token_ttl: 2628288
+    # Maybe try username#1234 formatted name as identity field
+    user_identity_field: id

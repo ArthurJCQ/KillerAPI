@@ -7,11 +7,11 @@ namespace App\Api\Controller;
 use App\Api\Exception\ValidationException;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\PlayerRepository;
-use App\Domain\Player\Security\PlayerAuthenticator;
 use App\Domain\Player\Security\PlayerVoter;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Serializer\KillerSerializer;
 use App\Validator\KillerValidator;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -35,7 +35,7 @@ class PlayerController extends AbstractController
         private readonly HubInterface $hub,
         private readonly KillerSerializer $serializer,
         private readonly KillerValidator $validator,
-        private readonly PlayerAuthenticator $playerAuthenticator,
+        private readonly JWTTokenManagerInterface $tokenManager,
     ) {
     }
 
@@ -60,7 +60,7 @@ class PlayerController extends AbstractController
         $this->playerRepository->store($player);
         $this->persistenceAdapter->flush();
 
-        $this->playerAuthenticator->authenticate($player);
+        $player->setToken($this->tokenManager->create($player));
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $player->getRoom()),
@@ -71,7 +71,7 @@ class PlayerController extends AbstractController
             $player,
             Response::HTTP_CREATED,
             ['Location' => sprintf('/player/%s', $player->getUserIdentifier())],
-            [AbstractNormalizer::GROUPS => 'get-player'],
+            [AbstractNormalizer::GROUPS => 'create-player'],
         );
     }
 

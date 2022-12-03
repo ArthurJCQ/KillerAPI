@@ -11,24 +11,25 @@ use App\Tests\ApiTester;
 
 class RoomControllerCest
 {
+    public const PLAYER_NAME = 'John';
+
     public function testCreateRoom(ApiTester $I): void
     {
-        $I->sendPost('player', (string) json_encode(['name' => 'John']));
-
+        $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
         $I->sendPost('room');
 
-        $playerId = $I->grabFromRepository(Player::class, 'id', ['name' => 'John']);
+        $playerId = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
 
         $I->seeResponseContainsJson(['admin' => ['id' => $playerId]]);
     }
 
     public function testPatchRoom(ApiTester $I): void
     {
-        $I->sendPost('player', (string) json_encode(['name' => 'John']));
+        $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
         $I->sendPost('room');
 
         /** @var int $roomId */
-        $roomId = $I->grabFromRepository(Room::class, 'id', ['name' => 'John\'s room']);
+        $roomId = $I->grabFromRepository(Room::class, 'id', ['name' => sprintf('%s\'s room', self::PLAYER_NAME)]);
         $I->sendPatch(sprintf('/room/%d', $roomId), (string) json_encode(['name' => 'new name']));
         $I->seeInRepository(Room::class, ['name' => 'new name']);
 
@@ -37,11 +38,11 @@ class RoomControllerCest
 
     public function testStartGameWithNotEnoughPlayers(ApiTester $I): void
     {
-        $I->sendPost('player', (string) json_encode(['name' => 'John']));
+        $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
         $I->sendPost('room');
 
         /** @var int $roomId */
-        $roomId = $I->grabFromRepository(Room::class, 'id', ['name' => 'John\'s room']);
+        $roomId = $I->grabFromRepository(Room::class, 'id', ['name' => sprintf('%s\'s room', self::PLAYER_NAME)]);
 
         $I->sendPatch(sprintf('/room/%d', $roomId), (string) json_encode(['status' => 'IN_GAME']));
         $I->seeResponseCodeIs(400);
@@ -49,13 +50,13 @@ class RoomControllerCest
 
     public function testExceptionIfNonAdminUpdateRoom(ApiTester $I): void
     {
-        $I->sendPost('player', (string) json_encode(['name' => 'John']));
+        $I->createAdminAndUpdateHeaders($I, self::PLAYER_NAME);
         $I->sendPost('room');
 
         /** @var int $roomId */
-        $roomId = $I->grabFromRepository(Room::class, 'id', ['name' => 'John\'s room']);
+        $roomId = $I->grabFromRepository(Room::class, 'id', ['name' => sprintf('%s\'s room', 'Admin')]);
 
-        $I->sendPost('player', (string) json_encode(['name' => 'Test']));
+        $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
 
         $I->sendPatch(sprintf('/room/%d', $roomId), (string) json_encode(['status' => 'IN_GAME']));
         $I->seeResponseCodeIs(403);
@@ -63,41 +64,43 @@ class RoomControllerCest
 
     public function testRoomDeletion(ApiTester $I): void
     {
-        $I->sendPost('player', (string) json_encode(['name' => 'John']));
+        $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
         $I->sendPost('room');
 
         /** @var int $roomId */
-        $roomId = $I->grabFromRepository(Room::class, 'id', ['name' => 'John\'s room']);
+        $roomId = $I->grabFromRepository(Room::class, 'id', ['name' => sprintf('%s\'s room', self::PLAYER_NAME)]);
 
         $I->sendDelete(sprintf('/room/%s', $roomId));
 
         $I->seeResponseCodeIsSuccessful();
 
-        $I->seeInRepository(Player::class, ['name' => 'John', 'room' => null, 'status' => PlayerStatus::ALIVE]);
+        $I->seeInRepository(Player::class, [
+            'name' => self::PLAYER_NAME,
+            'room' => null,
+            'status' => PlayerStatus::ALIVE,
+        ]);
     }
 
     public function testStartGameWithNoMission(ApiTester $I): void
     {
-        $I->sendPost('/player', (string) json_encode(['name' => 'Admin']));
+        $I->createAdminAndUpdateHeaders($I);
         $I->sendPost('room');
 
-        $admin = $I->grabEntityFromRepository(Player::class, ['name' => 'Admin']);
         $room = $I->grabEntityFromRepository(Room::class, ['name' => 'Admin\'s room']);
 
-        $I->sendPost('/player', (string) json_encode(['name' => 'John']));
+        $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
 
         /** @var string $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'John']);
+        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
         $I->sendPatch(sprintf('player/%s', $player1Id), ['room' => $room->getCode()]);
 
-
-        $I->sendPost('/player', (string) json_encode(['name' => 'Doe']));
+        $I->createPlayerAndUpdateHeaders($I, 'Doe');
 
         /** @var string $player2Id */
         $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
         $I->sendPatch(sprintf('player/%s', $player2Id), ['room' => $room->getCode()]);
 
-        $I->amLoggedInAs($admin);
+        $I->setAdminJwtHeader($I);
 
         $I->sendPatch(sprintf('/room/%s', $room->getId()), ['status' => 'IN_GAME']);
 
@@ -106,29 +109,28 @@ class RoomControllerCest
 
     public function testStartGameSuccessfully(ApiTester $I): void
     {
-        $I->sendPost('/player', (string) json_encode(['name' => 'Admin']));
+        $I->createAdminAndUpdateHeaders($I);
+
         $I->sendPost('room');
         $I->sendPost('/mission', (string) json_encode(['content' => 'mission']));
 
-        $admin = $I->grabEntityFromRepository(Player::class, ['name' => 'Admin']);
         $room = $I->grabEntityFromRepository(Room::class, ['name' => 'Admin\'s room']);
 
-        $I->sendPost('/player', (string) json_encode(['name' => 'John']));
+        $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
 
         /** @var string $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'John']);
+        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
         $I->sendPatch(sprintf('player/%s', $player1Id), (string) json_encode(['room' => $room->getCode()]));
         $I->sendPost('/mission', (string) json_encode(['content' => 'mission']));
 
-
-        $I->sendPost('/player', (string) (string) json_encode(['name' => 'Doe']));
+        $I->createPlayerAndUpdateHeaders($I, 'Doe');
 
         /** @var string $player2Id */
         $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
         $I->sendPatch(sprintf('player/%s', $player2Id), (string) json_encode(['room' => $room->getCode()]));
         $I->sendPost('/mission', (string) json_encode(['content' => 'mission']));
 
-        $I->amLoggedInAs($admin);
+        $I->setAdminJwtHeader($I);
 
         $I->sendPatch(sprintf('/room/%s', $room->getId()), (string) json_encode(['status' => 'IN_GAME']));
 
