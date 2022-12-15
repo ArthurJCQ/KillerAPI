@@ -12,6 +12,8 @@ use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Serializer\KillerSerializer;
 use App\Validator\KillerValidator;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -27,8 +29,10 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
 #[Route('/player')]
-class PlayerController extends AbstractController
+class PlayerController extends AbstractController implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     public function __construct(
         private readonly PlayerRepository $playerRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
@@ -61,11 +65,7 @@ class PlayerController extends AbstractController
         $this->persistenceAdapter->flush();
 
         $player->setToken($this->tokenManager->create($player));
-
-        $this->hub->publish(new Update(
-            sprintf('room/%s', $player->getRoom()),
-            $this->serializer->serialize($player, [AbstractNormalizer::GROUPS => 'get-player']),
-        ));
+        $this->logger->info('Token created for player {user_id}', ['user_id' => $player->getId()]);
 
         return $this->json(
             $player,
@@ -126,6 +126,7 @@ class PlayerController extends AbstractController
             sprintf('room/%s', $player->getRoom()),
             $this->serializer->serialize($player, [AbstractNormalizer::GROUPS => 'get-player']),
         ));
+        $this->logger->info('Event mercure sent: post-PATCH for player {user_id}', ['user_id' => $player->getId()]);
 
         return $this->json($player, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'get-player']);
     }
@@ -134,14 +135,15 @@ class PlayerController extends AbstractController
     #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player')]
     public function deletePlayer(Player $player): JsonResponse
     {
-        $this->playerRepository->remove($player);
-
         $room = $player->getRoom();
+
+        $this->playerRepository->remove($player);
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $room),
             $this->serializer->serialize($player, [AbstractNormalizer::GROUPS => 'get-player']),
         ));
+        $this->logger->info('Event mercure sent: post-DELETE for player {user_id}', ['user_id' => $player->getId()]);
 
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
