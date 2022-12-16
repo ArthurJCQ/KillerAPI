@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fabc594bfb93ab092b3e6493b3437f64",
+    "content-hash": "a543b019bce5c6076ef4d72f572b6dfa",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -11139,16 +11139,16 @@
         },
         {
             "name": "symfony/browser-kit",
-            "version": "v6.1.3",
+            "version": "v6.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/browser-kit.git",
-                "reference": "2e3b6a4406c2af963c634d7bd0457402b67dcc56"
+                "reference": "5602fcc9a2a696f1743050ffcafa30741da94227"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/browser-kit/zipball/2e3b6a4406c2af963c634d7bd0457402b67dcc56",
-                "reference": "2e3b6a4406c2af963c634d7bd0457402b67dcc56",
+                "url": "https://api.github.com/repos/symfony/browser-kit/zipball/5602fcc9a2a696f1743050ffcafa30741da94227",
+                "reference": "5602fcc9a2a696f1743050ffcafa30741da94227",
                 "shasum": ""
             },
             "require": {
@@ -11190,7 +11190,7 @@
             "description": "Simulates the behavior of a web browser, allowing you to make requests, click on links and submit forms programmatically",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/browser-kit/tree/v6.1.3"
+                "source": "https://github.com/symfony/browser-kit/tree/v6.2.0"
             },
             "funding": [
                 {
@@ -11206,7 +11206,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-07-27T15:50:51+00:00"
+            "time": "2022-11-02T09:08:04+00:00"
         },
         {
             "name": "symfony/css-selector",
@@ -11584,5 +11584,5 @@
         "ext-xdebug": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.3.0"
 }
