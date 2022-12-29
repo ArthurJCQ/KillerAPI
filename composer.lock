@@ -6334,16 +6334,16 @@
         },
         {
             "name": "symfony/validator",
-            "version": "v6.2.0",
+            "version": "v6.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/validator.git",
-                "reference": "0f74ad1cab71f5899dca8233db774a50f8656de0"
+                "reference": "bd44a9ae3b19ae81c723b5a5fff6a1a36844ee01"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/validator/zipball/0f74ad1cab71f5899dca8233db774a50f8656de0",
-                "reference": "0f74ad1cab71f5899dca8233db774a50f8656de0",
+                "url": "https://api.github.com/repos/symfony/validator/zipball/bd44a9ae3b19ae81c723b5a5fff6a1a36844ee01",
+                "reference": "bd44a9ae3b19ae81c723b5a5fff6a1a36844ee01",
                 "shasum": ""
             },
             "require": {
@@ -6366,7 +6366,7 @@
                 "symfony/yaml": "<5.4"
             },
             "require-dev": {
-                "doctrine/annotations": "^1.13",
+                "doctrine/annotations": "^1.13|^2",
                 "egulias/email-validator": "^2.1.10|^3",
                 "symfony/cache": "^5.4|^6.0",
                 "symfony/config": "^5.4|^6.0",
@@ -6422,7 +6422,7 @@
             "description": "Provides tools to validate values",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/validator/tree/v6.2.0"
+                "source": "https://github.com/symfony/validator/tree/v6.2.3"
             },
             "funding": [
                 {
@@ -6438,7 +6438,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-11-25T08:42:40+00:00"
+            "time": "2022-12-22T17:55:15+00:00"
         },
         {
             "name": "symfony/var-dumper",
@@ -11584,5 +11584,5 @@
         "ext-xdebug": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.3.0"
 }
