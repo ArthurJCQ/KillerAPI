@@ -8,9 +8,9 @@ use App\Domain\Mission\MissionRepository;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;
 
-class ResetPlayerUseCase implements PlayerUseCase
+readonly class ResetPlayerUseCase implements PlayerUseCase
 {
-    public function __construct(private readonly MissionRepository $missionRepository)
+    public function __construct(private MissionRepository $missionRepository)
     {
     }
 

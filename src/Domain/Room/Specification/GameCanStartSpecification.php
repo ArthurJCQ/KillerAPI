@@ -6,11 +6,11 @@ namespace App\Domain\Room\Specification;
 
 use App\Domain\Room\Entity\Room;
 
-final class GameCanStartSpecification implements RoomSpecification
+final readonly class GameCanStartSpecification implements RoomSpecification
 {
     public function __construct(
-        private readonly EnoughPlayerInRoomSpecification $enoughPlayerInRoomSpecification,
-        private readonly EnoughMissionInRoomSpecification $enoughMissionInRoomSpecification,
+        private EnoughPlayerInRoomSpecification $enoughPlayerInRoomSpecification,
+        private EnoughMissionInRoomSpecification $enoughMissionInRoomSpecification,
     ) {
     }
 

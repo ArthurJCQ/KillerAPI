@@ -8,12 +8,12 @@ use App\Domain\Room\Entity\Room;
 use App\Domain\Room\Exception\CanNotApplyRoomTransitionException;
 use Symfony\Component\Workflow\WorkflowInterface;
 
-class RoomStatusTransitionUseCase
+readonly class RoomStatusTransitionUseCase
 {
     public const START_GAME_TRANSITION = 'start_game';
     public const END_GAME_TRANSITION = 'end_game';
 
-    public function __construct(private readonly WorkflowInterface $roomLifecycleStateMachine)
+    public function __construct(private WorkflowInterface $roomLifecycleStateMachine)
     {
     }
 

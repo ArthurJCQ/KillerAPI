@@ -16,12 +16,12 @@ use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-final class PlayerDoctrineSubscriber implements EventSubscriberInterface
+final readonly class PlayerDoctrineSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private readonly PasswordRandomizer $randomizePassword,
-        private readonly PlayerLeaveRoomUseCase $playerLeaveRoomUseCase,
-        private readonly EventDispatcherInterface $eventDispatcher,
+        private PasswordRandomizer $randomizePassword,
+        private PlayerLeaveRoomUseCase $playerLeaveRoomUseCase,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 

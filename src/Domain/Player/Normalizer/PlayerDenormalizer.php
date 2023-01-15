@@ -8,9 +8,9 @@ use App\Domain\Player\Entity\Player;
 use App\Domain\Player\PlayerRepository;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
-final class PlayerDenormalizer implements DenormalizerInterface
+final readonly class PlayerDenormalizer implements DenormalizerInterface
 {
-    public function __construct(private readonly PlayerRepository $playerRepository)
+    public function __construct(private PlayerRepository $playerRepository)
     {
     }
 

@@ -10,9 +10,9 @@ use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Events;
 
-class RoomDoctrineSubscriber implements EventSubscriberInterface
+readonly class RoomDoctrineSubscriber implements EventSubscriberInterface
 {
-    public function __construct(private readonly ResetPlayerUseCase $resetPlayerUseCase)
+    public function __construct(private ResetPlayerUseCase $resetPlayerUseCase)
     {
     }
 

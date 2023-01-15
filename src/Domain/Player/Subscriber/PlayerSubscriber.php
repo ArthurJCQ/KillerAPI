@@ -12,13 +12,13 @@ use App\Domain\Room\UseCase\RoomChangeAdminUseCase;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-class PlayerSubscriber implements EventSubscriberInterface
+readonly class PlayerSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly PlayerKilledUseCase $playerKilledUseCase,
-        private readonly ResetPlayerUseCase $resetPlayerUseCase,
-        private readonly RoomChangeAdminUseCase $roomChangeAdminUseCase,
+        private EventDispatcherInterface $eventDispatcher,
+        private PlayerKilledUseCase $playerKilledUseCase,
+        private ResetPlayerUseCase $resetPlayerUseCase,
+        private RoomChangeAdminUseCase $roomChangeAdminUseCase,
     ) {
     }
 

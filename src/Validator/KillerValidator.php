@@ -8,11 +8,11 @@ use App\Api\Exception\ValidationException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class KillerValidator
+readonly class KillerValidator
 {
     public function __construct(
-        private readonly SerializerInterface $serializer,
-        private readonly ValidatorInterface $validator,
+        private SerializerInterface $serializer,
+        private ValidatorInterface $validator,
     ) {
     }
 

@@ -8,9 +8,9 @@ use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
-final class RoomDenormalizer implements DenormalizerInterface
+final readonly class RoomDenormalizer implements DenormalizerInterface
 {
-    public function __construct(private readonly RoomRepository $roomRepository)
+    public function __construct(private RoomRepository $roomRepository)
     {
     }
 
