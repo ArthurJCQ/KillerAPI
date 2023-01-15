@@ -15,4 +15,16 @@ final class DoctrineRoomRepository extends DoctrineBaseRepository implements Roo
     {
         parent::__construct($entityManager, Room::class);
     }
+
+    public function getRoomByIdOrCode(mixed $identifier): mixed
+    {
+        return $this->repository
+            ->createQueryBuilder('r')
+            ->where('r.id = :identifierId')
+            ->orWhere('r.code = :identifierCode')
+            ->setParameter('identifierId', is_int($identifier) ? $identifier : -1)
+            ->setParameter('identifierCode', $identifier)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

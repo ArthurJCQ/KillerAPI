@@ -23,6 +23,32 @@ class RoomControllerCest
         $I->seeResponseContainsJson(['admin' => ['id' => $playerId]]);
     }
 
+    public function testGetRoomWithId(ApiTester $I): void
+    {
+        $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
+        $I->sendPost('room');
+
+        /** @var int $roomId */
+        $roomId = $I->grabFromRepository(Room::class, 'id', ['name' => sprintf('%s\'s room', self::PLAYER_NAME)]);
+
+        $I->sendGet(sprintf('/room/%d', $roomId));
+
+        $I->seeResponseCodeIsSuccessful();
+    }
+
+    public function testGetRoomWithCode(ApiTester $I): void
+    {
+        $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
+        $I->sendPost('room');
+
+        /** @var string $roomCode */
+        $roomCode = $I->grabFromRepository(Room::class, 'code', ['name' => sprintf('%s\'s room', self::PLAYER_NAME)]);
+
+        $I->sendGet(sprintf('/room/%s', $roomCode));
+
+        $I->seeResponseCodeIsSuccessful();
+    }
+
     public function testPatchRoom(ApiTester $I): void
     {
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);

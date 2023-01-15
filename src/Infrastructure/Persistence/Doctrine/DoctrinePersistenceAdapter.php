@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
-class DoctrinePersistenceAdapter implements PersistenceAdapterInterface
+readonly class DoctrinePersistenceAdapter implements PersistenceAdapterInterface
 {
     public function __construct(private EntityManagerInterface $entityManager)
     {

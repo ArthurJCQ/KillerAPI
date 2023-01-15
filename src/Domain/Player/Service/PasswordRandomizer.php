@@ -7,9 +7,9 @@ namespace App\Domain\Player\Service;
 use App\Domain\Player\Entity\Player;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-class PasswordRandomizer
+readonly class PasswordRandomizer
 {
-    public function __construct(private readonly UserPasswordHasherInterface $userPasswordHasher)
+    public function __construct(private UserPasswordHasherInterface $userPasswordHasher)
     {
     }
 

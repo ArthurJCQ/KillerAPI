@@ -10,11 +10,11 @@ use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-class PlayerLeaveRoomUseCase implements PlayerUseCase
+readonly class PlayerLeaveRoomUseCase implements PlayerUseCase
 {
     public function __construct(
-        private readonly RoomRepository $roomRepository,
-        private readonly EventDispatcherInterface $eventDispatcher,
+        private RoomRepository $roomRepository,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 

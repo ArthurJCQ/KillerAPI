@@ -6,9 +6,9 @@ namespace App\Serializer;
 
 use Symfony\Component\Serializer\SerializerInterface;
 
-class KillerSerializer
+readonly class KillerSerializer
 {
-    public function __construct(private readonly SerializerInterface $serializer)
+    public function __construct(private SerializerInterface $serializer)
     {
     }
 
