@@ -26,7 +26,7 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\Column(type: 'integer', unique: true)]
     #[ORM\GeneratedValue(strategy: "AUTO")]
-    #[Groups(['get-player', 'create-player', 'get-room', 'get-mission'])]
+    #[Groups(['get-player', 'create-player', 'get-room', 'get-mission', 'me'])]
     private int $id;
 
     #[ORM\Column(type: 'string', length: 255)]
