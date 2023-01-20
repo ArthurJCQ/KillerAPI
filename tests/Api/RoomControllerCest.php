@@ -161,5 +161,15 @@ class RoomControllerCest
         $I->sendPatch(sprintf('/room/%s', $room->getId()), (string) json_encode(['status' => 'IN_GAME']));
 
         $I->seeResponseCodeIs(200);
+
+        $I->sendGet('/player/me');
+
+        $I->canSeeResponseContainsJson(
+            [
+                'name' => 'Admin',
+                'room' => ['code' => $room->getCode()],
+                'status' => PlayerStatus::ALIVE->value
+            ],
+        );
     }
 }

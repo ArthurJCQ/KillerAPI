@@ -59,7 +59,7 @@ class RoomController extends AbstractController
         return $this->json($room, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'get-room']);
     }
 
-    #[Route('/{id}', name: 'patch_room', requirements: ['id' => Requirement::DIGITS], methods: [Request::METHOD_PATCH])]
+    #[Route('/{id}', name: 'patch_room', methods: [Request::METHOD_PATCH])]
     #[IsGranted(RoomVoter::EDIT_ROOM, subject: 'room')]
     public function patchRoom(Request $request, Room $room): JsonResponse
     {

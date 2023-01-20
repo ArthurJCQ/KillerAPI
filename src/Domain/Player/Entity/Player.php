@@ -15,6 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -50,16 +51,17 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToOne(targetEntity: Room::class, cascade: ['persist'], inversedBy: 'players')]
     #[ORM\JoinColumn(name: 'room_players', referencedColumnName: 'id')]
     #[Groups(['get-player', 'create-player', 'me', 'patch-player'])]
+    #[MaxDepth(1)]
     private ?Room $room = null;
 
     #[ORM\OneToOne(mappedBy: 'killer', targetEntity: self::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'player_target')]
     #[Groups(['me'])]
+    #[MaxDepth(1)]
     private ?Player $target = null;
 
     #[ORM\OneToOne(inversedBy: 'target', targetEntity: self::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'player_killer')]
-    #[Groups(['me'])]
     private ?Player $killer = null;
 
     #[ORM\Column(type: 'string')]

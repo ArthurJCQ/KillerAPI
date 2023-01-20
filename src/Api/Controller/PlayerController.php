@@ -84,7 +84,12 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
             throw new NotFoundHttpException('Player not found.');
         }
 
-        return $this->json($player, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'me']);
+        return $this->json(
+            $player,
+            Response::HTTP_OK,
+            [],
+            [AbstractNormalizer::GROUPS => 'me', AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true],
+        );
     }
 
     #[Route('/{id}', name: 'get_player', methods: [Request::METHOD_GET])]
