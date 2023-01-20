@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1e789270858bd999f7c801ec3bbc9c13",
+    "content-hash": "8e6dfc72760518700745c40048240e7a",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -1780,29 +1780,29 @@
         },
         {
             "name": "marvin255/random-string-generator",
-            "version": "v1.6.0",
+            "version": "v2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/marvin255/random-string-generator.git",
-                "reference": "501f41a55ee7fbbb3695333e3d08e5c04abade55"
+                "reference": "3b8c5c55e69a6fd2f29ad44db8a270d664a4ac31"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/marvin255/random-string-generator/zipball/501f41a55ee7fbbb3695333e3d08e5c04abade55",
-                "reference": "501f41a55ee7fbbb3695333e3d08e5c04abade55",
+                "url": "https://api.github.com/repos/marvin255/random-string-generator/zipball/3b8c5c55e69a6fd2f29ad44db8a270d664a4ac31",
+                "reference": "3b8c5c55e69a6fd2f29ad44db8a270d664a4ac31",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.4.0",
+                "php": ">=8.1",
                 "symfony/framework-bundle": "^5.0|^6.0"
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^3.0",
-                "phpunit/phpunit": "^9.0|^10.0",
-                "psalm/plugin-phpunit": "^0.16",
+                "infection/infection": "^0.26.16",
+                "phpunit/phpunit": "^9.0",
                 "sebastian/phpcpd": "^6.0",
                 "symfony/phpunit-bridge": "^5.0|^6.0",
-                "vimeo/psalm": "^4.0"
+                "vimeo/psalm": "^4.0|^5.0"
             },
             "type": "symfony-bundle",
             "autoload": {
@@ -1825,9 +1825,9 @@
             ],
             "support": {
                 "issues": "https://github.com/marvin255/random-string-generator/issues",
-                "source": "https://github.com/marvin255/random-string-generator/tree/v1.6.0"
+                "source": "https://github.com/marvin255/random-string-generator/tree/v2.0.0"
             },
-            "time": "2022-03-11T07:43:48+00:00"
+            "time": "2023-01-04T19:31:11+00:00"
         },
         {
             "name": "monolog/monolog",
