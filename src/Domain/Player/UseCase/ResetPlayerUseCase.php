@@ -10,19 +10,15 @@ use App\Domain\Player\Enum\PlayerStatus;
 
 readonly class ResetPlayerUseCase implements PlayerUseCase
 {
-    public function __construct(private MissionRepository $missionRepository)
-    {
-    }
-
     public function execute(Player $player): void
     {
         $player->setRoom(null);
         $player->setTarget(null);
+        $player->setAssignedMission(null);
         $player->setStatus(PlayerStatus::ALIVE);
 
         foreach ($player->getAuthoredMissions() as $mission) {
             $player->removeAuthoredMission($mission);
-            $this->missionRepository->remove($mission);
         }
     }
 }

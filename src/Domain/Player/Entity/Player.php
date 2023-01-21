@@ -167,6 +167,7 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->target instanceof self && !$target) {
             $this->target->setKiller(null);
+            $this->setKiller(null);
         }
 
         if ($target instanceof self) {
@@ -245,6 +246,9 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setAssignedMission(?Mission $assignedMission): self
     {
+        $this->assignedMission?->setIsAssigned(false);
+        $assignedMission?->setIsAssigned(true);
+
         $this->assignedMission = $assignedMission;
 
         return $this;

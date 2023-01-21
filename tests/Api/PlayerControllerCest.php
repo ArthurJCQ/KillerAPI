@@ -112,7 +112,6 @@ class PlayerControllerCest
         $I->seeResponseCodeIsSuccessful();
     }
 
-
     public function testDeletePlayer(ApiTester $I): void
     {
         /** @var string $playerId */

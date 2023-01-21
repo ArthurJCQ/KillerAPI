@@ -135,6 +135,7 @@ class RoomControllerCest
 
     public function testStartGameSuccessfully(ApiTester $I): void
     {
+        // Create admin and room
         $I->createAdminAndUpdateHeaders($I);
 
         $I->sendPost('room');
@@ -142,6 +143,7 @@ class RoomControllerCest
 
         $room = $I->grabEntityFromRepository(Room::class, ['name' => 'Admin\'s room']);
 
+        // Join room with player1
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
 
         /** @var string $player1Id */
@@ -149,6 +151,7 @@ class RoomControllerCest
         $I->sendPatch(sprintf('player/%s', $player1Id), (string) json_encode(['room' => $room->getCode()]));
         $I->sendPost('/mission', (string) json_encode(['content' => 'mission']));
 
+        // Join room with player 2
         $I->createPlayerAndUpdateHeaders($I, 'Doe');
 
         /** @var string $player2Id */
@@ -156,12 +159,14 @@ class RoomControllerCest
         $I->sendPatch(sprintf('player/%s', $player2Id), (string) json_encode(['room' => $room->getCode()]));
         $I->sendPost('/mission', (string) json_encode(['content' => 'mission']));
 
+        // Start the game with admin
         $I->setAdminJwtHeader($I);
 
         $I->sendPatch(sprintf('/room/%s', $room->getId()), (string) json_encode(['status' => 'IN_GAME']));
 
         $I->seeResponseCodeIs(200);
 
+        // I can still get my player
         $I->sendGet('/player/me');
 
         $I->canSeeResponseContainsJson(
@@ -171,5 +176,54 @@ class RoomControllerCest
                 'status' => PlayerStatus::ALIVE->value
             ],
         );
+    }
+
+    public function testStartGameAndJoinAnotherOne(ApiTester $I): void
+    {
+        // Create admin and room
+        $I->createAdminAndUpdateHeaders($I);
+
+        $I->sendPost('room');
+        $I->sendPost('/mission', (string) json_encode(['content' => 'mission']));
+
+        $room = $I->grabEntityFromRepository(Room::class, ['name' => 'Admin\'s room']);
+
+        // Join room with player1
+        $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
+
+        /** @var string $player1Id */
+        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
+        $I->sendPatch(sprintf('player/%s', $player1Id), (string) json_encode(['room' => $room->getCode()]));
+        $I->sendPost('/mission', (string) json_encode(['content' => 'mission']));
+
+        // Join room with player 2
+        $I->createPlayerAndUpdateHeaders($I, 'Doe');
+
+        /** @var string $player2Id */
+        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
+        $I->sendPatch(sprintf('player/%s', $player2Id), (string) json_encode(['room' => $room->getCode()]));
+        $I->sendPost('/mission', (string) json_encode(['content' => 'mission']));
+
+        // Start the game with admin
+        $I->setAdminJwtHeader($I);
+
+        $I->sendPatch(sprintf('/room/%s', $room->getId()), (string) json_encode(['status' => 'IN_GAME']));
+
+        $I->seeResponseCodeIs(200);
+
+        // I create a new room with a player
+        $I->setJwtHeader($I, self::PLAYER_NAME);
+        $I->sendPost('/room');
+
+        /** @var int $newRoomCode */
+        $newRoomCode = $I->grabFromRepository(Room::class, 'code', ['name' => sprintf('%s\'s room', self::PLAYER_NAME)]);
+        $I->seeResponseCodeIsSuccessful();
+
+        // I join the new room with the admin of the previous room
+        $I->setAdminJwtHeader($I);
+        $adminId = $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin']);
+
+        $I->sendPatch(sprintf('/player/%s', $adminId), (string) json_encode(['room' => $newRoomCode]));
+        $I->seeResponseCodeIsSuccessful();
     }
 }

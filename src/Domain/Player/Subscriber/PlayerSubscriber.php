@@ -35,7 +35,7 @@ readonly class PlayerSubscriber implements EventSubscriberInterface
         // Player leaving is considered as killed.
         $this->eventDispatcher->dispatch(new PlayerKilledEvent($player, $oldRoom), PlayerKilledEvent::NAME);
 
-        if ($oldRoom->getAdmin() === $player) {
+        if ($oldRoom && $oldRoom->getAdmin() === $player) {
             $this->roomChangeAdminUseCase->execute($oldRoom);
         }
 

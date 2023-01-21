@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Domain\Room\Factory;
 
 use App\Domain\Player\Entity\Player;
+use App\Domain\Player\Event\PlayerLeftRoomEvent;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
 use Marvin255\RandomStringGenerator\Generator\RandomStringGenerator;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 readonly class RoomFactory
 {
@@ -16,6 +18,7 @@ readonly class RoomFactory
         private RandomStringGenerator $randomStringGenerator,
         private Security $security,
         private RoomRepository $roomRepository,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 

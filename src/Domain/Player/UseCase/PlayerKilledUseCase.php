@@ -18,6 +18,7 @@ class PlayerKilledUseCase implements PlayerUseCase
 
         $killer = $player->getKiller();
         $target = $player->getTarget();
+        $assignedMission = $player->getAssignedMission();
 
         if ($killer === null || $target === null) {
             throw new PlayerHasNoKillerOrTargetException(sprintf(
@@ -26,10 +27,10 @@ class PlayerKilledUseCase implements PlayerUseCase
             ));
         }
 
-        $killer->setTarget($target);
-        $killer->setAssignedMission($player->getAssignedMission());
-
         $player->setTarget(null);
         $player->setAssignedMission(null);
+
+        $killer->setTarget($target);
+        $killer->setAssignedMission($assignedMission);
     }
 }
