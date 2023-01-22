@@ -17,8 +17,11 @@ readonly class PlayerNormalizer implements NormalizerInterface
      * @param array<string, string> $context
      * @return float|int|bool|\ArrayObject|array<string, string>|string|null
      */
-    public function normalize(mixed $object, string $format = null, array $context = []): float|int|bool|\ArrayObject|array|string|null
-    {
+    public function normalize(
+        mixed $object,
+        string $format = null,
+        array $context = [],
+    ): float|int|bool|\ArrayObject|array|string|null {
         if (!$object instanceof Player) {
             return [];
         }
@@ -34,6 +37,7 @@ readonly class PlayerNormalizer implements NormalizerInterface
         return $normalizedPlayer;
     }
 
+    /** @param array<string, string> $context */
     public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
     {
         return $data instanceof Player;

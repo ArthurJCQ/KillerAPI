@@ -29,6 +29,7 @@ readonly class PlayerLeaveRoomUseCase implements PlayerUseCase
         if (\count($playersByRoom) === 1) {
             // If no player left after this one, remove room, player will be automatically reset.
             $this->roomRepository->remove($oldRoom);
+            $oldRoom = null;
         }
 
         $this->eventDispatcher->dispatch(new PlayerLeftRoomEvent($player, $oldRoom), PlayerLeftRoomEvent::NAME);

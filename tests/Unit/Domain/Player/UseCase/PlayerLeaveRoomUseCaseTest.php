@@ -57,8 +57,13 @@ class PlayerLeaveRoomUseCaseTest extends \Codeception\Test\Unit
         $player = $this->prophesize(Player::class);
 
         $room = $this->prophesize(Room::class);
+        $event = new PlayerLeftRoomEvent($player->reveal(), null);
 
         $room->getPlayers()->shouldBeCalledOnce()->willReturn(new ArrayCollection([$player]));
+
+        $this->eventDispatcher->dispatch($event, PlayerLeftRoomEvent::NAME)
+            ->shouldBeCalledOnce()
+            ->willReturn($event);
 
         $this->playerLeaveRoomUseCase->execute($player->reveal(), $room->reveal());
     }
