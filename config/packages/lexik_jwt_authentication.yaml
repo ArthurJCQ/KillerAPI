@@ -4,5 +4,3 @@ lexik_jwt_authentication:
     pass_phrase: '%env(JWT_PASSPHRASE)%'
     # 1 month ttl
     token_ttl: 2628288
-    # Maybe try username#1234 formatted name as identity field
-    user_identity_field: id

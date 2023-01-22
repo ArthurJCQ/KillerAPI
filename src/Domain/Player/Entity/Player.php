@@ -110,7 +110,7 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     /** @see UserInterface */
     public function getUserIdentifier(): string
     {
-        return $this->name;
+        return (string) $this->id;
     }
 
     /**

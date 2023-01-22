@@ -6,14 +6,14 @@ namespace App\Domain\Player\Validator;
 
 use App\Domain\Mission\Entity\Mission;
 use App\Domain\Player\Entity\Player;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 class PlayerCanUpdateMissionValidator extends ConstraintValidator
 {
-    public function __construct(private Security $security)
+    public function __construct(private readonly Security $security)
     {
     }
 
