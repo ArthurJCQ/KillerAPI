@@ -20,6 +20,10 @@ services:
             - '../src/Domain/*/Entity/'
             - '../src/Kernel.php'
 
+    App\Domain\Player\Normalizer\PlayerNormalizer:
+        arguments:
+            $normalizer: '@serializer.normalizer.object'
+
 when@test:
     services:
         mercure.hub.default:

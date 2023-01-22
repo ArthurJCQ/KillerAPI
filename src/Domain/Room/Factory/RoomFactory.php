@@ -18,7 +18,6 @@ readonly class RoomFactory
         private RandomStringGenerator $randomStringGenerator,
         private Security $security,
         private RoomRepository $roomRepository,
-        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 

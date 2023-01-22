@@ -173,7 +173,7 @@ class RoomControllerCest
             [
                 'name' => 'Admin',
                 'room' => ['code' => $room->getCode()],
-                'status' => PlayerStatus::ALIVE->value
+                'status' => PlayerStatus::ALIVE->value,
             ],
         );
     }
@@ -216,11 +216,17 @@ class RoomControllerCest
         $I->sendPost('/room');
 
         /** @var int $newRoomCode */
-        $newRoomCode = $I->grabFromRepository(Room::class, 'code', ['name' => sprintf('%s\'s room', self::PLAYER_NAME)]);
+        $newRoomCode = $I->grabFromRepository(
+            Room::class,
+            'code',
+            ['name' => sprintf('%s\'s room', self::PLAYER_NAME)],
+        );
         $I->seeResponseCodeIsSuccessful();
 
         // I join the new room with the admin of the previous room
         $I->setAdminJwtHeader($I);
+
+        /** @var string $adminId */
         $adminId = $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin']);
 
         $I->sendPatch(sprintf('/player/%s', $adminId), (string) json_encode(['room' => $newRoomCode]));
