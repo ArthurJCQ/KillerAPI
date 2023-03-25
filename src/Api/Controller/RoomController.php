@@ -22,7 +22,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
@@ -67,7 +66,11 @@ class RoomController extends AbstractController
 
         if (isset($data['status'])) {
             try {
-                $this->roomStatusTransitionUseCase->executeTransition($room, $data['status']);
+                $transitionSuccess = $this->roomStatusTransitionUseCase->executeTransition($room, $data['status']);
+
+                if (!$transitionSuccess) {
+                    throw new BadRequestHttpException(sprintf('Can not update room status to %s', $data['status']));
+                }
             } catch (\DomainException $e) {
                 throw new BadRequestHttpException($e->getMessage());
             }

@@ -15,7 +15,7 @@ class RoomChangeAdminUseCase implements RoomUseCase
         $admin = $room->getAdmin();
         $playersInRoom = $room->getPlayers()->toArray();
 
-        if (!$playersInRoom || \count($playersInRoom) <= 1) {
+        if (!$playersInRoom) {
             return;
         }
 

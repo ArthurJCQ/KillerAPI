@@ -45,13 +45,11 @@ class RoomChangeAdminTest extends \Codeception\Test\Unit
 
     public function testNotEnoughPlayers(): void
     {
-        $adminPlayer = $this->prophesize(Player::class);
-
         $room = $this->prophesize(Room::class);
-        $room->getAdmin()->shouldBeCalledOnce()->willReturn($adminPlayer->reveal());
+        $room->getAdmin()->shouldBeCalledOnce()->willReturn(null);
         $room->getPlayers()
             ->shouldBeCalledOnce()
-            ->willReturn(new ArrayCollection([$adminPlayer->reveal()]));
+            ->willReturn(new ArrayCollection([]));
         $room->setAdmin(Argument::any())->shouldNotBeCalled();
 
         $this->roomChangeAdminUseCase->execute($room->reveal());

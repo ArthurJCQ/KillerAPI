@@ -60,40 +60,4 @@ class PlayerKilledUseCaseTest extends \Codeception\Test\Unit
 
         $this->playerKilledUseCase->execute($player);
     }
-
-    public function testNoKillerException(): void
-    {
-        $room = $this->make(Room::class, [
-            'getStatus' => Expected::once(Room::IN_GAME),
-        ]);
-
-        $player = $this->make(Player::class, [
-            'getId' => Expected::once(1),
-            'getRoom' => Expected::exactly(2, $room),
-            'getKiller' => Expected::once(),
-            'getTarget' => Expected::once(new Player()),
-        ]);
-
-        $this->expectException(PlayerHasNoKillerOrTargetException::class);
-
-        $this->playerKilledUseCase->execute($player);
-    }
-
-    public function testNoTargetException(): void
-    {
-        $room = $this->make(Room::class, [
-            'getStatus' => Expected::once(Room::IN_GAME),
-        ]);
-
-        $player = $this->make(Player::class, [
-            'getId' => Expected::once(1),
-            'getRoom' => Expected::exactly(2, $room),
-            'getKiller' => Expected::once(new Player()),
-            'getTarget' => Expected::once(),
-        ]);
-
-        $this->expectException(PlayerHasNoKillerOrTargetException::class);
-
-        $this->playerKilledUseCase->execute($player);
-    }
 }

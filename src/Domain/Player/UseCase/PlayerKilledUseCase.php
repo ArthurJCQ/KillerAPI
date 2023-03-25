@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Domain\Player\UseCase;
 
 use App\Domain\Player\Entity\Player;
-use App\Domain\Player\Exception\PlayerHasNoKillerOrTargetException;
 use App\Domain\Room\Entity\Room;
 
 class PlayerKilledUseCase implements PlayerUseCase
@@ -21,10 +20,7 @@ class PlayerKilledUseCase implements PlayerUseCase
         $assignedMission = $player->getAssignedMission();
 
         if ($killer === null || $target === null) {
-            throw new PlayerHasNoKillerOrTargetException(sprintf(
-                'User %s has no killer or no target',
-                $player->getId(),
-            ));
+            return;
         }
 
         $player->setTarget(null);

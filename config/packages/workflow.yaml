@@ -18,6 +18,5 @@ framework:
                     from: PENDING
                     to: IN_GAME
                 end_game:
-                    guard: "is_granted('edit_room', subject)"
                     from: IN_GAME
                     to: ENDED

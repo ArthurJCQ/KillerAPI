@@ -7,6 +7,7 @@ namespace App\Domain\Player\Subscriber;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Player\Event\PlayerKilledEvent;
+use App\Domain\Player\Exception\PlayerCanNotJoinRoomException;
 use App\Domain\Player\Service\PasswordRandomizer;
 use App\Domain\Player\UseCase\PlayerLeaveRoomUseCase;
 use App\Domain\Room\Entity\Room;
@@ -55,11 +56,22 @@ final readonly class PlayerDoctrineSubscriber implements EventSubscriberInterfac
             return;
         }
 
-        if ($args->hasChangedField('room') && $args->getOldValue('room') instanceof Room) {
-            $this->playerLeaveRoomUseCase->execute($player, $args->getOldValue('room'));
+        if ($args->hasChangedField('room')) {
+            $oldRoom = $args->getOldValue('room');
+            $newRoom =  $args->getNewValue('room');
+
+            if ($newRoom instanceof Room && $oldRoom !== $newRoom && $newRoom->getStatus() === Room::IN_GAME) {
+                throw new PlayerCanNotJoinRoomException('Can not join IN_GAME room');
+            }
+
+            if ($oldRoom instanceof Room) {
+                $this->playerLeaveRoomUseCase->execute($player, $oldRoom);
+
+                return;
+            }
         }
 
-        if ($args->hasChangedField('status') && $args->getNewValue('status') === PlayerStatus::KILLED) {
+        if ($args->hasChangedField('status') && $args->getNewValue('status') === PlayerStatus::KILLED->value) {
             $this->eventDispatcher->dispatch(new PlayerKilledEvent($player), PlayerKilledEvent::NAME);
         }
     }

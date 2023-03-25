@@ -28,6 +28,10 @@ class RoomVoter extends Voter
     {
         $player = $token->getUser();
 
+        if ($attribute === self::EDIT_ROOM && $token->getUserIdentifier() === '') {
+            return true;
+        }
+
         if (!$player instanceof Player) {
             return false;
         }
@@ -45,7 +49,8 @@ class RoomVoter extends Voter
 
     private function canView(Room $room, Player $player): bool
     {
-        return in_array($player, $room->getPlayers()->toArray(), true);
+        return $room->getStatus() === Room::ENDED
+            || in_array($player, $room->getPlayers()->toArray(), true);
     }
 
     private function canEdit(Room $room, Player $player): bool
@@ -55,6 +60,8 @@ class RoomVoter extends Voter
 
     private function canCreate(Player $player): bool
     {
-        return !$player->getRoom();
+        return true;
+        // TODO : Implements some security checks here ?
+//        return !$player->getRoom() || $player->getRoom()->getStatus() === Room::PENDING;
     }
 }

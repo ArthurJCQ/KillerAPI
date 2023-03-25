@@ -6,7 +6,6 @@ namespace App\Domain\Player\Entity;
 
 use App\Domain\Mission\Entity\Mission;
 use App\Domain\Player\Enum\PlayerStatus;
-use App\Domain\Player\Validator\PlayerCanJoinRoom;
 use App\Domain\Player\Validator\PlayerCanRename;
 use App\Domain\Room\Entity\Room;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -21,7 +20,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[PlayerCanRename]
-#[PlayerCanJoinRoom]
 class Player implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -153,6 +151,10 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setRoom(?Room $room): self
     {
+        if ($this->room && !$room) {
+            $this->room->getPlayers()->removeElement($this);
+        }
+
         $this->room = $room;
 
         return $this;

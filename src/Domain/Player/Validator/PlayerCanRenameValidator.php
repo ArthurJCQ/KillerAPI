@@ -32,7 +32,7 @@ class PlayerCanRenameValidator extends ConstraintValidator
 
         $players = $this->playerRepository->findPlayersByRoomAndName($player->getRoom(), $player->getName());
 
-        if (\count($players) === 0) {
+        if (\count($players) === 0 || $players[0]->getId() === $player->getId()) {
             return;
         }
 

@@ -6,13 +6,13 @@ namespace App\Domain\Room\Entity;
 
 use App\Domain\Mission\Entity\Mission;
 use App\Domain\Player\Entity\Player;
+use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Room\Validator\CanPatchRoom;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
@@ -59,9 +59,13 @@ class Room
     #[ORM\Column(type: 'datetime')]
     private \DateTime $dateEnd;
 
-    #[ORM\OneToMany(mappedBy: 'room', targetEntity: Mission::class)]
+    #[ORM\OneToMany(mappedBy: 'room', targetEntity: Mission::class, cascade: ['remove'])]
     #[Groups(['get-room', 'me'])]
     private Collection $missions;
+
+    #[ORM\OneToOne(targetEntity: Player::class)]
+    #[Groups(['get-room'])]
+    private ?Player $winner = null;
 
     public function __construct()
     {
@@ -123,6 +127,15 @@ class Room
     public function getPlayers(): Collection
     {
         return $this->players;
+    }
+
+    /** @return ?array<int, Player> */
+    public function getAlivePlayers(): ?array
+    {
+        return array_values(
+            array_filter($this->players->toArray(), static fn (Player $player) =>
+                $player->getStatus() === PlayerStatus::ALIVE),
+        );
     }
 
     public function addPlayer(Player $player): self
@@ -214,6 +227,18 @@ class Room
     public function setAdmin(?Player $admin): self
     {
         $this->admin = $admin;
+
+        return $this;
+    }
+
+    public function getWinner(): ?Player
+    {
+        return $this->winner;
+    }
+
+    public function setWinner(?Player $winner): self
+    {
+        $this->winner = $winner;
 
         return $this;
     }

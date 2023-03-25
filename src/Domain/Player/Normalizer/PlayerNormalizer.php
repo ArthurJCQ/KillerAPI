@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Player\Normalizer;
 
 use App\Domain\Player\Entity\Player;
+use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
+use Symfony\Component\Serializer\Exception\CircularReferenceException;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 readonly class PlayerNormalizer implements NormalizerInterface

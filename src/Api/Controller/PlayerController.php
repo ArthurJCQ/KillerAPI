@@ -8,6 +8,8 @@ use App\Api\Exception\ValidationException;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\PlayerRepository;
 use App\Domain\Player\Security\PlayerVoter;
+use App\Domain\Room\Entity\Room;
+use App\Domain\Room\Workflow\RoomStatusTransitionUseCase;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Serializer\KillerSerializer;
 use App\Validator\KillerValidator;
@@ -40,6 +42,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly KillerSerializer $serializer,
         private readonly KillerValidator $validator,
         private readonly JWTTokenManagerInterface $tokenManager,
+        private readonly RoomStatusTransitionUseCase $roomStatusTransitionUseCase,
     ) {
     }
 
@@ -103,8 +106,9 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
     public function patchPlayer(Request $request, Player $player): JsonResponse
     {
         $data = $request->toArray();
+        $playerRoom = $player->getRoom();
 
-        if (isset($data['role']) && $player !== $player->getRoom()?->getAdmin()) {
+        if (isset($data['role']) && $player !== $playerRoom?->getAdmin()) {
             throw new UnauthorizedHttpException('Can not update player role with non admin player');
         }
 
@@ -126,6 +130,13 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
         $this->persistenceAdapter->flush();
 
+        // Try to end room after player update.
+        if ($playerRoom instanceof Room) {
+            $this->roomStatusTransitionUseCase->executeTransition($playerRoom, Room::ENDED);
+
+            $this->persistenceAdapter->flush();
+        }
+
         // TODO: publish event for previous room if there is one
         $this->hub->publish(new Update(
             sprintf('room/%s', $player->getRoom()),
@@ -141,6 +152,13 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
     public function deletePlayer(Player $player): JsonResponse
     {
         $room = $player->getRoom();
+
+        // Try to end room after player deletion.
+        if ($room instanceof Room) {
+            $this->roomStatusTransitionUseCase->executeTransition($room, Room::ENDED);
+
+            $this->persistenceAdapter->flush();
+        }
 
         $this->playerRepository->remove($player);
 

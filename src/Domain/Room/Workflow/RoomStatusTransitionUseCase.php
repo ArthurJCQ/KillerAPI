@@ -17,7 +17,7 @@ readonly class RoomStatusTransitionUseCase
     {
     }
 
-    public function executeTransition(Room $room, string $roomStatus): void
+    public function executeTransition(Room $room, string $roomStatus): bool
     {
         $transition = match ($roomStatus) {
             Room::IN_GAME => self::START_GAME_TRANSITION,
@@ -35,9 +35,11 @@ readonly class RoomStatusTransitionUseCase
         }
 
         if (!$transitionSuccess) {
-            throw new CanNotApplyRoomTransitionException('Could not update room status.');
+            return false;
         }
 
         $this->roomLifecycleStateMachine->apply($room, $transition);
+
+        return true;
     }
 }
