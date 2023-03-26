@@ -31,8 +31,8 @@ class Mission
     #[Groups(['get-mission', 'get-player'])]
     private ?Player $author;
 
-    #[ORM\ManyToOne(targetEntity: Room::class, cascade: ['persist', 'remove'], inversedBy: 'missions')]
-    #[ORM\JoinColumn(name: 'room_missions', onDelete: 'CASCADE')]
+    #[ORM\ManyToOne(targetEntity: Room::class, cascade: ['persist'], inversedBy: 'missions')]
+    #[ORM\JoinColumn(name: 'room_missions')]
     #[Groups(['get-mission', 'get-player'])]
     private ?Room $room;
 
