@@ -137,11 +137,23 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
             $this->persistenceAdapter->flush();
         }
 
-        // TODO: publish event for previous room if there is one
         $this->hub->publish(new Update(
             sprintf('room/%s', $player->getRoom()),
-            $this->serializer->serialize($player, [AbstractNormalizer::GROUPS => 'get-player']),
+            $this->serializer->serialize((object) ['type' => 'ROOM_UPDATED']),
         ));
+
+        if ($playerRoom !== $player->getRoom()) {
+            $this->hub->publish(new Update(
+                sprintf('room/%s', $playerRoom),
+                $this->serializer->serialize((object) ['type' => 'ROOM_UPDATED']),
+            ));
+        }
+
+        $this->hub->publish(new Update(
+            sprintf('player/%s', $player->getId()),
+            $this->serializer->serialize((object) ['type' => 'PLAYER_UPDATED']),
+        ));
+
         $this->logger->info('Event mercure sent: post-PATCH for player {user_id}', ['user_id' => $player->getId()]);
 
         return $this->json($player, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'get-player']);
@@ -164,7 +176,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $room),
-            $this->serializer->serialize($player, [AbstractNormalizer::GROUPS => 'get-player']),
+            $this->serializer->serialize((object) ['type' => 'ROOM_UPDATED']),
         ));
         $this->logger->info('Event mercure sent: post-DELETE for player {user_id}', ['user_id' => $player->getId()]);
 

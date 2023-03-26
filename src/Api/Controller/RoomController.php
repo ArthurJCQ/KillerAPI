@@ -96,7 +96,7 @@ class RoomController extends AbstractController
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $room),
-            $this->serializer->serialize($room, [AbstractNormalizer::GROUPS => 'get-room']),
+            $this->serializer->serialize((object) ['type' => 'ROOM_UPDATED']),
         ));
 
         return $this->json($room, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'get-room']);
@@ -110,7 +110,10 @@ class RoomController extends AbstractController
 
         $this->persistenceAdapter->flush();
 
-        $this->hub->publish(new Update(sprintf('room/%s', $room)));
+        $this->hub->publish(new Update(
+            sprintf('room/%s', $room),
+            $this->serializer->serialize((object) ['type' => 'ROOM_UPDATED']),
+        ));
 
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
