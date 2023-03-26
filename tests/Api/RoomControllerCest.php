@@ -325,6 +325,11 @@ class RoomControllerCest
         ]);
 
         $I->setJwtHeader($I, 'Doe');
+        $I->sendGet('/player/me');
+        $I->seeResponseCodeIsSuccessful([
+            'name' => 'Doe',
+        ]);
+
         $I->sendPatch(sprintf('/player/%s', $player2Id), (string) json_encode(['status' => PlayerStatus::KILLED]));
 
         $I->sendGet('/player/me');

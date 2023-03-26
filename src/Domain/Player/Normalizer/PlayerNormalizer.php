@@ -34,6 +34,7 @@ readonly class PlayerNormalizer implements NormalizerInterface
             return $normalizedPlayer;
         }
 
+        // Not used because of AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER in /player/me
         $normalizedPlayer['target'] = $normalizedPlayer['target']['id'];
 
         return $normalizedPlayer;
