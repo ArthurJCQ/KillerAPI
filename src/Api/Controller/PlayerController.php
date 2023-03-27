@@ -94,8 +94,6 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
             [
                 AbstractNormalizer::GROUPS => 'me',
                 AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
-                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => static fn (Player $object) =>
-                    ['id' => $object->getId()],
             ],
         );
     }

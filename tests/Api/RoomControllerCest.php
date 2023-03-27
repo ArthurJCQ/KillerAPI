@@ -326,7 +326,7 @@ class RoomControllerCest
 
         $I->setJwtHeader($I, 'Doe');
         $I->sendGet('/player/me');
-        $I->seeResponseCodeIsSuccessful([
+        $I->seeResponseContainsJson([
             'name' => 'Doe',
         ]);
 

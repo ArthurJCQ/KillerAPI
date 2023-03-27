@@ -7,6 +7,7 @@ namespace App\Domain\Player\Normalizer;
 use App\Domain\Player\Entity\Player;
 use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use Symfony\Component\Serializer\Exception\CircularReferenceException;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 readonly class PlayerNormalizer implements NormalizerInterface
@@ -28,14 +29,26 @@ readonly class PlayerNormalizer implements NormalizerInterface
             return [];
         }
 
+        $context = array_merge(
+            $context,
+            [AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => static fn (Player $object) =>
+                [
+                    'id' => $object->getId(),
+                    'name' => $object->getName(),
+                ]],
+        );
+
         $normalizedPlayer = $this->normalizer->normalize($object, $format, $context);
 
         if (!isset($normalizedPlayer['target']) || !$object->getTarget()) {
             return $normalizedPlayer;
         }
 
-        // Not used because of AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER in /player/me
-        $normalizedPlayer['target'] = $normalizedPlayer['target']['id'];
+
+        $normalizedPlayer['target'] = [
+            'id' => $normalizedPlayer['target']['id'],
+            'name' => $normalizedPlayer['target']['name'],
+        ];
 
         return $normalizedPlayer;
     }
