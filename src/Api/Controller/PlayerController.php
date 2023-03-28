@@ -30,7 +30,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
-#[Route('/player')]
+#[Route('/player', format: 'json')]
 class PlayerController extends AbstractController implements LoggerAwareInterface
 {
     use LoggerAwareTrait;

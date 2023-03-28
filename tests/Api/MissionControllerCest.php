@@ -25,4 +25,11 @@ class MissionControllerCest
         $I->sendPost('mission', (string) json_encode(['content' => 'mission']));
         $I->seeResponseCodeIsSuccessful();
     }
+
+    public function testCreateMissionNotEnoughCharacters(ApiTester $I): void
+    {
+        $I->sendPost('room');
+        $I->sendPost('mission', (string) json_encode(['content' => 'mi']));
+        $I->seeResponseCodeIs(400);
+    }
 }

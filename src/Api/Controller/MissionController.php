@@ -24,7 +24,7 @@ use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
-#[Route('/mission')]
+#[Route('/mission', format: 'json')]
 class MissionController extends AbstractController
 {
     public function __construct(
