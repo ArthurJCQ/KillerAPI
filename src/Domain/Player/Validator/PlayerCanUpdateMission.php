@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 class PlayerCanUpdateMission extends Constraint
 {
-    public string $message = 'The player {{ player }} can not update this mission';
+    public string $message = 'PLAYER_CAN_NOT_UPDATE_MISSION';
 
     public function getTargets(): string
     {

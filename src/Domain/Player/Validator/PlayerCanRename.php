@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 class PlayerCanRename extends Constraint
 {
-    public string $message = 'The user {{ user }} can not be renamed as another user have the same name';
+    public string $message = 'ALREADY_EXIST';
 
     public function getTargets(): string
     {

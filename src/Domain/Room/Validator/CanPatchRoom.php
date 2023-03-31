@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 class CanPatchRoom extends Constraint
 {
-    public string $message = 'Can not patch room {{ room }}';
+    public string $message = 'CAN_NOT_UPDATE_ROOM';
 
     public function getTargets(): string
     {

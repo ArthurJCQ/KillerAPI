@@ -37,7 +37,7 @@ class Room
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups(['get-room', 'me', 'post-room', 'patch-room'])]
-    #[Assert\Length(min: 2)]
+    #[Assert\Length(min: 2, max: 50, minMessage: 'TOO_SHORT_CONTENT', maxMessage: 'TOO_LONG_CONTENT')]
     private string $name;
 
     #[ORM\Column(type: 'string', length: 255, options: ['default' => self::PENDING])]
