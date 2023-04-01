@@ -24,6 +24,6 @@ readonly class KillerValidator
             return;
         }
 
-        throw new ValidationException($this->serializer->serialize($violations, 'json'));
+        throw new ValidationException($this->serializer->serialize($violations->get(0)->getMessage(), 'json'));
     }
 }
