@@ -22,10 +22,6 @@ readonly class RoomConverter implements ParamConverterInterface
 
         $room = $this->roomRepository->getRoomByIdOrCode($roomIdentifier);
 
-        if (!$room) {
-            return false;
-        }
-
         $request->attributes->set('room', $room);
 
         return true;
