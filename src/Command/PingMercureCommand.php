@@ -21,8 +21,7 @@ class PingMercureCommand extends Command
 
     protected function configure(): void
     {
-        $this
-            ->setHelp('This command ping mercure to test if config is correct.');
+        $this->setHelp('This command ping mercure to test if config is correct.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

@@ -10,6 +10,7 @@ use App\Domain\Player\PlayerRepository;
 use App\Domain\Player\Security\PlayerVoter;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\Workflow\RoomStatusTransitionUseCase;
+use App\Http\Cookie\CookieProvider;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Serializer\KillerSerializer;
 use App\Validator\KillerValidator;
@@ -24,6 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Component\Mercure\Authorization;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
@@ -43,6 +45,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly KillerValidator $validator,
         private readonly JWTTokenManagerInterface $tokenManager,
         private readonly RoomStatusTransitionUseCase $roomStatusTransitionUseCase,
+        private readonly Authorization $mercureAuthorization,
     ) {
     }
 
@@ -87,7 +90,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
             throw new NotFoundHttpException('Player not found.');
         }
 
-        return $this->json(
+        $response = $this->json(
             $player,
             Response::HTTP_OK,
             [],
@@ -96,6 +99,18 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
                 AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
             ],
         );
+
+        $response->headers->setCookie(CookieProvider::getJwtCookie(
+            ['mercure', ['subscribe' => ['*']]],
+            $this->getParameter('mercure.jwt_secret'),
+            'mercureAuthorization',
+            null,
+            'Lax',
+            $this->getParameter('mercure.path'),
+            $this->getParameter('mercure.domain'),
+        ));
+
+        return $response;
     }
 
     #[Route('/{id}', name: 'get_player', methods: [Request::METHOD_GET])]
