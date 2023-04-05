@@ -25,7 +25,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
-use Symfony\Component\Mercure\Authorization;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
@@ -45,7 +44,6 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly KillerValidator $validator,
         private readonly JWTTokenManagerInterface $tokenManager,
         private readonly RoomStatusTransitionUseCase $roomStatusTransitionUseCase,
-        private readonly Authorization $mercureAuthorization,
     ) {
     }
 
