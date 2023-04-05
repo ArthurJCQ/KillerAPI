@@ -100,12 +100,12 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
         $response->headers->setCookie(CookieProvider::getJwtCookie(
             ['mercure', ['subscribe' => ['*']]],
-            $this->getParameter('mercure.jwt_secret'),
+            is_string($this->getParameter('mercure.jwt_secret')) ? $this->getParameter('mercure.jwt_secret') : '',
             'mercureAuthorization',
             null,
             'Lax',
-            $this->getParameter('mercure.path'),
-            $this->getParameter('mercure.domain'),
+            is_string($this->getParameter('mercure.path')) ? $this->getParameter('mercure.path') : '',
+            is_string($this->getParameter('mercure.domain')) ? $this->getParameter('mercure.domain') : '',
         ));
 
         return $response;

@@ -28,10 +28,10 @@ class RoomControllerCest
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
         $I->sendPost('room');
 
-        /** @var int $roomId */
-        $roomId = $I->grabFromRepository(Room::class, 'id', ['name' => sprintf('%s\'s room', self::PLAYER_NAME)]);
+        /** @var string $roomId */
+        $roomId = $I->grabFromRepository(Room::class, 'code', ['name' => sprintf('%s\'s room', self::PLAYER_NAME)]);
 
-        $I->sendGet(sprintf('/room/%d', $roomId));
+        $I->sendGet(sprintf('/room/%s', $roomId));
 
         $I->seeResponseCodeIsSuccessful();
     }
@@ -54,9 +54,9 @@ class RoomControllerCest
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
         $I->sendPost('room');
 
-        /** @var int $roomId */
-        $roomId = $I->grabFromRepository(Room::class, 'id', ['name' => sprintf('%s\'s room', self::PLAYER_NAME)]);
-        $I->sendPatch(sprintf('/room/%d', $roomId), (string) json_encode(['name' => 'new name']));
+        /** @var string $roomId */
+        $roomId = $I->grabFromRepository(Room::class, 'code', ['name' => sprintf('%s\'s room', self::PLAYER_NAME)]);
+        $I->sendPatch(sprintf('/room/%s', $roomId), (string) json_encode(['name' => 'new name']));
         $I->seeInRepository(Room::class, ['name' => 'new name']);
 
         $I->seeResponseCodeIsSuccessful();
@@ -67,10 +67,10 @@ class RoomControllerCest
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
         $I->sendPost('room');
 
-        /** @var int $roomId */
-        $roomId = $I->grabFromRepository(Room::class, 'id', ['name' => sprintf('%s\'s room', self::PLAYER_NAME)]);
+        /** @var string $roomId */
+        $roomId = $I->grabFromRepository(Room::class, 'code', ['name' => sprintf('%s\'s room', self::PLAYER_NAME)]);
 
-        $I->sendPatch(sprintf('/room/%d', $roomId), (string) json_encode(['status' => 'IN_GAME']));
+        $I->sendPatch(sprintf('/room/%s', $roomId), (string) json_encode(['status' => 'IN_GAME']));
         $I->seeResponseCodeIs(400);
     }
 
@@ -79,12 +79,12 @@ class RoomControllerCest
         $I->createAdminAndUpdateHeaders($I, self::PLAYER_NAME);
         $I->sendPost('room');
 
-        /** @var int $roomId */
-        $roomId = $I->grabFromRepository(Room::class, 'id', ['name' => sprintf('%s\'s room', 'Admin')]);
+        /** @var string $roomId */
+        $roomId = $I->grabFromRepository(Room::class, 'code', ['name' => sprintf('%s\'s room', 'Admin')]);
 
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
 
-        $I->sendPatch(sprintf('/room/%d', $roomId), (string) json_encode(['status' => 'IN_GAME']));
+        $I->sendPatch(sprintf('/room/%s', $roomId), (string) json_encode(['status' => 'IN_GAME']));
         $I->seeResponseCodeIs(403);
     }
 
@@ -93,8 +93,8 @@ class RoomControllerCest
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
         $I->sendPost('room');
 
-        /** @var int $roomId */
-        $roomId = $I->grabFromRepository(Room::class, 'id', ['name' => sprintf('%s\'s room', self::PLAYER_NAME)]);
+        /** @var string $roomId */
+        $roomId = $I->grabFromRepository(Room::class, 'code', ['name' => sprintf('%s\'s room', self::PLAYER_NAME)]);
 
         $I->sendDelete(sprintf('/room/%s', $roomId));
 
@@ -128,7 +128,7 @@ class RoomControllerCest
 
         $I->setAdminJwtHeader($I);
 
-        $I->sendPatch(sprintf('/room/%s', $room->getId()), ['status' => 'IN_GAME']);
+        $I->sendPatch(sprintf('/room/%s', $room->getCode()), ['status' => 'IN_GAME']);
 
         $I->seeResponseCodeIs(400);
     }
@@ -162,7 +162,7 @@ class RoomControllerCest
         // Start the game with admin
         $I->setAdminJwtHeader($I);
 
-        $I->sendPatch(sprintf('/room/%s', $room->getId()), (string) json_encode(['status' => 'IN_GAME']));
+        $I->sendPatch(sprintf('/room/%s', $room->getCode()), (string) json_encode(['status' => 'IN_GAME']));
 
         $I->seeResponseCodeIs(200);
 
@@ -207,7 +207,7 @@ class RoomControllerCest
         // Start the game with admin
         $I->setAdminJwtHeader($I);
 
-        $I->sendPatch(sprintf('/room/%s', $room->getId()), (string) json_encode(['status' => 'IN_GAME']));
+        $I->sendPatch(sprintf('/room/%s', $room->getCode()), (string) json_encode(['status' => 'IN_GAME']));
 
         $I->seeResponseCodeIs(200);
 
@@ -264,7 +264,7 @@ class RoomControllerCest
         // Start the game with admin
         $I->setAdminJwtHeader($I);
 
-        $I->sendPatch(sprintf('/room/%s', $room->getId()), (string) json_encode(['status' => 'IN_GAME']));
+        $I->sendPatch(sprintf('/room/%s', $room->getCode()), (string) json_encode(['status' => 'IN_GAME']));
 
         $I->seeResponseCodeIs(200);
 
@@ -309,7 +309,7 @@ class RoomControllerCest
         // Start the game with admin
         $I->setAdminJwtHeader($I);
 
-        $I->sendPatch(sprintf('/room/%s', $room->getId()), (string) json_encode(['status' => 'IN_GAME']));
+        $I->sendPatch(sprintf('/room/%s', $room->getCode()), (string) json_encode(['status' => 'IN_GAME']));
 
         $I->seeResponseCodeIs(200);
 
@@ -343,7 +343,7 @@ class RoomControllerCest
         ]);
 
         $I->setAdminJwtHeader($I);
-        $I->sendGet(sprintf('/room/%d', $room->getId()));
+        $I->sendGet(sprintf('/room/%s', $room->getCode()));
 
         $I->seeResponseContainsJson([
             'status' => Room::ENDED,
@@ -385,7 +385,7 @@ class RoomControllerCest
         $I->sendPatch(sprintf('player/%s', $adminId), (string) json_encode(['room' => null]));
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
-        $I->sendGet(sprintf('/room/%s', $room->getId()));
+        $I->sendGet(sprintf('/room/%s', $room->getCode()));
         $I->seeResponseContainsJson([
             'code' => $room->getCode(),
             'admin' => [

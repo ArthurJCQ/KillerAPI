@@ -25,6 +25,10 @@ class CookieProvider
         ?bool $secure = null,
         bool $httpOnly = false,
     ): Cookie {
+        if ($tokenSecret === '') {
+            throw new \LogicException('Token secret should not be null');
+        }
+
         $jwt = (new Builder(new JoseEncoder(), ChainedFormatter::default()))
             ->withClaim($claim[0], $claim[1])
             ->getToken(new Sha256(), InMemory::plainText($tokenSecret));

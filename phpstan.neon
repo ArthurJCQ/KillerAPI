@@ -10,3 +10,4 @@ parameters:
     checkGenericClassInNonGenericObjectType: false
     ignoreErrors:
         - '#^Cannot call method [a-z]+\(\) on Psr\\Log\\LoggerInterface\|null\.$#'
+        - '#^Method App\\Http\\Cookie\\CookieProvider\:\:getJwtCookie\(\) has parameter \$claim with no value type specified in iterable type array\.$#'

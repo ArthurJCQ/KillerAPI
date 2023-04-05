@@ -21,6 +21,6 @@ readonly class KillerValidator
             return;
         }
 
-        throw new ValidationException($violations->get(0)->getMessage());
+        throw new ValidationException((string) $violations->get(0)->getMessage());
     }
 }
