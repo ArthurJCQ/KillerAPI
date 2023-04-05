@@ -14,6 +14,12 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        public:
+            pattern: ^/player
+            methods: [POST]
+            stateless: true
+            lazy: true
+            provider: app_user_provider
         main:
             stateless: true
             lazy: true
