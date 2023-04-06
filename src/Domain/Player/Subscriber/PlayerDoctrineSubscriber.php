@@ -61,7 +61,7 @@ final readonly class PlayerDoctrineSubscriber implements EventSubscriberInterfac
             $newRoom =  $args->getNewValue('room');
 
             if ($newRoom instanceof Room && $oldRoom !== $newRoom && $newRoom->getStatus() === Room::IN_GAME) {
-                throw new PlayerCanNotJoinRoomException('Can not join IN_GAME room');
+                throw new PlayerCanNotJoinRoomException('ROOM_ALREADY_IN_GAME');
             }
 
             if ($oldRoom instanceof Room) {
