@@ -9,6 +9,7 @@ use App\Domain\Player\Entity\Player;
 use App\Domain\Player\PlayerRepository;
 use App\Domain\Player\Security\PlayerVoter;
 use App\Domain\Room\Entity\Room;
+use App\Domain\Room\RoomRepository;
 use App\Domain\Room\Workflow\RoomStatusTransitionUseCase;
 use App\Http\Cookie\CookieProvider;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
@@ -38,6 +39,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
     public function __construct(
         private readonly PlayerRepository $playerRepository,
+        private readonly RoomRepository $roomRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly HubInterface $hub,
         private readonly KillerSerializer $serializer,
@@ -125,7 +127,11 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         $playerRoom = $player->getRoom();
 
         if (isset($data['role']) && $player !== $playerRoom?->getAdmin()) {
-            throw new UnauthorizedHttpException('Can not update player role with non admin player');
+            throw new UnauthorizedHttpException('CAN_NOT_UPDATE_PLAYER_ROLE');
+        }
+
+        if (isset($data['room']) && !$this->roomRepository->findBy(['code' => $data['room']])) {
+            throw new NotFoundHttpException('ROOM_NOT_FOUND');
         }
 
         $this->serializer->deserialize(
