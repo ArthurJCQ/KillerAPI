@@ -122,7 +122,10 @@ class MissionController extends AbstractController
         /** @var Player $player */
         $player = $this->getUser();
 
-        $this->hub->publish(new Update(sprintf('room/%s', $player->getRoom())));
+        $this->hub->publish(new Update(
+            sprintf('room/%s', $player->getRoom()),
+            $this->serializer->serialize((object) ['type' => 'ROOM_UPDATED']),
+        ));
 
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }

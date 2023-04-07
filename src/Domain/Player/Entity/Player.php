@@ -152,7 +152,7 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRoom(?Room $room): self
     {
         if ($this->room && !$room) {
-            $this->room->getPlayers()->removeElement($this);
+            $this->room->removePlayer($this);
         }
 
         $this->room = $room;
