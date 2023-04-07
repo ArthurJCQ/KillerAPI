@@ -155,6 +155,10 @@ class Room
             if ($player->getRoom() === $this) {
                 $player->setRoom(null);
             }
+
+            foreach ($player->getAuthoredMissions() as $mission) {
+                $this->removeMission($mission);
+            }
         }
 
         return $this;

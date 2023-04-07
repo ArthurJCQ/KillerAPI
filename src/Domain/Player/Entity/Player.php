@@ -151,8 +151,14 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setRoom(?Room $room): self
     {
+        // Player leaves room
         if ($this->room && !$room) {
-            $this->room->getPlayers()->removeElement($this);
+            $this->room->removePlayer($this);
+        }
+
+        // Player changes room
+        if ($this->room !== $room) {
+            $this->clearMissions();
         }
 
         $this->room = $room;
@@ -272,6 +278,17 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $missions;
+    }
+
+    public function clearMissions(): self
+    {
+        foreach ($this->getAuthoredMissions() as $mission) {
+            if ($this->authoredMissions->removeElement($mission) && $mission->getAuthor() === $this) {
+                $mission->setAuthor(null);
+            }
+        }
+
+        return $this;
     }
 
     #[Groups(['create-player'])]
