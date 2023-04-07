@@ -30,7 +30,12 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups(['get-player', 'create-player', 'get-room', 'me', 'post-player', 'patch-player'])]
-    #[Assert\Length(min: 2, max: 30, minMessage: 'TOO_SHORT_CONTENT', maxMessage: 'TOO_LONG_CONTENT')]
+    #[Assert\Length(
+        min: 2,
+        max: 30,
+        minMessage: 'PLAYER_NAME_TOO_SHORT_CONTENT',
+        maxMessage: 'PLAYER_NAME_TOO_LONG_CONTENT'
+    )]
     private string $name;
 
     /** @var string[] */

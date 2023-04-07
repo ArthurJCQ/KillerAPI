@@ -60,7 +60,7 @@ class Room
     private \DateTime $dateEnd;
 
     #[ORM\OneToMany(mappedBy: 'room', targetEntity: Mission::class, cascade: ['remove'])]
-    #[Groups(['get-room', 'me'])]
+    #[Groups(['get-room'])]
     private Collection $missions;
 
     #[ORM\OneToOne(targetEntity: Player::class)]

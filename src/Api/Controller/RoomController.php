@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Api\Controller;
 
-use App\Api\Exception\ValidationException;
+use App\Api\Exception\KillerBadRequestHttpException;
+use App\Api\Exception\KillerValidationException;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\Factory\RoomFactory;
-use App\Domain\Room\Request\ParamConverter\RoomConverter;
 use App\Domain\Room\RoomRepository;
 use App\Domain\Room\Security\RoomVoter;
 use App\Domain\Room\Workflow\RoomStatusTransitionUseCase;
@@ -15,7 +15,6 @@ use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Serializer\KillerSerializer;
 use App\Validator\KillerValidator;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -90,15 +89,20 @@ class RoomController extends AbstractController
 
         try {
             $this->validator->validate($room);
-        } catch (ValidationException $e) {
-            throw new BadRequestHttpException($e->getMessage());
+        } catch (KillerValidationException $e) {
+            throw new KillerBadRequestHttpException($e->getMessage());
         }
 
         $this->persistenceAdapter->flush();
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $room),
-            $this->serializer->serialize((object) ['type' => 'ROOM_UPDATED']),
+            $this->serializer->serialize((object) [
+                'type' => 'ROOM_UPDATED',
+                'player' => $this->getUser()
+                    ? $this->serializer->serialize($this->getUser(), [AbstractNormalizer::GROUPS => 'me'])
+                    : [],
+            ]),
         ));
 
         return $this->json($room, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'get-room']);
@@ -114,7 +118,12 @@ class RoomController extends AbstractController
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $room),
-            $this->serializer->serialize((object) ['type' => 'ROOM_UPDATED']),
+            $this->serializer->serialize((object) [
+                'type' => 'ROOM_UPDATED',
+                'player' => $this->getUser()
+                    ? $this->serializer->serialize($this->getUser(), [AbstractNormalizer::GROUPS => 'me'])
+                    : [],
+            ]),
         ));
 
         return $this->json(null, Response::HTTP_NO_CONTENT);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Validator;
 
-use App\Api\Exception\ValidationException;
+use App\Api\Exception\KillerValidationException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 readonly class KillerValidator
@@ -21,6 +21,6 @@ readonly class KillerValidator
             return;
         }
 
-        throw new ValidationException((string) $violations->get(0)->getMessage());
+        throw new KillerValidationException((string) $violations->get(0)->getMessage());
     }
 }
