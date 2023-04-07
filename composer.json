@@ -47,7 +47,6 @@
         "codeception/module-doctrine2": "^3.0",
         "codeception/module-rest": "^3.3",
         "codeception/module-symfony": "^3.1",
-        "deployer/deployer": "^7.0",
         "doctrine/doctrine-fixtures-bundle": "^3.4",
         "jangregor/phpstan-prophecy": "^1.0",
         "phpmd/phpmd": "^2.12",
