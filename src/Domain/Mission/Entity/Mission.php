@@ -22,7 +22,7 @@ class Mission
     private int $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Assert\Length(min: 5, max: 1000, minMessage: 'TOO_SHORT_CONTENT', maxMessage: 'TOO_LONG_CONTENT')]
+    #[Assert\Length(min: 5, max: 1000, minMessage: 'MISSION_TOO_SHORT_CONTENT', maxMessage: 'MISSION_TOO_LONG_CONTENT')]
     #[Groups(['get-mission', 'get-player', 'post-mission', 'me'])]
     private string $content;
 
