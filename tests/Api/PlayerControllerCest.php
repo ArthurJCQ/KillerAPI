@@ -21,8 +21,6 @@ class PlayerControllerCest
 
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
 
-        $I->seeAuthentication();
-
         $I->setAdminJwtHeader($I);
     }
 

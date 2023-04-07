@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Api\Controller;
 
-use App\Api\Exception\ValidationException;
+use App\Api\Exception\KillerBadRequestHttpException;
+use App\Api\Exception\KillerValidationException;
 use App\Domain\Mission\Entity\Mission;
 use App\Domain\Mission\MissionRepository;
 use App\Domain\Mission\Security\MissionVoter;
@@ -57,8 +58,8 @@ class MissionController extends AbstractController
 
         try {
             $this->validator->validate($mission);
-        } catch (ValidationException $e) {
-            throw new BadRequestHttpException($e->getMessage());
+        } catch (KillerValidationException $e) {
+            throw new KillerBadRequestHttpException($e->getMessage());
         }
 
         $this->missionRepository->store($mission);
@@ -66,7 +67,12 @@ class MissionController extends AbstractController
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $room),
-            $this->serializer->serialize((object) ['type' => 'ROOM_UPDATED']),
+            $this->serializer->serialize((object) [
+                'type' => 'ROOM_UPDATED',
+                'player' => $this->getUser()
+                    ? $this->serializer->serialize($this->getUser(), [AbstractNormalizer::GROUPS => 'me'])
+                    : [],
+            ]),
         ));
 
         return $this->json($mission, Response::HTTP_CREATED, [], [AbstractNormalizer::GROUPS => 'get-mission']);
@@ -94,8 +100,8 @@ class MissionController extends AbstractController
 
         try {
             $this->validator->validate($mission);
-        } catch (ValidationException $e) {
-            throw new BadRequestHttpException($e->getMessage());
+        } catch (KillerValidationException $e) {
+            throw new KillerBadRequestHttpException($e->getMessage());
         }
 
         $this->persistenceAdapter->flush();
@@ -124,7 +130,12 @@ class MissionController extends AbstractController
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $player->getRoom()),
-            $this->serializer->serialize((object) ['type' => 'ROOM_UPDATED']),
+            $this->serializer->serialize((object) [
+                'type' => 'ROOM_UPDATED',
+                'player' => $this->getUser()
+                    ? $this->serializer->serialize($this->getUser(), [AbstractNormalizer::GROUPS => 'me'])
+                    : [],
+            ]),
         ));
 
         return $this->json(null, Response::HTTP_NO_CONTENT);

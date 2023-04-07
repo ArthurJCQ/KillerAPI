@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Api\Controller;
 
-use App\Api\Exception\ValidationException;
+use App\Api\Exception\KillerBadRequestHttpException;
+use App\Api\Exception\KillerValidationException;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\PlayerRepository;
 use App\Domain\Player\Security\PlayerVoter;
@@ -23,7 +24,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Mercure\HubInterface;
@@ -63,8 +63,8 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
         try {
             $this->validator->validate($player);
-        } catch (ValidationException $e) {
-            throw new BadRequestHttpException($e->getMessage());
+        } catch (KillerValidationException $e) {
+            throw new KillerBadRequestHttpException($e->getMessage());
         }
 
         $this->playerRepository->store($player);
@@ -146,8 +146,8 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
         try {
             $this->validator->validate($player);
-        } catch (ValidationException $e) {
-            throw new BadRequestHttpException($e->getMessage());
+        } catch (KillerValidationException $e) {
+            throw new KillerBadRequestHttpException($e->getMessage());
         }
 
         $this->persistenceAdapter->flush();
@@ -161,19 +161,34 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $player->getRoom()),
-            $this->serializer->serialize((object) ['type' => 'ROOM_UPDATED']),
+            $this->serializer->serialize((object) [
+                'type' => 'ROOM_UPDATED',
+                'player' => $this->getUser()
+                    ? $this->serializer->serialize($this->getUser(), [AbstractNormalizer::GROUPS => 'me'])
+                    : [],
+            ]),
         ));
 
         if ($playerRoom !== $player->getRoom()) {
             $this->hub->publish(new Update(
                 sprintf('room/%s', $playerRoom),
-                $this->serializer->serialize((object) ['type' => 'ROOM_UPDATED']),
+                $this->serializer->serialize((object) [
+                    'type' => 'ROOM_UPDATED',
+                    'player' => $this->getUser()
+                        ? $this->serializer->serialize($this->getUser(), [AbstractNormalizer::GROUPS => 'me'])
+                        : [],
+                ]),
             ));
         }
 
         $this->hub->publish(new Update(
             sprintf('player/%s', $player->getId()),
-            $this->serializer->serialize((object) ['type' => 'PLAYER_UPDATED']),
+            $this->serializer->serialize((object) [
+                'type' => 'PLAYER_UPDATED',
+                'player' => $this->getUser()
+                    ? $this->serializer->serialize($this->getUser(), [AbstractNormalizer::GROUPS => 'me'])
+                    : [],
+            ]),
         ));
 
         $this->logger->info('Event mercure sent: post-PATCH for player {user_id}', ['user_id' => $player->getId()]);
