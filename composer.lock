@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "496cbf7d9155efa2e6dcbd42e9061c59",
+    "content-hash": "e84a1ebb165b6e689b3b2517b0f91d88",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -7754,49 +7754,6 @@
                 }
             ],
             "time": "2022-02-25T21:32:43+00:00"
-        },
-        {
-            "name": "deployer/deployer",
-            "version": "v7.3.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/deployphp/deployer.git",
-                "reference": "de2367892e2475e4ad42b4d86d8cfef4f2387471"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/deployphp/deployer/zipball/de2367892e2475e4ad42b4d86d8cfef4f2387471",
-                "reference": "de2367892e2475e4ad42b4d86d8cfef4f2387471",
-                "shasum": ""
-            },
-            "bin": [
-                "dep"
-            ],
-            "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Anton Medvedev",
-                    "email": "anton@medv.io"
-                }
-            ],
-            "description": "Deployment Tool",
-            "homepage": "https://deployer.org",
-            "support": {
-                "docs": "https://deployer.org/docs",
-                "issues": "https://github.com/deployphp/deployer/issues",
-                "source": "https://github.com/deployphp/deployer"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/sponsors/antonmedv",
-                    "type": "github"
-                }
-            ],
-            "time": "2023-03-24T10:50:39+00:00"
         },
         {
             "name": "doctrine/data-fixtures",
