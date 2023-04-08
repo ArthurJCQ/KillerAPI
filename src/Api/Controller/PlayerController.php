@@ -161,35 +161,18 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $player->getRoom()),
-            $this->serializer->serialize((object) [
-                'type' => 'ROOM_UPDATED',
-                'player' => $this->getUser()
-                    ? $this->serializer->serialize($this->getUser(), [AbstractNormalizer::GROUPS => 'me'])
-                    : [],
-            ]),
+            $this->serializer->serialize(
+                (object) $player->getRoom(),
+                [AbstractNormalizer::GROUPS => 'publish-mercure'],
+            ),
         ));
 
         if ($playerRoom !== $player->getRoom()) {
             $this->hub->publish(new Update(
                 sprintf('room/%s', $playerRoom),
-                $this->serializer->serialize((object) [
-                    'type' => 'ROOM_UPDATED',
-                    'player' => $this->getUser()
-                        ? $this->serializer->serialize($this->getUser(), [AbstractNormalizer::GROUPS => 'me'])
-                        : [],
-                ]),
+                $this->serializer->serialize((object) $playerRoom, [AbstractNormalizer::GROUPS => 'publish-mercure']),
             ));
         }
-
-        $this->hub->publish(new Update(
-            sprintf('player/%s', $player->getId()),
-            $this->serializer->serialize((object) [
-                'type' => 'PLAYER_UPDATED',
-                'player' => $this->getUser()
-                    ? $this->serializer->serialize($this->getUser(), [AbstractNormalizer::GROUPS => 'me'])
-                    : [],
-            ]),
-        ));
 
         $this->logger->info('Event mercure sent: post-PATCH for player {user_id}', ['user_id' => $player->getId()]);
 
@@ -213,7 +196,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $room),
-            $this->serializer->serialize((object) ['type' => 'ROOM_UPDATED']),
+            $this->serializer->serialize((object) $room, [AbstractNormalizer::GROUPS => 'publish-mercure']),
         ));
         $this->logger->info('Event mercure sent: post-DELETE for player {user_id}', ['user_id' => $player->getId()]);
 

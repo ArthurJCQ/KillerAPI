@@ -70,7 +70,8 @@ class RoomController extends AbstractController
                 $transitionSuccess = $this->roomStatusTransitionUseCase->executeTransition($room, $data['status']);
 
                 if (!$transitionSuccess) {
-                    throw new BadRequestHttpException(sprintf('Can not update room status to %s', $data['status']));
+                    // CAN_NOT_MOVE_TO_IN_GAME or CAN_NO_MOVE_TO_ENDED
+                    throw new KillerBadRequestHttpException(sprintf('CAN_NOT_MOVE_TO_%s', $data['status']));
                 }
             } catch (\DomainException $e) {
                 throw new BadRequestHttpException($e->getMessage());
@@ -97,12 +98,7 @@ class RoomController extends AbstractController
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $room),
-            $this->serializer->serialize((object) [
-                'type' => 'ROOM_UPDATED',
-                'player' => $this->getUser()
-                    ? $this->serializer->serialize($this->getUser(), [AbstractNormalizer::GROUPS => 'me'])
-                    : [],
-            ]),
+            $this->serializer->serialize($room, [AbstractNormalizer::GROUPS => 'publish-mercure']),
         ));
 
         return $this->json($room, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'get-room']);
@@ -118,12 +114,7 @@ class RoomController extends AbstractController
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $room),
-            $this->serializer->serialize((object) [
-                'type' => 'ROOM_UPDATED',
-                'player' => $this->getUser()
-                    ? $this->serializer->serialize($this->getUser(), [AbstractNormalizer::GROUPS => 'me'])
-                    : [],
-            ]),
+            $this->serializer->serialize((object) []),
         ));
 
         return $this->json(null, Response::HTTP_NO_CONTENT);

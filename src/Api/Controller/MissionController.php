@@ -67,12 +67,7 @@ class MissionController extends AbstractController
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $room),
-            $this->serializer->serialize((object) [
-                'type' => 'ROOM_UPDATED',
-                'player' => $this->getUser()
-                    ? $this->serializer->serialize($this->getUser(), [AbstractNormalizer::GROUPS => 'me'])
-                    : [],
-            ]),
+            $this->serializer->serialize($room, [AbstractNormalizer::GROUPS => 'publish-mercure']),
         ));
 
         return $this->json($mission, Response::HTTP_CREATED, [], [AbstractNormalizer::GROUPS => 'get-mission']);
@@ -130,12 +125,10 @@ class MissionController extends AbstractController
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $player->getRoom()),
-            $this->serializer->serialize((object) [
-                'type' => 'ROOM_UPDATED',
-                'player' => $this->getUser()
-                    ? $this->serializer->serialize($this->getUser(), [AbstractNormalizer::GROUPS => 'me'])
-                    : [],
-            ]),
+            $this->serializer->serialize(
+                (object) $player->getRoom(),
+                [AbstractNormalizer::GROUPS => 'publish-mercure'],
+            ),
         ));
 
         return $this->json(null, Response::HTTP_NO_CONTENT);

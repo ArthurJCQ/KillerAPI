@@ -27,30 +27,30 @@ class Room
     #[ORM\Id]
     #[ORM\Column(type: 'integer', unique: true)]
     #[ORM\GeneratedValue(strategy: "AUTO")]
-    #[Groups(['get-player', 'get-room', 'get-mission', 'me'])]
+    #[Groups(['get-player', 'get-room', 'get-mission', 'me', 'publish-mercure'])]
     private int $id;
 
     #[ORM\Column(type: 'string', length: 5)]
-    #[Groups(['get-room', 'me', 'get-player', 'get-mission'])]
+    #[Groups(['get-room', 'me', 'get-player', 'get-mission', 'publish-mercure'])]
     #[Assert\Length(exactly: 5)]
     private string $code;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['get-room', 'me', 'post-room', 'patch-room'])]
+    #[Groups(['get-room', 'me', 'post-room', 'patch-room', 'publish-mercure'])]
     #[Assert\Length(min: 2, max: 50, minMessage: 'TOO_SHORT_CONTENT', maxMessage: 'TOO_LONG_CONTENT')]
     private string $name;
 
     #[ORM\Column(type: 'string', length: 255, options: ['default' => self::PENDING])]
-    #[Groups(['get-room', 'me'])]
+    #[Groups(['get-room', 'me', 'publish-mercure'])]
     private string $status = self::PENDING;
 
     /** @var Collection<int, Player> */
     #[ORM\OneToMany(mappedBy: 'room', targetEntity: Player::class)]
-    #[Groups('get-room')]
+    #[Groups(['get-room', 'publish-mercure'])]
     private Collection $players;
 
     #[ORM\OneToOne(targetEntity: Player::class)]
-    #[Groups(['get-room'])]
+    #[Groups(['get-room', 'publish-mercure'])]
     private ?Player $admin = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
@@ -60,11 +60,11 @@ class Room
     private \DateTime $dateEnd;
 
     #[ORM\OneToMany(mappedBy: 'room', targetEntity: Mission::class, cascade: ['remove'])]
-    #[Groups(['get-room'])]
+    #[Groups(['get-room', 'publish-mercure'])]
     private Collection $missions;
 
     #[ORM\OneToOne(targetEntity: Player::class)]
-    #[Groups(['get-room'])]
+    #[Groups(['get-room', 'publish-mercure'])]
     private ?Player $winner = null;
 
     public function __construct()

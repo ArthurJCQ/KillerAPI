@@ -25,11 +25,11 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\Column(type: 'integer', unique: true)]
     #[ORM\GeneratedValue(strategy: "AUTO")]
-    #[Groups(['get-player', 'create-player', 'get-room', 'get-mission', 'me'])]
+    #[Groups(['get-player', 'create-player', 'get-room', 'get-mission', 'me', 'publish-mercure'])]
     private int $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['get-player', 'create-player', 'get-room', 'me', 'post-player', 'patch-player'])]
+    #[Groups(['get-player', 'create-player', 'get-room', 'me', 'post-player', 'patch-player', 'publish-mercure'])]
     #[Assert\Length(
         min: 2,
         max: 30,
@@ -48,7 +48,7 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
         enumType: PlayerStatus::class,
         options: ['default' => PlayerStatus::ALIVE],
     )]
-    #[Groups(['get-player', 'create-player', 'get-room', 'me', 'patch-player'])]
+    #[Groups(['get-player', 'create-player', 'get-room', 'me', 'patch-player', 'publish-mercure'])]
     private PlayerStatus $status = PlayerStatus::ALIVE;
 
     #[ORM\ManyToOne(targetEntity: Room::class, cascade: ['persist'], inversedBy: 'players')]
