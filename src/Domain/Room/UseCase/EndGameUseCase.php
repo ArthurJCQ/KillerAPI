@@ -11,10 +11,8 @@ use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 
 readonly class EndGameUseCase implements RoomUseCase
 {
-    public function __construct(
-        private PersistenceAdapterInterface $persistenceAdapter,
-        private ResetPlayerUseCase $resetPlayerUseCase,
-    ) {
+    public function __construct(private PersistenceAdapterInterface $persistenceAdapter)
+    {
     }
 
     public function execute(Room $room): void
@@ -23,9 +21,8 @@ readonly class EndGameUseCase implements RoomUseCase
 
         $room->setWinner($winner);
 
-        if ($winner instanceof Player) {
-            $this->resetPlayerUseCase->execute($winner);
-        }
+        $winner->setTarget(null);
+        $winner->setAssignedMission(null);
 
         $this->persistenceAdapter->flush();
     }

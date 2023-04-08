@@ -354,7 +354,9 @@ class RoomControllerCest
 
         $I->sendGet('/player/me');
         $I->seeResponseContainsJson([
-            'room' => null,
+            'room' => [
+                'status' => Room::ENDED,
+            ],
             'status' => PlayerStatus::ALIVE->value,
             'assignedMission' => null,
             'target' => null,
