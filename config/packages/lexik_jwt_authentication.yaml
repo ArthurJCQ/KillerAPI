@@ -4,3 +4,8 @@ lexik_jwt_authentication:
     pass_phrase: '%env(JWT_PASSPHRASE)%'
     # 1 month ttl
     token_ttl: 2628288
+
+    token_extractors:
+        cookie:
+            enabled: true
+            name: !php/const App\Api\Controller\PlayerController::JWT_AUTH_COOKIE_NAME

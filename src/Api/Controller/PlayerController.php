@@ -16,6 +16,7 @@ use App\Http\Cookie\CookieProvider;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Serializer\KillerSerializer;
 use App\Validator\KillerValidator;
+use Lexik\Bundle\JWTAuthenticationBundle\Security\Http\Cookie\JWTCookieProvider;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -37,6 +38,8 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 {
     use LoggerAwareTrait;
 
+    public const JWT_AUTH_COOKIE_NAME = 'killer_auth';
+
     public function __construct(
         private readonly PlayerRepository $playerRepository,
         private readonly RoomRepository $roomRepository,
@@ -45,6 +48,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly KillerSerializer $serializer,
         private readonly KillerValidator $validator,
         private readonly JWTTokenManagerInterface $tokenManager,
+        private readonly JWTCookieProvider $JWTCookieProvider,
         private readonly RoomStatusTransitionUseCase $roomStatusTransitionUseCase,
     ) {
     }
@@ -70,15 +74,19 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         $this->playerRepository->store($player);
         $this->persistenceAdapter->flush();
 
-        $player->setToken($this->tokenManager->create($player));
+        $token = $this->tokenManager->create($player);
         $this->logger->info('Token created for player {user_id}', ['user_id' => $player->getId()]);
 
-        return $this->json(
+        $response = $this->json(
             $player,
             Response::HTTP_CREATED,
             ['Location' => sprintf('/player/%s', $player->getUserIdentifier())],
             [AbstractNormalizer::GROUPS => 'create-player'],
         );
+
+        $response->headers->setCookie($this->JWTCookieProvider->createCookie($token, self::JWT_AUTH_COOKIE_NAME));
+
+        return $response;
     }
 
     #[Route('/me', name: 'me', methods: [Request::METHOD_GET])]
