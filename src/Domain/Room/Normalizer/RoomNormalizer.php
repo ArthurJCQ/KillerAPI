@@ -33,6 +33,10 @@ readonly class RoomNormalizer implements NormalizerInterface
 
         $normalizedRoom = $this->normalizer->normalize($object, $format, $context);
 
+        if (!is_array($normalizedRoom) || !isset($normalizedRoom['id'])) {
+            return $normalizedRoom;
+        }
+
         $normalizedRoom['hasEnoughPlayers'] = $this->enoughPlayerInRoomSpecification->isSatisfiedBy($object);
         $normalizedRoom['hasEnoughMissions'] = $this->enoughMissionInRoomSpecification->isSatisfiedBy($object);
 
