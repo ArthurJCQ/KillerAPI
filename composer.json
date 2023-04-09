@@ -11,6 +11,7 @@
         "ext-iconv": "*",
         "ext-json": "*",
         "ext-xdebug": "*",
+        "ext-apcu": "*",
         "doctrine/annotations": "^2.0",
         "doctrine/doctrine-bundle": "^2.7",
         "doctrine/doctrine-migrations-bundle": "^3.2",
