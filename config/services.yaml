@@ -27,6 +27,10 @@ services:
         arguments:
             $normalizer: '@serializer.normalizer.object'
 
+    App\Domain\Room\Normalizer\RoomNormalizer:
+        arguments:
+            $normalizer: '@serializer.normalizer.object'
+
 when@test:
     services:
         mercure.hub.default:
