@@ -156,17 +156,10 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setRoom(?Room $room): self
     {
-        // Player leaves room
-//        if ($this->room && !$room) {
-//            $this->room->removePlayer($this);
-//        }
-
         // Player changes room
         if ($this->room !== $room) {
             $this->clearMissions();
         }
-
-//        $room?->addPlayer($this);
 
         $this->room = $room;
 
