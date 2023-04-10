@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Room\UseCase;
 
 use App\Domain\Mission\Entity\Mission;
+use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -30,8 +31,16 @@ class DispatchMissionsAndTargetsUseCase implements RoomUseCase, LoggerAwareInter
                 'player_id' => $player->getId(),
                 'target_id' => $target->getId(),
             ]);
+        }
 
-            // Let's assign missions.
+        usort(
+            $players,
+            static fn (Player $playerA, Player $playerB) =>
+                \count($playerA->getAuthoredMissionsInRoom()) <=> \count($playerB->getAuthoredMissionsInRoom()),
+        );
+
+        // Let's assign missions.
+        foreach (array_reverse($players) as $player) {
             foreach ($players as $playerMissions) {
                 /**
                  * player = the player we want to assign the mission to.

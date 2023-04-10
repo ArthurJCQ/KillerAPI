@@ -31,6 +31,8 @@ services:
         arguments:
             $normalizer: '@serializer.normalizer.object'
 
+    Symfony\Component\Serializer\Normalizer\ProblemNormalizer:
+
 when@test:
     services:
         mercure.hub.default:
