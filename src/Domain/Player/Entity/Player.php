@@ -308,4 +308,11 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+    #[SerializedName('hasAtLeastOneMission')]
+    #[Groups(['get-room'])]
+    public function hasAtLeastOneMission(): bool
+    {
+        return \count($this->getAuthoredMissionsInRoom()) > 0;
+    }
 }

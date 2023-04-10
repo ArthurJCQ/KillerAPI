@@ -19,7 +19,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
@@ -45,7 +44,7 @@ class MissionController extends AbstractController
         $room = $player->getRoom();
 
         if (!$room || $room->getStatus() !== Room::PENDING) {
-            throw new BadRequestHttpException('Enter a PENDING room before adding missions');
+            throw new KillerBadRequestHttpException('CAN_NOT_ADD_MISSIONS');
         }
 
         $mission = $this->serializer->deserialize(

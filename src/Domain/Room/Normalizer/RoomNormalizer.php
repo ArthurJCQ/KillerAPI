@@ -7,14 +7,16 @@ namespace App\Domain\Room\Normalizer;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\Specification\EnoughMissionInRoomSpecification;
 use App\Domain\Room\Specification\EnoughPlayerInRoomSpecification;
+use App\Domain\Room\Specification\AllPlayersAddedMissionSpecification;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-readonly class RoomNormalizer implements NormalizerInterface
+final readonly class RoomNormalizer implements NormalizerInterface
 {
     public function __construct(
         private NormalizerInterface $normalizer,
         private EnoughPlayerInRoomSpecification $enoughPlayerInRoomSpecification,
         private EnoughMissionInRoomSpecification $enoughMissionInRoomSpecification,
+        private AllPlayersAddedMissionSpecification $allPlayersAddedMissionSpecification,
     ) {
     }
 
@@ -39,6 +41,7 @@ readonly class RoomNormalizer implements NormalizerInterface
 
         $normalizedRoom['hasEnoughPlayers'] = $this->enoughPlayerInRoomSpecification->isSatisfiedBy($object);
         $normalizedRoom['hasEnoughMissions'] = $this->enoughMissionInRoomSpecification->isSatisfiedBy($object);
+        $normalizedRoom['allPlayersAddedMissions'] = $this->allPlayersAddedMissionSpecification->isSatisfiedBy($object);
 
         return $normalizedRoom;
     }
