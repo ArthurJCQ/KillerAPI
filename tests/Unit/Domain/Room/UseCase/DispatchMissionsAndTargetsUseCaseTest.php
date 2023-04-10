@@ -84,17 +84,14 @@ class DispatchMissionsAndTargetsUseCaseTest extends \Codeception\Test\Unit
 
 
         $missionPlayer1->isAssigned()->shouldBeCalled();
-        $missionPlayer1->setIsAssigned(true)->shouldBeCalled();
         $missionPlayer1->getAuthor()->shouldBeCalled()->willReturn($player1->reveal());
         $missionPlayer1->getId()->shouldBeCalledOnce()->willReturn(1);
 
         $missionPlayer2->isAssigned()->shouldBeCalled();
-        $missionPlayer2->setIsAssigned(true)->shouldBeCalled();
         $missionPlayer2->getAuthor()->shouldBeCalled()->willReturn($player2->reveal());
         $missionPlayer2->getId()->shouldBeCalledOnce()->willReturn(2);
 
         $missionPlayer3->isAssigned()->shouldBeCalled();
-        $missionPlayer3->setIsAssigned(true)->shouldBeCalled();
         $missionPlayer3->getAuthor()->shouldBeCalled()->willReturn($player2->reveal());
         $missionPlayer3->getId()->shouldBeCalledOnce()->willReturn(3);
 

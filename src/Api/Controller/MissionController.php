@@ -52,8 +52,7 @@ class MissionController extends AbstractController
             Mission::class,
             [AbstractNormalizer::GROUPS => 'post-mission'],
         );
-        $mission->setAuthor($player);
-        $room->addMission($mission);
+        $player->addAuthoredMission($mission);
 
         try {
             $this->validator->validate($mission);

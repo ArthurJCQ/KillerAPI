@@ -70,7 +70,6 @@ class DispatchMissionsAndTargetsUseCase implements RoomUseCase, LoggerAwareInter
 
                     // Otherwise, assign it and break to not keep assigning missions.
                     $player->setAssignedMission($mission);
-                    $mission->setIsAssigned(true);
 
                     $this->logger->info('Player {player_id} was assigned {mission_id} as a mission.', [
                         'player_id' => $player->getId(),

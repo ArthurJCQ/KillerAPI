@@ -12,7 +12,7 @@ readonly class ResetPlayerUseCase implements PlayerUseCase
 {
     public function execute(Player $player): void
     {
-        $player->setRoom(null);
+        $player->getRoom()?->removePlayer($player);
         $player->setTarget(null);
         $player->setAssignedMission(null);
         $player->setStatus(PlayerStatus::ALIVE);

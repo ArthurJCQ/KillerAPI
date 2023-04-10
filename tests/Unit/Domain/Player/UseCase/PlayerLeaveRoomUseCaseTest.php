@@ -8,7 +8,6 @@ use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Event\PlayerLeftRoomEvent;
 use App\Domain\Player\UseCase\PlayerLeaveRoomUseCase;
 use App\Domain\Room\Entity\Room;
-use App\Domain\Room\RoomRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -24,13 +23,9 @@ class PlayerLeaveRoomUseCaseTest extends \Codeception\Test\Unit
 
     protected function setUp(): void
     {
-        $roomRepository = $this->prophesize(RoomRepository::class);
         $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
 
-        $this->playerLeaveRoomUseCase = new PlayerLeaveRoomUseCase(
-            $roomRepository->reveal(),
-            $this->eventDispatcher->reveal(),
-        );
+        $this->playerLeaveRoomUseCase = new PlayerLeaveRoomUseCase($this->eventDispatcher->reveal());
 
         parent::setUp();
     }
@@ -59,7 +54,7 @@ class PlayerLeaveRoomUseCaseTest extends \Codeception\Test\Unit
         $room = $this->prophesize(Room::class);
         $event = new PlayerLeftRoomEvent($player->reveal(), null);
 
-        $room->getPlayers()->shouldBeCalledOnce()->willReturn(new ArrayCollection([]));
+        $room->getPlayers()->shouldBeCalledOnce()->willReturn(new ArrayCollection([$player->reveal()]));
 
         $this->eventDispatcher->dispatch($event, PlayerLeftRoomEvent::NAME)
             ->shouldBeCalledOnce()
