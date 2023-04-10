@@ -32,6 +32,8 @@ services:
             $normalizer: '@serializer.normalizer.object'
 
     Symfony\Component\Serializer\Normalizer\ProblemNormalizer:
+        arguments:
+            $debug: '%kernel.debug%'
 
 when@test:
     services:
