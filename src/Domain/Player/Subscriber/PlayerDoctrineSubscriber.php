@@ -34,7 +34,7 @@ final readonly class PlayerDoctrineSubscriber implements EventSubscriberInterfac
             return;
         }
 
-        $this->playerLeaveRoomUseCase->execute($player);
+        $this->playerLeaveRoomUseCase->execute($player, $player->getRoom());
     }
 
     public function prePersist(LifecycleEventArgs $args): void

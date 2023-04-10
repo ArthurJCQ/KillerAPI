@@ -105,7 +105,6 @@ class PlayerControllerCest
             'status' => PlayerStatus::ALIVE->value,
             'room' => null,
         ]);
-        $I->dontSeeInRepository(Room::class, ['name' => sprintf('%s\' room', self::PLAYER_NAME)]);
 
         $I->seeResponseCodeIsSuccessful();
     }

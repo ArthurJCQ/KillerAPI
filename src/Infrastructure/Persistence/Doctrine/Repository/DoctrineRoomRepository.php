@@ -27,4 +27,13 @@ final class DoctrineRoomRepository extends DoctrineBaseRepository implements Roo
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function getEmptyRooms(): iterable
+    {
+        return $this->repository
+            ->createQueryBuilder('r')
+            ->where('r.players IS EMPTY')
+            ->getQuery()
+            ->toIterable();
+    }
 }

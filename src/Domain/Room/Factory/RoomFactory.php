@@ -33,7 +33,6 @@ readonly class RoomFactory
         return (new Room())
             ->setCode(strtoupper($roomCode))
             ->setName(sprintf("%s's room", $player->getName()))
-            ->setAdmin($player)
             ->addPlayer($player);
     }
 }

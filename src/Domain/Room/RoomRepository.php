@@ -11,4 +11,6 @@ use App\Infrastructure\Persistence\BaseRepository;
 interface RoomRepository extends BaseRepository
 {
     public function getRoomByIdOrCode(mixed $identifier): mixed;
+
+    public function getEmptyRooms(): iterable;
 }

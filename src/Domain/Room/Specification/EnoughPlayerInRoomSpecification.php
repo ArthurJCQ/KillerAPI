@@ -13,6 +13,6 @@ class EnoughPlayerInRoomSpecification implements RoomSpecification
     {
         $players = $room->getPlayers();
 
-        return \count($players) > 2;
+        return $players->count() > 2;
     }
 }

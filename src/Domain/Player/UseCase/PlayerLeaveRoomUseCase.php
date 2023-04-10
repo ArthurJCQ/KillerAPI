@@ -7,15 +7,12 @@ namespace App\Domain\Player\UseCase;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Event\PlayerLeftRoomEvent;
 use App\Domain\Room\Entity\Room;
-use App\Domain\Room\RoomRepository;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 readonly class PlayerLeaveRoomUseCase implements PlayerUseCase
 {
-    public function __construct(
-        private RoomRepository $roomRepository,
-        private EventDispatcherInterface $eventDispatcher,
-    ) {
+    public function __construct(private EventDispatcherInterface $eventDispatcher)
+    {
     }
 
     public function execute(Player $player, ?Room $oldRoom = null): void
@@ -26,9 +23,8 @@ readonly class PlayerLeaveRoomUseCase implements PlayerUseCase
 
         $playersByRoom = $oldRoom->getPlayers();
 
-        if (\count($playersByRoom) === 0) {
-            // If no player left after this one, remove room, player will be automatically reset.
-            $this->roomRepository->remove($oldRoom);
+        if ($playersByRoom->count() === 1) {
+            // If no player left after this one, do not handle any logic in it afterwards.
             $oldRoom = null;
         }
 

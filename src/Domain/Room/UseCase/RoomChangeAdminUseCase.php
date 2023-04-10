@@ -27,6 +27,6 @@ class RoomChangeAdminUseCase implements RoomUseCase
 
         shuffle($eligibleAdmins);
 
-        $room->setAdmin($eligibleAdmins[0]);
+        $room->setAdmin($eligibleAdmins[0] ?? null);
     }
 }

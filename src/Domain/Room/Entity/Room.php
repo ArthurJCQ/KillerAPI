@@ -145,6 +145,10 @@ class Room
             $player->setRoom($this);
         }
 
+        if ($this->players->count()) {
+            $this->setAdmin($player);
+        }
+
         return $this;
     }
 
@@ -154,6 +158,10 @@ class Room
             // set the owning side to null (unless already changed)
             if ($player->getRoom() === $this) {
                 $player->setRoom(null);
+            }
+
+            if ($this->admin === $player) {
+                $this->setAdmin(null);
             }
 
             foreach ($player->getAuthoredMissions() as $mission) {
