@@ -22,6 +22,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[PlayerCanRename]
 class Player implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    public const DEFAULT_AVATAR = 'captain';
+
     #[ORM\Id]
     #[ORM\Column(type: 'integer', unique: true)]
     #[ORM\GeneratedValue(strategy: "AUTO")]
@@ -78,6 +80,10 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\JoinColumn(name: 'user_assigned_mission')]
     #[Groups(['me'])]
     private ?Mission $assignedMission = null;
+
+    #[ORM\Column(type: 'string', options: ['default' => self::DEFAULT_AVATAR])]
+    #[Groups(['me', 'get-room', 'post-player', 'create-player', 'get-player', 'patch-player'])]
+    private string $avatar = self::DEFAULT_AVATAR;
 
     private string $token = '';
 
@@ -258,6 +264,18 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
         $assignedMission?->setIsAssigned(true);
 
         $this->assignedMission = $assignedMission;
+
+        return $this;
+    }
+
+    public function getAvatar(): string
+    {
+        return $this->avatar;
+    }
+
+    public function setAvatar(string $avatar): self
+    {
+        $this->avatar = $avatar;
 
         return $this;
     }
