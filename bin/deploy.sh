@@ -25,7 +25,7 @@ cd $APP_PATH
 
 composer install --no-dev --optimize-autoloader
 APP_ENV=prod APP_DEBUG=0 php bin/console cache:clear
-php bin/console/clear_apcu_cache.php
+php $APP_PATH/bin/console/clear_apcu_cache.php
 
 bin/console do:mi:mi --no-interaction
 

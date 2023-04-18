@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Domain\Mission\MissionRepository;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;

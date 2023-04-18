@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Room\Normalizer;
 
+use App\Application\Specification\Room\AllPlayersAddedMissionSpecification;
+use App\Application\Specification\Room\EnoughMissionInRoomSpecification;
+use App\Application\Specification\Room\EnoughPlayerInRoomSpecification;
 use App\Domain\Room\Entity\Room;
-use App\Domain\Room\Specification\EnoughMissionInRoomSpecification;
-use App\Domain\Room\Specification\EnoughPlayerInRoomSpecification;
-use App\Domain\Room\Specification\AllPlayersAddedMissionSpecification;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 final readonly class RoomNormalizer implements NormalizerInterface

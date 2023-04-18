@@ -32,7 +32,7 @@ abstract class DoctrineBaseRepository
     }
 
     /** @return ?T */
-    public function find(int $id): ?object
+    public function find(int|string $id): ?object
     {
         return $this->repository->find($id);
     }

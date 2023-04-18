@@ -22,4 +22,9 @@ readonly class DoctrinePersistenceAdapter implements PersistenceAdapterInterface
     {
         $this->entityManager->clear();
     }
+
+    public function refresh(object $object): void
+    {
+        $this->entityManager->refresh($object);
+    }
 }

@@ -6,14 +6,14 @@ namespace App\Api\Controller;
 
 use App\Api\Exception\KillerBadRequestHttpException;
 use App\Api\Exception\KillerValidationException;
+use App\Domain\KillerSerializerInterface;
+use App\Domain\KillerValidatorInterface;
 use App\Domain\Mission\Entity\Mission;
 use App\Domain\Mission\MissionRepository;
-use App\Domain\Mission\Security\MissionVoter;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
-use App\Serializer\KillerSerializer;
-use App\Validator\KillerValidator;
+use App\Infrastructure\Security\Voters\MissionVoter;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,8 +31,8 @@ class MissionController extends AbstractController
         private readonly MissionRepository $missionRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly HubInterface $hub,
-        private readonly KillerSerializer $serializer,
-        private readonly KillerValidator $validator,
+        private readonly KillerSerializerInterface $serializer,
+        private readonly KillerValidatorInterface $validator,
     ) {
     }
 

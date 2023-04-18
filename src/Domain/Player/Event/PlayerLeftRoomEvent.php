@@ -12,7 +12,7 @@ class PlayerLeftRoomEvent extends Event
 {
     public const NAME = 'player.left.room';
 
-    public function __construct(protected readonly Player $player, private readonly ?Room $oldRoom)
+    public function __construct(protected readonly Player $player, private readonly ?Room $previousRoom)
     {
     }
 
@@ -21,8 +21,8 @@ class PlayerLeftRoomEvent extends Event
         return $this->player;
     }
 
-    public function getOldRoom(): ?Room
+    public function getPreviousRoom(): ?Room
     {
-        return $this->oldRoom;
+        return $this->previousRoom;
     }
 }

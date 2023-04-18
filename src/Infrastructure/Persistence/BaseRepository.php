@@ -14,7 +14,7 @@ interface BaseRepository
     public function remove(object $object): void;
 
     /** @return ?T */
-    public function find(int $id): ?object;
+    public function find(string|int $id): ?object;
 
     /**
      * @param array<string, mixed> $options
