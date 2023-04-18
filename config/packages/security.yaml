@@ -40,7 +40,6 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
          - { path: ^/player, roles: PUBLIC_ACCESS, method: [POST] }
-         - { path: ^/room/test, roles: PUBLIC_ACCESS, method: [GET] }
          - { path: ^/player, roles: ROLE_USER }
          - { path: ^/room, roles: ROLE_USER }
          - { path: ^/mission, roles: ROLE_USER }

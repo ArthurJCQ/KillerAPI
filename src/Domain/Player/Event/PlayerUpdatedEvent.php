@@ -10,8 +10,6 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 class PlayerUpdatedEvent extends Event
 {
-    public const NAME = 'player.updated';
-
     public function __construct(protected readonly Player $player, protected readonly ?Room $previousRoom = null)
     {
     }

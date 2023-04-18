@@ -42,7 +42,7 @@ class Room
 
     /** @var Collection<int, Player> */
     #[ORM\OneToMany(mappedBy: 'room', targetEntity: Player::class, fetch: 'EAGER')]
-//    #[Assert\Unique]
+    #[Assert\Unique]
     #[Groups(['get-room', 'publish-mercure'])]
     private Collection $players;
 

@@ -10,8 +10,6 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 class PlayerLeftRoomEvent extends Event
 {
-    public const NAME = 'player.left.room';
-
     public function __construct(protected readonly Player $player, private readonly ?Room $previousRoom)
     {
     }
