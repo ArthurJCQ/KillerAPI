@@ -6,21 +6,23 @@ namespace App\Api\Controller;
 
 use App\Api\Exception\KillerBadRequestHttpException;
 use App\Api\Exception\KillerValidationException;
+use App\Domain\KillerSerializerInterface;
+use App\Domain\KillerValidatorInterface;
 use App\Domain\Player\Entity\Player;
+use App\Domain\Player\Event\PlayerUpdatedEvent;
 use App\Domain\Player\PlayerRepository;
-use App\Domain\Player\Security\PlayerVoter;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
-use App\Domain\Room\Workflow\RoomStatusTransitionUseCase;
-use App\Http\Cookie\CookieProvider;
+use App\Domain\Room\RoomWorkflowTransitionInterface;
+use App\Infrastructure\Http\Cookie\CookieProvider;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
-use App\Serializer\KillerSerializer;
-use App\Validator\KillerValidator;
+use App\Infrastructure\Security\Voters\PlayerVoter;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,6 +33,7 @@ use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 #[Route('/player', format: 'json')]
 class PlayerController extends AbstractController implements LoggerAwareInterface
@@ -42,10 +45,12 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly RoomRepository $roomRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly HubInterface $hub,
-        private readonly KillerSerializer $serializer,
-        private readonly KillerValidator $validator,
+        private readonly KillerSerializerInterface $serializer,
+        private readonly KillerValidatorInterface $validator,
         private readonly JWTTokenManagerInterface $tokenManager,
-        private readonly RoomStatusTransitionUseCase $roomStatusTransitionUseCase,
+        private readonly RoomWorkflowTransitionInterface $roomStatusTransitionUseCase,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly Security $security,
     ) {
     }
 
@@ -124,14 +129,21 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
     public function patchPlayer(Request $request, Player $player): JsonResponse
     {
         $data = $request->toArray();
-        $playerRoom = $player->getRoom();
 
-        if (isset($data['role']) && $player !== $playerRoom?->getAdmin()) {
+        // If room is about to be updated, keep the reference of the previous one
+        $previousRoom = $player->getRoom();
+
+        if ($request->request->has('status') && $player !== $previousRoom?->getAdmin()) {
             throw new UnauthorizedHttpException('CAN_NOT_UPDATE_PLAYER_ROLE');
         }
 
-        if (isset($data['room']) && !$this->roomRepository->findBy(['code' => $data['room']])) {
-            throw new NotFoundHttpException('ROOM_NOT_FOUND');
+        if (array_key_exists('room', $data)) {
+            $previousRoom?->removePlayer($player);
+
+            if (isset($data['room'])) {
+                $newRoom = $this->roomRepository->find($data['room']);
+                $newRoom?->addPlayer($player);
+            }
         }
 
         $this->serializer->deserialize(
@@ -152,12 +164,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
         $this->persistenceAdapter->flush();
 
-        // Try to end room after player update.
-        if ($playerRoom instanceof Room) {
-            $this->roomStatusTransitionUseCase->executeTransition($playerRoom, Room::ENDED);
-
-            $this->persistenceAdapter->flush();
-        }
+        $this->eventDispatcher->dispatch(new PlayerUpdatedEvent($player, $previousRoom));
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $player->getRoom()),
@@ -167,10 +174,10 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
             ),
         ));
 
-        if ($playerRoom !== $player->getRoom()) {
+        if ($previousRoom !== $player->getRoom()) {
             $this->hub->publish(new Update(
-                sprintf('room/%s', $playerRoom),
-                $this->serializer->serialize((object) $playerRoom, [AbstractNormalizer::GROUPS => 'publish-mercure']),
+                sprintf('room/%s', $previousRoom),
+                $this->serializer->serialize((object) $previousRoom, [AbstractNormalizer::GROUPS => 'publish-mercure']),
             ));
         }
 
@@ -188,17 +195,16 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         // Try to end room after player deletion.
         if ($room instanceof Room) {
             $this->roomStatusTransitionUseCase->executeTransition($room, Room::ENDED);
-
-            $this->persistenceAdapter->flush();
         }
-
-        $this->playerRepository->remove($player);
-
         $this->hub->publish(new Update(
             sprintf('room/%s', $room),
             $this->serializer->serialize((object) $room, [AbstractNormalizer::GROUPS => 'publish-mercure']),
         ));
         $this->logger->info('Event mercure sent: post-DELETE for player {user_id}', ['user_id' => $player->getId()]);
+
+        $this->security->logout(validateCsrfToken: false);
+        $this->playerRepository->remove($player);
+        $this->persistenceAdapter->flush();
 
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }

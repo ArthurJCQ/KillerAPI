@@ -10,8 +10,6 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 class PlayerKilledEvent extends Event
 {
-    public const NAME = 'player.killed';
-
     public function __construct(protected readonly Player $player, protected readonly ?Room $room = null)
     {
     }

@@ -9,4 +9,6 @@ interface PersistenceAdapterInterface
     public function flush(): void;
 
     public function clear(): void;
+
+    public function refresh(object $object): void;
 }

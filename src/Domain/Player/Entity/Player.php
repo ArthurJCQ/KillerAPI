@@ -54,8 +54,8 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     private PlayerStatus $status = PlayerStatus::ALIVE;
 
     #[ORM\ManyToOne(targetEntity: Room::class, cascade: ['persist'], inversedBy: 'players')]
-    #[ORM\JoinColumn(name: 'room_players', referencedColumnName: 'id')]
-    #[Groups(['get-player', 'create-player', 'me', 'patch-player'])]
+    #[ORM\JoinColumn(name: 'room_players')]
+    #[Groups(['get-player', 'create-player', 'me'])]
     #[MaxDepth(1)]
     private ?Room $room = null;
 
@@ -165,6 +165,10 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
         // Player changes room
         if ($this->room !== $room) {
             $this->clearMissions();
+
+            if ($this->room?->getAdmin() === $this) {
+                $this->room->setAdmin(null);
+            }
         }
 
         $this->room = $room;
@@ -303,6 +307,7 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
         foreach ($this->getAuthoredMissions() as $mission) {
             if ($this->authoredMissions->removeElement($mission) && $mission->getAuthor() === $this) {
                 $mission->setAuthor(null);
+                $this->room?->removeMission($mission);
             }
         }
 

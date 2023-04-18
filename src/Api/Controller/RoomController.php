@@ -6,14 +6,14 @@ namespace App\Api\Controller;
 
 use App\Api\Exception\KillerBadRequestHttpException;
 use App\Api\Exception\KillerValidationException;
+use App\Domain\KillerSerializerInterface;
+use App\Domain\KillerValidatorInterface;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\Factory\RoomFactory;
 use App\Domain\Room\RoomRepository;
-use App\Domain\Room\Security\RoomVoter;
-use App\Domain\Room\Workflow\RoomStatusTransitionUseCase;
+use App\Domain\Room\RoomWorkflowTransitionInterface;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
-use App\Serializer\KillerSerializer;
-use App\Validator\KillerValidator;
+use App\Infrastructure\Security\Voters\RoomVoter;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -32,10 +32,10 @@ class RoomController extends AbstractController
     public function __construct(
         private readonly RoomRepository $roomRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
-        private readonly RoomStatusTransitionUseCase $roomStatusTransitionUseCase,
+        private readonly RoomWorkflowTransitionInterface $roomStatusTransitionUseCase,
         private readonly HubInterface $hub,
-        private readonly KillerSerializer $serializer,
-        private readonly KillerValidator $validator,
+        private readonly KillerSerializerInterface $serializer,
+        private readonly KillerValidatorInterface $validator,
         private readonly RoomFactory $roomFactory,
     ) {
     }
@@ -108,12 +108,13 @@ class RoomController extends AbstractController
     #[IsGranted(RoomVoter::EDIT_ROOM, subject: 'room')]
     public function deleteRoom(Room $room): JsonResponse
     {
+        $roomCode = $room->getId();
         $this->roomRepository->remove($room);
 
         $this->persistenceAdapter->flush();
 
         $this->hub->publish(new Update(
-            sprintf('room/%s', $room),
+            sprintf('room/%s', $roomCode),
             $this->serializer->serialize((object) []),
         ));
 

@@ -8,15 +8,14 @@ use App\Domain\Mission\Entity\Mission;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Room\Validator\CanPatchRoom;
+use App\Infrastructure\Persistence\Doctrine\RoomIdGenerator;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
-#[UniqueEntity(fields: 'code')]
 #[CanPatchRoom]
 class Room
 {
@@ -25,15 +24,12 @@ class Room
     public const ENDED = 'ENDED';
 
     #[ORM\Id]
-    #[ORM\Column(type: 'integer', unique: true)]
-    #[ORM\GeneratedValue(strategy: "AUTO")]
-    #[Groups(['get-player', 'get-room', 'get-mission', 'me', 'publish-mercure'])]
-    private int $id;
-
-    #[ORM\Column(type: 'string', length: 5)]
-    #[Groups(['get-room', 'me', 'get-player', 'get-mission', 'publish-mercure'])]
+    #[ORM\Column(type: 'string', length: 5, unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(RoomIdGenerator::class)]
     #[Assert\Length(exactly: 5)]
-    private string $code;
+    #[Groups(['get-player', 'get-room', 'get-mission', 'me', 'publish-mercure', 'patch-player'])]
+    private string $id;
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups(['get-room', 'me', 'post-room', 'patch-room', 'publish-mercure'])]
@@ -45,7 +41,8 @@ class Room
     private string $status = self::PENDING;
 
     /** @var Collection<int, Player> */
-    #[ORM\OneToMany(mappedBy: 'room', targetEntity: Player::class)]
+    #[ORM\OneToMany(mappedBy: 'room', targetEntity: Player::class, fetch: 'EAGER')]
+    #[Assert\Unique]
     #[Groups(['get-room', 'publish-mercure'])]
     private Collection $players;
 
@@ -75,26 +72,14 @@ class Room
         $this->missions = new ArrayCollection();
     }
 
-    public function getId(): int
+    public function getId(): string
     {
         return $this->id;
     }
 
-    public function setId(int $id): self
+    public function setId(string $id): self
     {
         $this->id = $id;
-
-        return $this;
-    }
-
-    public function getCode(): string
-    {
-        return $this->code;
-    }
-
-    public function setCode(string $code): self
-    {
-        $this->code = $code;
 
         return $this;
     }
@@ -145,7 +130,7 @@ class Room
             $player->setRoom($this);
         }
 
-        if ($this->players->count()) {
+        if ($this->players->count() === 1) {
             $this->setAdmin($player);
         }
 
@@ -198,7 +183,7 @@ class Room
 
     public function __toString(): string
     {
-        return $this->getCode();
+        return $this->getId();
     }
 
     /**

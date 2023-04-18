@@ -68,36 +68,45 @@ class PlayerControllerCest
 
     public function testPlayerJoinRoom(ApiTester $I): void
     {
-        $code = $I->grabFromRepository(Room::class, 'code', ['name' => 'Admin\'s room']);
+        $code = $I->grabFromRepository(Room::class, 'id', ['name' => 'Admin\'s room']);
         /** @var string $playerId */
         $playerId = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
         $I->sendPatch(sprintf('/player/%s', $playerId), (string) json_encode(['room' => $code]));
 
-        $I->seeInRepository(Player::class, ['name' => self::PLAYER_NAME, 'room' => ['code' => $code]]);
+        $I->seeInRepository(Player::class, ['name' => self::PLAYER_NAME, 'room' => ['id' => $code]]);
 
         $I->seeResponseCodeIsSuccessful();
     }
 
     public function testPlayerLeaveRoom(ApiTester $I): void
     {
+        /** @var string $roomCode */
+        $roomCode = $I->grabFromRepository(
+            Room::class,
+            'id',
+            ['name' => sprintf('%s\'s room', 'Admin')],
+        );
+
         /** @var string $playerId */
         $playerId = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
 
-        $I->haveInRepository(Room::class, ['code' => 'XXXXX', 'name' => sprintf('%s\' room', self::PLAYER_NAME)]);
         $player = $I->grabEntityFromRepository(Player::class, ['name' => self::PLAYER_NAME]);
         $player->setStatus(PlayerStatus::KILLED);
         $I->flushToDatabase();
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
-        $I->sendPatch(sprintf('/player/%s', $playerId), (string) json_encode(['room' => 'XXXXX']));
+        $I->sendPatch(sprintf('/player/%s', $playerId), (string) json_encode(['room' => $roomCode]));
+        $I->seeResponseCodeIsSuccessful();
         $I->seeInRepository(
             Player::class,
-            ['name' => self::PLAYER_NAME, 'status' => PlayerStatus::KILLED->value, 'room' => ['code' => 'XXXXX']],
+            ['name' => self::PLAYER_NAME, 'status' => PlayerStatus::KILLED->value, 'room' => ['id' => $roomCode]],
         );
 
         $I->seeResponseCodeIsSuccessful();
+
+        $I->sendPost('/mission', (string) json_encode(['content' => 'coucou']));
 
         $I->sendPatch(sprintf('/player/%s', $playerId), (string) json_encode(['room' => null]));
         $I->seeInRepository(Player::class, [
@@ -105,25 +114,35 @@ class PlayerControllerCest
             'status' => PlayerStatus::ALIVE->value,
             'room' => null,
         ]);
-
         $I->seeResponseCodeIsSuccessful();
+
+        $I->setAdminJwtHeader($I);
+        $I->sendGet(sprintf('/room/%s', $roomCode));
+        $I->seeResponseContainsJson([
+            'missions' => [],
+        ]);
     }
 
     public function testDeletePlayer(ApiTester $I): void
     {
+        $roomCode = $I->grabFromRepository(
+            Room::class,
+            'id',
+            ['name' => sprintf('%s\'s room', 'Admin')],
+        );
+
         /** @var string $playerId */
         $playerId = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
 
-        $I->haveInRepository(Room::class, ['code' => 'XXXXX', 'name' => sprintf('%s\' room', self::PLAYER_NAME)]);
         $player = $I->grabEntityFromRepository(Player::class, ['name' => self::PLAYER_NAME]);
         $player->setStatus(PlayerStatus::KILLED);
         $I->flushToDatabase();
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
-        $I->sendPatch(sprintf('/player/%s', $playerId), (string) json_encode(['room' => 'XXXXX']));
+        $I->sendPatch(sprintf('/player/%s', $playerId), (string) json_encode(['room' => $roomCode]));
         $I->seeInRepository(
             Player::class,
-            ['name' => self::PLAYER_NAME, 'status' => PlayerStatus::KILLED->value, 'room' => ['code' => 'XXXXX']],
+            ['name' => self::PLAYER_NAME, 'status' => PlayerStatus::KILLED->value, 'room' => ['id' => $roomCode]],
         );
 
         $I->seeResponseCodeIsSuccessful();

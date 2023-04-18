@@ -14,10 +14,13 @@ final readonly class RoomDenormalizer implements DenormalizerInterface
     {
     }
 
-    /** @param array<string, string> $context */
+    /**
+     * @param string $data
+     * @param array<string, string> $context
+     */
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): ?Room
     {
-        return $this->roomRepository->findOneBy(['code' => $data]);
+        return $this->roomRepository->find($data);
     }
 
     /** @param array<string, string> $context */
