@@ -14,7 +14,7 @@ final class Version20230419124137 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Change Room winner from OneToOne to ManyToOne';
     }
 
     public function up(Schema $schema): void
