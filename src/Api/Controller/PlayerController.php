@@ -6,6 +6,7 @@ namespace App\Api\Controller;
 
 use App\Api\Exception\KillerBadRequestHttpException;
 use App\Api\Exception\KillerValidationException;
+use App\Application\UseCase\Player\ChangeRoomUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Player\Entity\Player;
@@ -51,6 +52,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly RoomWorkflowTransitionInterface $roomStatusTransitionUseCase,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly Security $security,
+        private readonly ChangeRoomUseCase $changeRoomUseCase,
     ) {
     }
 
@@ -130,20 +132,17 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
     {
         $data = $request->toArray();
 
-        // If room is about to be updated, keep the reference of the previous one
-        $previousRoom = $player->getRoom();
-
-        if ($request->request->has('status') && $player !== $previousRoom?->getAdmin()) {
+        if (isset($data['role']) && $player !== $player->getRoom()?->getAdmin()) {
             throw new UnauthorizedHttpException('CAN_NOT_UPDATE_PLAYER_ROLE');
         }
 
-        if (array_key_exists('room', $data)) {
-            $previousRoom?->removePlayer($player);
+        // If room is about to be updated, keep the reference of the previous one
+        $previousRoom = $player->getRoom();
 
-            if (isset($data['room'])) {
-                $newRoom = $this->roomRepository->find($data['room']);
-                $newRoom?->addPlayer($player);
-            }
+        if (array_key_exists('room', $data)) {
+            $newRoom = $this->roomRepository->find($data['room']);
+
+            $this->changeRoomUseCase->execute($player, $newRoom);
         }
 
         $this->serializer->deserialize(
@@ -164,7 +163,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
         $this->persistenceAdapter->flush();
 
-        $this->eventDispatcher->dispatch(new PlayerUpdatedEvent($player, $previousRoom));
+        $this->eventDispatcher->dispatch(new PlayerUpdatedEvent($player));
 
         $this->hub->publish(new Update(
             sprintf('room/%s', $player->getRoom()),

@@ -101,7 +101,7 @@ class PlayerControllerCest
         $I->seeResponseCodeIsSuccessful();
         $I->seeInRepository(
             Player::class,
-            ['name' => self::PLAYER_NAME, 'status' => PlayerStatus::KILLED->value, 'room' => ['id' => $roomCode]],
+            ['name' => self::PLAYER_NAME, 'status' => PlayerStatus::ALIVE->value, 'room' => ['id' => $roomCode]],
         );
 
         $I->seeResponseCodeIsSuccessful();
@@ -140,9 +140,10 @@ class PlayerControllerCest
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
         $I->sendPatch(sprintf('/player/%s', $playerId), (string) json_encode(['room' => $roomCode]));
+
         $I->seeInRepository(
             Player::class,
-            ['name' => self::PLAYER_NAME, 'status' => PlayerStatus::KILLED->value, 'room' => ['id' => $roomCode]],
+            ['name' => self::PLAYER_NAME, 'status' => PlayerStatus::ALIVE->value, 'room' => ['id' => $roomCode]],
         );
 
         $I->seeResponseCodeIsSuccessful();
