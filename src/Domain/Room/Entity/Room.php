@@ -60,7 +60,7 @@ class Room
     #[Groups(['get-room', 'publish-mercure'])]
     private Collection $missions;
 
-    #[ORM\OneToOne(targetEntity: Player::class)]
+    #[ORM\ManyToOne(targetEntity: Player::class)]
     #[Groups(['get-room', 'publish-mercure'])]
     private ?Player $winner = null;
 
