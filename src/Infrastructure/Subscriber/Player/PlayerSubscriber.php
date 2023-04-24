@@ -7,7 +7,7 @@ namespace App\Infrastructure\Subscriber\Player;
 use App\Application\UseCase\Player\PlayerKilledUseCase;
 use App\Application\UseCase\Player\ResetPlayerUseCase;
 use App\Domain\Player\Event\PlayerKilledEvent;
-use App\Domain\Player\Event\PlayerLeftRoomEvent;
+use App\Domain\Player\Event\PlayerChangedRoomEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
@@ -25,7 +25,7 @@ readonly class PlayerSubscriber implements EventSubscriberInterface
         $this->playerKilledUseCase->execute($playerKilledEvent->getPlayer());
     }
 
-    public function onPlayerLeftRoom(PlayerLeftRoomEvent $playerLeftRoomEvent): void
+    public function onPlayerLeftRoom(PlayerChangedRoomEvent $playerLeftRoomEvent): void
     {
         $player = $playerLeftRoomEvent->getPlayer();
         $previousRoom = $playerLeftRoomEvent->getPreviousRoom();
@@ -41,7 +41,7 @@ readonly class PlayerSubscriber implements EventSubscriberInterface
     {
         return [
             PlayerKilledEvent::class => 'onPlayerKilled',
-            PlayerLeftRoomEvent::class => 'onPlayerLeftRoom',
+            PlayerChangedRoomEvent::class => 'onPlayerLeftRoom',
         ];
     }
 }

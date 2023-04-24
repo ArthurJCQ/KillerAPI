@@ -7,7 +7,7 @@ namespace App\Infrastructure\Subscriber\Player;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Player\Event\PlayerKilledEvent;
-use App\Domain\Player\Event\PlayerLeftRoomEvent;
+use App\Domain\Player\Event\PlayerChangedRoomEvent;
 use App\Domain\Player\Exception\PlayerCanNotJoinRoomException;
 use App\Domain\Player\PasswordRandomizer;
 use App\Domain\Room\Entity\Room;
@@ -33,7 +33,7 @@ final readonly class PlayerDoctrineSubscriber implements EventSubscriberInterfac
             return;
         }
 
-        $this->eventDispatcher->dispatch(new PlayerLeftRoomEvent($player, $player->getRoom()));
+        $this->eventDispatcher->dispatch(new PlayerChangedRoomEvent($player, $player->getRoom()));
     }
 
     public function prePersist(LifecycleEventArgs $args): void
@@ -53,21 +53,6 @@ final readonly class PlayerDoctrineSubscriber implements EventSubscriberInterfac
 
         if (!$player instanceof Player) {
             return;
-        }
-
-        if ($args->hasChangedField('room')) {
-            $previousRoom = $args->getOldValue('room');
-            /** @var ?Room $newRoom */
-            $newRoom =  $args->getNewValue('room');
-
-            if ($newRoom?->getStatus() === Room::IN_GAME) {
-                throw new PlayerCanNotJoinRoomException('ROOM_ALREADY_IN_GAME');
-            }
-
-            if ($previousRoom instanceof Room) {
-                $previousRoom->getPlayers()->count();
-                $this->eventDispatcher->dispatch(new PlayerLeftRoomEvent($player, $previousRoom));
-            }
         }
 
         if ($args->hasChangedField('status') && $args->getNewValue('status') === PlayerStatus::KILLED->value) {

@@ -6,10 +6,11 @@ namespace App\Api\Controller;
 
 use App\Api\Exception\KillerBadRequestHttpException;
 use App\Api\Exception\KillerValidationException;
+use App\Application\UseCase\Player\ChangeRoomUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
+use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
-use App\Domain\Room\Factory\RoomFactory;
 use App\Domain\Room\RoomRepository;
 use App\Domain\Room\RoomWorkflowTransitionInterface;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
@@ -36,7 +37,7 @@ class RoomController extends AbstractController
         private readonly HubInterface $hub,
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
-        private readonly RoomFactory $roomFactory,
+        private readonly ChangeRoomUseCase $changeRoomUseCase,
     ) {
     }
 
@@ -44,7 +45,11 @@ class RoomController extends AbstractController
     #[IsGranted(RoomVoter::CREATE_ROOM)]
     public function createRoom(): JsonResponse
     {
-        $room = $this->roomFactory->create();
+        /** @var Player $player */
+        $player = $this->getUser();
+        $room = (new Room())->setName(sprintf("%s's room", $player->getName()));
+
+        $this->changeRoomUseCase->execute($player, $room);
 
         $this->roomRepository->store($room);
         $this->persistenceAdapter->flush();

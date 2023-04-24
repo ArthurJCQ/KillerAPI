@@ -8,7 +8,7 @@ use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
 use Symfony\Contracts\EventDispatcher\Event;
 
-class PlayerLeftRoomEvent extends Event
+class PlayerChangedRoomEvent extends Event
 {
     public function __construct(protected readonly Player $player, private readonly ?Room $previousRoom)
     {
