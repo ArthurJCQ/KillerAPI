@@ -6,16 +6,20 @@ namespace App\Application\UseCase\Player;
 
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\PlayerUseCase;
-use App\Domain\Room\Entity\Room;
+use App\Infrastructure\Persistence\PersistenceAdapterInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
-class PlayerKilledUseCase implements PlayerUseCase
+class PlayerKilledUseCase implements PlayerUseCase, LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
+    public function __construct(private readonly PersistenceAdapterInterface $persistenceAdapter)
+    {
+    }
+
     public function execute(Player $player): void
     {
-        if ($player->getRoom() === null || $player->getRoom()->getStatus() !== Room::IN_GAME) {
-            return;
-        }
-
         $killer = $player->getKiller();
         $target = $player->getTarget();
         $assignedMission = $player->getAssignedMission();
@@ -26,6 +30,8 @@ class PlayerKilledUseCase implements PlayerUseCase
 
         $player->setTarget(null);
         $player->setAssignedMission(null);
+
+        $this->persistenceAdapter->flush();
 
         $killer->setTarget($target);
         $killer->setAssignedMission($assignedMission);

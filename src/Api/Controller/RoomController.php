@@ -15,14 +15,13 @@ use App\Domain\Room\RoomRepository;
 use App\Domain\Room\RoomWorkflowTransitionInterface;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Infrastructure\Security\Voters\RoomVoter;
+use App\Infrastructure\SSE\SseInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Mercure\HubInterface;
-use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
@@ -34,7 +33,7 @@ class RoomController extends AbstractController
         private readonly RoomRepository $roomRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly RoomWorkflowTransitionInterface $roomStatusTransitionUseCase,
-        private readonly HubInterface $hub,
+        private readonly SseInterface $hub,
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
         private readonly ChangeRoomUseCase $changeRoomUseCase,
@@ -101,10 +100,10 @@ class RoomController extends AbstractController
 
         $this->persistenceAdapter->flush();
 
-        $this->hub->publish(new Update(
+        $this->hub->publish(
             sprintf('room/%s', $room),
             $this->serializer->serialize($room, [AbstractNormalizer::GROUPS => 'publish-mercure']),
-        ));
+        );
 
         return $this->json($room, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'get-room']);
     }
@@ -118,10 +117,10 @@ class RoomController extends AbstractController
 
         $this->persistenceAdapter->flush();
 
-        $this->hub->publish(new Update(
+        $this->hub->publish(
             sprintf('room/%s', $roomCode),
             $this->serializer->serialize((object) []),
-        ));
+        );
 
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }

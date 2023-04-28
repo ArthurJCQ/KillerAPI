@@ -14,13 +14,12 @@ use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Infrastructure\Security\Voters\MissionVoter;
+use App\Infrastructure\SSE\SseInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mercure\HubInterface;
-use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
@@ -30,7 +29,7 @@ class MissionController extends AbstractController
     public function __construct(
         private readonly MissionRepository $missionRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
-        private readonly HubInterface $hub,
+        private readonly SseInterface $hub,
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
     ) {
@@ -63,10 +62,10 @@ class MissionController extends AbstractController
         $this->missionRepository->store($mission);
         $this->persistenceAdapter->flush();
 
-        $this->hub->publish(new Update(
+        $this->hub->publish(
             sprintf('room/%s', $room),
             $this->serializer->serialize($room, [AbstractNormalizer::GROUPS => 'publish-mercure']),
-        ));
+        );
 
         return $this->json($mission, Response::HTTP_CREATED, [], [AbstractNormalizer::GROUPS => 'get-mission']);
     }
@@ -121,13 +120,13 @@ class MissionController extends AbstractController
         /** @var Player $player */
         $player = $this->getUser();
 
-        $this->hub->publish(new Update(
+        $this->hub->publish(
             sprintf('room/%s', $player->getRoom()),
             $this->serializer->serialize(
                 (object) $player->getRoom(),
                 [AbstractNormalizer::GROUPS => 'publish-mercure'],
             ),
-        ));
+        );
 
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }

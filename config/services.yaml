@@ -36,5 +36,5 @@ services:
 
 when@test:
     services:
-        mercure.hub.default:
+        App\Infrastructure\SSE\SseInterface:
             class: App\Tests\Api\Stubs\MercureHubStub
