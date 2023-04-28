@@ -10,6 +10,8 @@ use App\Application\UseCase\Player\ChangeRoomUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Player\Entity\Player;
+use App\Domain\Player\Enum\PlayerStatus;
+use App\Domain\Player\Event\PlayerKilledEvent;
 use App\Domain\Player\Event\PlayerUpdatedEvent;
 use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
@@ -18,6 +20,7 @@ use App\Domain\Room\RoomWorkflowTransitionInterface;
 use App\Infrastructure\Http\Cookie\CookieProvider;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Infrastructure\Security\Voters\PlayerVoter;
+use App\Infrastructure\SSE\SseInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -29,8 +32,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
-use Symfony\Component\Mercure\HubInterface;
-use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
@@ -45,7 +46,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly PlayerRepository $playerRepository,
         private readonly RoomRepository $roomRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
-        private readonly HubInterface $hub,
+        private readonly SseInterface $hub,
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
         private readonly JWTTokenManagerInterface $tokenManager,
@@ -145,6 +146,10 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
             $this->changeRoomUseCase->execute($player, $newRoom);
         }
 
+        if (isset($data['status']) && $data['status'] === PlayerStatus::KILLED->value) {
+            $this->eventDispatcher->dispatch(new PlayerKilledEvent($player));
+        }
+
         $this->serializer->deserialize(
             (string) $request->getContent(),
             Player::class,
@@ -161,23 +166,25 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
             throw new KillerBadRequestHttpException($e->getMessage());
         }
 
+        $this->logger->info('KILLER : player target : {player_target}', ['player_target' => $player->getTarget()]);
+
         $this->persistenceAdapter->flush();
 
         $this->eventDispatcher->dispatch(new PlayerUpdatedEvent($player));
 
-        $this->hub->publish(new Update(
+        $this->hub->publish(
             sprintf('room/%s', $player->getRoom()),
             $this->serializer->serialize(
                 (object) $player->getRoom(),
                 [AbstractNormalizer::GROUPS => 'publish-mercure'],
             ),
-        ));
+        );
 
         if ($previousRoom !== $player->getRoom()) {
-            $this->hub->publish(new Update(
+            $this->hub->publish(
                 sprintf('room/%s', $previousRoom),
                 $this->serializer->serialize((object) $previousRoom, [AbstractNormalizer::GROUPS => 'publish-mercure']),
-            ));
+            );
         }
 
         $this->logger->info('Event mercure sent: post-PATCH for player {user_id}', ['user_id' => $player->getId()]);
@@ -195,10 +202,10 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         if ($room instanceof Room) {
             $this->roomStatusTransitionUseCase->executeTransition($room, Room::ENDED);
         }
-        $this->hub->publish(new Update(
+        $this->hub->publish(
             sprintf('room/%s', $room),
             $this->serializer->serialize((object) $room, [AbstractNormalizer::GROUPS => 'publish-mercure']),
-        ));
+        );
         $this->logger->info('Event mercure sent: post-DELETE for player {user_id}', ['user_id' => $player->getId()]);
 
         $this->security->logout(validateCsrfToken: false);

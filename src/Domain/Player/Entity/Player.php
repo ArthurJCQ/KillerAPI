@@ -183,14 +183,10 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setTarget(?Player $target): self
     {
-        if ($this->target instanceof self && !$target) {
-            $this->target->setKiller(null);
-            $this->setKiller(null);
-        }
+        $this->target?->setKiller(null);
 
-        if ($target instanceof self) {
-            $target->setKiller($this);
-        }
+        // New target for the player
+        $target?->setKiller($this);
 
         $this->target = $target;
 

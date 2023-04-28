@@ -8,29 +8,26 @@ use App\Application\UseCase\Player\PlayerKilledUseCase;
 use App\Domain\Mission\Entity\Mission;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
+use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use Codeception\Stub\Expected;
+use Prophecy\PhpUnit\ProphecyTrait;
+use Prophecy\Prophecy\ObjectProphecy;
 
 class PlayerKilledUseCaseTest extends \Codeception\Test\Unit
 {
+    use ProphecyTrait;
+
+    /** @var PersistenceAdapterInterface|ObjectProphecy */
+    private ObjectProphecy $persistenceAdapter;
+
     private PlayerKilledUseCase $playerKilledUseCase;
 
     protected function setUp(): void
     {
-        $this->playerKilledUseCase = new PlayerKilledUseCase();
+        $this->persistenceAdapter = $this->prophesize(PersistenceAdapterInterface::class);
+        $this->playerKilledUseCase = new PlayerKilledUseCase($this->persistenceAdapter->reveal());
 
         parent::setUp();
-    }
-
-    public function testPlayerHasNoRoom(): void
-    {
-        $player = $this->make(Player::class, [
-            'getRoom' => Expected::once(),
-            'getKiller' => Expected::never(),
-            'getTarget' => Expected::never(),
-            'getAssignedMission' => Expected::never(),
-        ]);
-
-        $this->playerKilledUseCase->execute($player);
     }
 
     public function testKillPlayer(): void
@@ -44,12 +41,7 @@ class PlayerKilledUseCaseTest extends \Codeception\Test\Unit
 
         $target = $this->make(Player::class);
 
-        $room = $this->make(Room::class, [
-           'getStatus' => Expected::once(Room::IN_GAME),
-        ]);
-
         $player = $this->make(Player::class, [
-            'getRoom' => Expected::exactly(2, $room),
             'getKiller' => Expected::once($killer),
             'getTarget' => Expected::once($target),
             'getAssignedMission' => Expected::once($mission),
