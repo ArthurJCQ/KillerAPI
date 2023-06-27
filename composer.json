@@ -36,7 +36,7 @@
         "symfony/requirements-checker": "^2.0",
         "symfony/runtime": "^6.2.0",
         "symfony/security-bundle": "6.2.*",
-        "symfony/serializer": "6.2.*",
+        "symfony/serializer": "6.3.*",
         "symfony/validator": "6.2.*",
         "symfony/workflow": "6.2.*",
         "symfony/yaml": "^6.2.0"
