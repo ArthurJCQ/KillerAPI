@@ -17,11 +17,11 @@ phpstan-ci: prepare-ci
 
 .PHONY: phpcs
 phpcs:
-	vendor/bin/phpcs -sp --standard=phpcs.xml --extensions=php --ignore=*/tests/bootstrap.php src tests
+	vendor/bin/phpcs -sp --standard=phpcs.xml.dist --extensions=php --ignore=*/tests/bootstrap.php src tests
 
 .PHONY: phpcs-ci
 phpcs-ci: prepare-ci
-	vendor/bin/phpcs -sp --report=checkstyle --report-file=$(REPORTS_DIR)/phpcs.xml --standard=phpcs.xml --extensions=php --ignore=*/tests/bootstrap.php src tests
+	vendor/bin/phpcs -sp --report=checkstyle --report-file=$(REPORTS_DIR)/phpcs.xml --standard=phpcs.xml.dist --extensions=php --ignore=*/tests/bootstrap.php src tests
 
 .PHONY: unit-tests
 unit-tests:
