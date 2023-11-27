@@ -143,6 +143,10 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         if (array_key_exists('room', $data)) {
             $newRoom = $this->roomRepository->find($data['room']);
 
+            if (!$newRoom && $data['room'] !== null) {
+                throw $this->createNotFoundException('ROOM_NOT_FOUND');
+            }
+
             $this->changeRoomUseCase->execute($player, $newRoom);
         }
 

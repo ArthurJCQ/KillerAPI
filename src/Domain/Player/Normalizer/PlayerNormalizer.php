@@ -46,6 +46,7 @@ readonly class PlayerNormalizer implements NormalizerInterface
         $normalizedPlayer['target'] = [
             'id' => $normalizedPlayer['target']['id'],
             'name' => $normalizedPlayer['target']['name'],
+            'avatar' => $normalizedPlayer['target']['avatar'],
         ];
 
         return $normalizedPlayer;

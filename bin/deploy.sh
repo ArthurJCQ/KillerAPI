@@ -17,7 +17,7 @@ RELEASE=KillerAPI-$versionNumber
 
 APP_PATH=/var/www/api-killerparty
 
-rsync -av --exclude={'config/secrets','config/jwt','tests','deploy.yaml','codeception.yml','docker-compose.yml','phpcs.xml','phpstan.neon','phpunit.xml.dist'} $RELEASE/ $APP_PATH/
+rsync -av --exclude={'config/secrets','config/jwt','tests','deploy.yaml','codeception.yml','docker-compose.yml','phpcs.xml.dist','phpstan.neon','phpunit.xml.dist'} $RELEASE/ $APP_PATH/
 
 rm -rf $RELEASE
 
