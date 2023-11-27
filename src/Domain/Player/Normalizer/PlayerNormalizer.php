@@ -33,6 +33,7 @@ readonly class PlayerNormalizer implements NormalizerInterface
                 [
                     'id' => $object->getId(),
                     'name' => $object->getName(),
+                    'avatar' => $object->getAvatar(),
                 ]],
         );
 
@@ -41,7 +42,6 @@ readonly class PlayerNormalizer implements NormalizerInterface
         if (!isset($normalizedPlayer['target']) || !$object->getTarget()) {
             return $normalizedPlayer;
         }
-
 
         $normalizedPlayer['target'] = [
             'id' => $normalizedPlayer['target']['id'],

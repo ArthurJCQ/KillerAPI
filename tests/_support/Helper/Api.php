@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Helper;
 
+use App\Domain\Player\Entity\Player;
 use App\Tests\ApiTester;
 use Codeception\Module;
 

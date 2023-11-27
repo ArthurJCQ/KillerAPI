@@ -175,6 +175,7 @@ class RoomControllerCest
                 'name' => 'Admin',
                 'room' => ['id' => $room->getId()],
                 'status' => PlayerStatus::ALIVE->value,
+                'target' => ['avatar' => Player::DEFAULT_AVATAR],
             ],
         );
     }
@@ -363,6 +364,7 @@ class RoomControllerCest
             'name' => 'Doe',
             'status' => PlayerStatus::ALIVE->value,
             'assignedMission' => ['content' => 'mission'],
+            'target' => ['avatar' => Player::DEFAULT_AVATAR],
         ]);
 
         $I->sendPatch(sprintf('/player/%s', $player2Id), (string) json_encode(['status' => PlayerStatus::KILLED]));
