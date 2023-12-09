@@ -36,7 +36,7 @@ readonly class KillerProblemNormalizer implements NormalizerInterface, Cacheable
         return $normalizedException;
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
     {
         return $this->inner->supportsNormalization($data, $format);
     }
