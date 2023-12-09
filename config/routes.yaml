@@ -1,3 +1,4 @@
 controllers:
     resource: ../src/Api/Controller/
+    namespace: App\Api\Controller
     type: attribute
