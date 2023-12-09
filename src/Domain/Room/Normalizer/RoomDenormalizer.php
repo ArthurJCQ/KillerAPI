@@ -28,4 +28,9 @@ final readonly class RoomDenormalizer implements DenormalizerInterface
     {
         return $type === Room::class && is_string($data);
     }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return ['string' => true];
+    }
 }

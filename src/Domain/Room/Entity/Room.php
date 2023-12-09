@@ -25,7 +25,7 @@ class Room
 
     #[ORM\Id]
     #[ORM\Column(type: 'string', length: 5, unique: true)]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\GeneratedValue(strategy: 'SEQUENCE')]
     #[ORM\CustomIdGenerator(RoomIdGenerator::class)]
     #[Assert\Length(exactly: 5)]
     #[Groups(['get-player', 'get-room', 'get-mission', 'me', 'publish-mercure', 'patch-player'])]

@@ -26,7 +26,7 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Id]
     #[ORM\Column(type: 'integer', unique: true)]
-    #[ORM\GeneratedValue(strategy: "AUTO")]
+    #[ORM\GeneratedValue(strategy: 'SEQUENCE')]
     #[Groups(['get-player', 'create-player', 'get-room', 'get-mission', 'me', 'publish-mercure'])]
     private int $id;
 
@@ -60,7 +60,6 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     private ?Room $room = null;
 
     #[ORM\OneToOne(mappedBy: 'killer', targetEntity: self::class, cascade: ['persist'])]
-    #[ORM\JoinColumn(name: 'player_target')]
     #[Groups(['me'])]
     #[MaxDepth(1)]
     private ?Player $target = null;

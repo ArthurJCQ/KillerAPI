@@ -7,12 +7,14 @@ namespace App\Infrastructure\Subscriber\Player;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Event\PlayerChangedRoomEvent;
 use App\Domain\Player\PasswordRandomizer;
-use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-final readonly class PlayerDoctrineSubscriber implements EventSubscriberInterface
+#[AsDoctrineListener(event: Events::preRemove)]
+#[AsDoctrineListener(event: Events::prePersist)]
+final readonly class PlayerDoctrineSubscriber
 {
     public function __construct(
         private PasswordRandomizer $randomizePassword,
@@ -40,10 +42,5 @@ final readonly class PlayerDoctrineSubscriber implements EventSubscriberInterfac
         }
 
         $this->randomizePassword->generate($player);
-    }
-
-    public function getSubscribedEvents(): array
-    {
-        return [Events::preRemove, Events::prePersist];
     }
 }
