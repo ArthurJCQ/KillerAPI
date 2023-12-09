@@ -4,23 +4,31 @@ doctrine:
 
         # IMPORTANT: You MUST configure your server version,
         # either here or in the DATABASE_URL env var (see .env file)
-        #server_version: '13'
+        #server_version: '15'
+
+        profiling_collect_backtrace: '%kernel.debug%'
     orm:
         auto_generate_proxy_classes: true
+        enable_lazy_ghost_objects: true
+        report_fields_where_declared: true
+        validate_xml_mapping: true
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
         auto_mapping: true
         mappings:
             App\Domain\Room\Entity\Room:
+                type: attribute
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Domain/Room/Entity'
                 prefix: 'App\Domain\Room\Entity'
                 alias: App\Domain\Room
             App\Domain\Player\Entity\Player:
+                type: attribute
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Domain/Player/Entity'
                 prefix: 'App\Domain\Player\Entity'
                 alias: App\Domain\Player
             App\Domain\Mission\Entity\Mission:
+                type: attribute
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Domain/Mission/Entity'
                 prefix: 'App\Domain\Mission\Entity'
@@ -37,6 +45,7 @@ when@prod:
     doctrine:
         orm:
             auto_generate_proxy_classes: false
+            proxy_dir: '%kernel.build_dir%/doctrine/orm/Proxies'
             query_cache_driver:
                 type: pool
                 pool: doctrine.system_cache_pool
