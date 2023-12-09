@@ -6,15 +6,14 @@ namespace App\Infrastructure\Serializer;
 
 use App\Api\Exception\KillerHttpException;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
-use Symfony\Component\DependencyInjection\Attribute\MapDecorated;
-use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ProblemNormalizer;
 
 #[AsDecorator(decorates: ProblemNormalizer::class)]
-readonly class KillerProblemNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
+readonly class KillerProblemNormalizer implements NormalizerInterface
 {
-    public function __construct(#[MapDecorated] private ProblemNormalizer $inner)
+    public function __construct(#[AutowireDecorated] private ProblemNormalizer $inner)
     {
     }
 
@@ -36,13 +35,13 @@ readonly class KillerProblemNormalizer implements NormalizerInterface, Cacheable
         return $normalizedException;
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
     {
         return $this->inner->supportsNormalization($data, $format);
     }
 
-    public function hasCacheableSupportsMethod(): bool
+    public function getSupportedTypes(?string $format): array
     {
-        return $this->inner->hasCacheableSupportsMethod();
+        return $this->inner->getSupportedTypes($format);
     }
 }

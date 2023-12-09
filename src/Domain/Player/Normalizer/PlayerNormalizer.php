@@ -57,4 +57,9 @@ readonly class PlayerNormalizer implements NormalizerInterface
     {
         return $data instanceof Player;
     }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [Player::class  => true];
+    }
 }

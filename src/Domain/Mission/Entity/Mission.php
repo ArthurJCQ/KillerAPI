@@ -17,7 +17,7 @@ class Mission
 {
     #[ORM\Id]
     #[ORM\Column(type: 'integer', unique: true)]
-    #[ORM\GeneratedValue(strategy: "AUTO")]
+    #[ORM\GeneratedValue(strategy: 'SEQUENCE')]
     #[Groups(['get-player', 'get-room', 'get-mission', 'me', 'publish-mercure'])]
     private int $id;
 
