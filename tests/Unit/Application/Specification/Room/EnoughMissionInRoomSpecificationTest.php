@@ -42,9 +42,9 @@ class EnoughMissionInRoomSpecificationTest extends \Codeception\Test\Unit
         $player3 = $this->prophesize(Player::class);
 
         $room = $this->prophesize(Room::class);
-        $room->getPlayers()
+        $room->getAlivePlayers()
             ->shouldBeCalledOnce()
-            ->willReturn(new ArrayCollection([$player1->reveal(), $player2->reveal(), $player3->reveal()]));
+            ->willReturn([$player1->reveal(), $player2->reveal(), $player3->reveal()]);
         $room->getMissions()->shouldBeCalledOnce()->willReturn(new ArrayCollection([
             $mission1->reveal(),
             $mission2->reveal(),

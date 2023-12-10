@@ -19,6 +19,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -36,8 +37,10 @@ class MissionController extends AbstractController
     }
 
     #[Route(name: 'create_mission', methods: [Request::METHOD_POST])]
-    public function createMission(Request $request): JsonResponse
-    {
+    #[IsGranted(MissionVoter::CREATE_MISSION, message: 'CREATE_MISSION_UNAUTHORIZED')]
+    public function createMission(
+        #[MapRequestPayload(serializationContext: [AbstractNormalizer::GROUPS => 'post-mission'])] Mission $mission,
+    ): JsonResponse {
         /** @var Player $player */
         $player = $this->getUser();
         $room = $player->getRoom();
@@ -46,18 +49,7 @@ class MissionController extends AbstractController
             throw new KillerBadRequestHttpException('CAN_NOT_ADD_MISSIONS');
         }
 
-        $mission = $this->serializer->deserialize(
-            (string) $request->getContent(),
-            Mission::class,
-            [AbstractNormalizer::GROUPS => 'post-mission'],
-        );
         $player->addAuthoredMission($mission);
-
-        try {
-            $this->validator->validate($mission);
-        } catch (KillerValidationException $e) {
-            throw new KillerBadRequestHttpException($e->getMessage());
-        }
 
         $this->missionRepository->store($mission);
         $this->persistenceAdapter->flush();
@@ -71,14 +63,14 @@ class MissionController extends AbstractController
     }
 
     #[Route('/{id}', name: 'get-mission', methods: [Request::METHOD_GET])]
-    #[IsGranted(MissionVoter::VIEW_MISSION, subject: 'mission')]
+    #[IsGranted(MissionVoter::VIEW_MISSION, subject: 'mission', message: 'VIEW_MISSION_UNAUTHORIZED')]
     public function getMission(Mission $mission): JsonResponse
     {
         return $this->json($mission, Response::HTTP_OK, [AbstractNormalizer::GROUPS => 'get-mission']);
     }
 
     #[Route('/{id}', name: 'patch_mission', methods: [Request::METHOD_PATCH])]
-    #[IsGranted(MissionVoter::EDIT_MISSION, subject: 'mission')]
+    #[IsGranted(MissionVoter::EDIT_MISSION, subject: 'mission', message: 'EDIT_MISSION_UNAUTHORIZED')]
     public function patchMission(Request $request, Mission $mission): JsonResponse
     {
         $this->serializer->deserialize(
@@ -110,7 +102,7 @@ class MissionController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete_mission', methods: [Request::METHOD_DELETE])]
-    #[IsGranted(MissionVoter::EDIT_MISSION, subject: 'mission')]
+    #[IsGranted(MissionVoter::EDIT_MISSION, subject: 'mission', message: 'DELETE_MISSION_UNAUTHORIZED')]
     public function deleteMission(Mission $mission): JsonResponse
     {
         $this->missionRepository->remove($mission);

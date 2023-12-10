@@ -29,6 +29,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Routing\Annotation\Route;
@@ -58,20 +59,9 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
     }
 
     #[Route(name: 'create_player', methods: [Request::METHOD_POST])]
-    public function createPlayer(Request $request): JsonResponse
-    {
-        $player = $this->serializer->deserialize(
-            (string) $request->getContent(),
-            Player::class,
-            [AbstractNormalizer::GROUPS => 'post-player'],
-        );
-
-        try {
-            $this->validator->validate($player);
-        } catch (KillerValidationException $e) {
-            throw new KillerBadRequestHttpException($e->getMessage());
-        }
-
+    public function createPlayer(
+        #[MapRequestPayload(serializationContext: [AbstractNormalizer::GROUPS => 'post-player'])] Player $player,
+    ): JsonResponse {
         $this->playerRepository->store($player);
         $this->persistenceAdapter->flush();
 
@@ -121,11 +111,15 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
     #[Route('/{id}', name: 'get_player', methods: [Request::METHOD_GET])]
     public function getPlayerById(Player $player): JsonResponse
     {
-        return $this->json($player, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'get-player']);
+        $serializationGroups = $this->security->isGranted('ROLE_MASTER')
+            ? ['get-player-master', 'get-player']
+            : 'get-player';
+
+        return $this->json($player, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => $serializationGroups]);
     }
 
     #[Route('/{id}', name: 'patch_player', methods: [Request::METHOD_PATCH])]
-    #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player')]
+    #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player', message: 'EDIT_PLAYER_UNAUTHORIZED')]
     public function patchPlayer(Request $request, Player $player): JsonResponse
     {
         $data = $request->toArray();
@@ -194,7 +188,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
     }
 
     #[Route('/{id}', name: 'delete_player', methods: [Request::METHOD_DELETE])]
-    #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player')]
+    #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player', message: 'DELETE_PLAYER_UNAUTHORIZED')]
     public function deletePlayer(Player $player): JsonResponse
     {
         $room = $player->getRoom();
@@ -213,6 +207,6 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         $this->playerRepository->remove($player);
         $this->persistenceAdapter->flush();
 
-        return $this->json(null, Response::HTTP_NO_CONTENT);
+        return $this->json(null, Response::HTTP_OK);
     }
 }

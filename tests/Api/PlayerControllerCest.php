@@ -16,7 +16,7 @@ class PlayerControllerCest
     public function _before(ApiTester $I): void
     {
         $I->createAdminAndUpdateHeaders($I);
-        $I->sendPost('room');
+        $I->sendPostAsJson('room');
         $I->seeInRepository(Room::class, ['name' => 'Admin\'s room']);
 
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
@@ -28,7 +28,7 @@ class PlayerControllerCest
     {
         $I->seeInRepository(Player::class, ['name' => self::PLAYER_NAME]);
 
-        $I->canSeeResponseContainsJson(
+        $I->seeResponseContainsJson(
             [
                 'name' => self::PLAYER_NAME,
                 'room' => null,
@@ -37,9 +37,9 @@ class PlayerControllerCest
         );
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
-        $I->sendGet('player/me');
+        $I->sendGetAsJson('player/me');
 
-        $I->canSeeResponseContainsJson(
+        $I->seeResponseContainsJson(
             [
                 'name' => self::PLAYER_NAME,
                 'room' => null,
@@ -54,11 +54,11 @@ class PlayerControllerCest
         $playerId = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
-        $I->sendPatch(sprintf('/player/%s', $playerId), (string) json_encode(['name' => 'Hey']));
+        $I->sendPatchAsJson(sprintf('/player/%s', $playerId), ['name' => 'Hey']);
         $I->seeInRepository(Player::class, ['name' => 'Hey']);
         $I->dontSeeInRepository(Player::class, ['name' => self::PLAYER_NAME]);
 
-        $I->canSeeResponseContainsJson(
+        $I->seeResponseContainsJson(
             [
                 'name' => 'Hey',
                 'status' => PlayerStatus::ALIVE->value
@@ -73,7 +73,7 @@ class PlayerControllerCest
         $playerId = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
-        $I->sendPatch(sprintf('/player/%s', $playerId), (string) json_encode(['room' => $code]));
+        $I->sendPatchAsJson(sprintf('/player/%s', $playerId), ['room' => $code]);
 
         $I->seeInRepository(Player::class, ['name' => self::PLAYER_NAME, 'room' => ['id' => $code]]);
 
@@ -97,7 +97,7 @@ class PlayerControllerCest
         $I->flushToDatabase();
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
-        $I->sendPatch(sprintf('/player/%s', $playerId), (string) json_encode(['room' => $roomCode]));
+        $I->sendPatchAsJson(sprintf('/player/%s', $playerId), ['room' => $roomCode]);
         $I->seeResponseCodeIsSuccessful();
         $I->seeInRepository(
             Player::class,
@@ -106,9 +106,9 @@ class PlayerControllerCest
 
         $I->seeResponseCodeIsSuccessful();
 
-        $I->sendPost('/mission', (string) json_encode(['content' => 'coucou']));
+        $I->sendPostAsJson('/mission', ['content' => 'coucou']);
 
-        $I->sendPatch(sprintf('/player/%s', $playerId), (string) json_encode(['room' => null]));
+        $I->sendPatchAsJson(sprintf('/player/%s', $playerId), ['room' => null]);
         $I->seeInRepository(Player::class, [
             'name' => self::PLAYER_NAME,
             'status' => PlayerStatus::ALIVE->value,
@@ -117,7 +117,7 @@ class PlayerControllerCest
         $I->seeResponseCodeIsSuccessful();
 
         $I->setAdminJwtHeader($I);
-        $I->sendGet(sprintf('/room/%s', $roomCode));
+        $I->sendGetAsJson(sprintf('/room/%s', $roomCode));
         $I->seeResponseContainsJson([
             'missions' => [],
         ]);
@@ -139,7 +139,7 @@ class PlayerControllerCest
         $I->flushToDatabase();
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
-        $I->sendPatch(sprintf('/player/%s', $playerId), (string) json_encode(['room' => $roomCode]));
+        $I->sendPatchAsJson(sprintf('/player/%s', $playerId), ['room' => $roomCode]);
 
         $I->seeInRepository(
             Player::class,
@@ -148,7 +148,7 @@ class PlayerControllerCest
 
         $I->seeResponseCodeIsSuccessful();
 
-        $I->sendDelete(sprintf('/player/%s', $playerId));
+        $I->sendDeleteAsJson(sprintf('/player/%s', $playerId));
         $I->dontSeeInRepository(Player::class, ['name' => self::PLAYER_NAME]);
 
         $I->seeResponseCodeIsSuccessful();

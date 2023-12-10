@@ -56,6 +56,7 @@ final readonly class RoomNormalizer implements NormalizerInterface
         return $data instanceof Room;
     }
 
+    /** @return array<'*'|'object'|string, bool|null> */
     public function getSupportedTypes(?string $format): array
     {
         return [Room::class => true];

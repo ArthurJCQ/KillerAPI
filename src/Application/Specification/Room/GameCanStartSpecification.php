@@ -18,6 +18,11 @@ final readonly class GameCanStartSpecification implements RoomSpecification
 
     public function isSatisfiedBy(Room $room): bool
     {
+        if ($room->isGameMastered()) {
+            return $this->enoughPlayerInRoomSpecification->isSatisfiedBy($room)
+                && $this->enoughMissionInRoomSpecification->isSatisfiedBy($room);
+        }
+
         return $this->enoughPlayerInRoomSpecification->isSatisfiedBy($room)
             && $this->enoughMissionInRoomSpecification->isSatisfiedBy($room)
             && $this->allPlayersAddedMissionSpecification->isSatisfiedBy($room);

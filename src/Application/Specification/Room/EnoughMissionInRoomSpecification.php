@@ -18,7 +18,7 @@ class EnoughMissionInRoomSpecification implements RoomSpecification
     // Also, at least 2 players must have added missions.
     public function isSatisfiedBy(Room $room): bool
     {
-        $players = $room->getPlayers();
+        $players = $room->getAlivePlayers();
 
         $playersWithAuthoredMissions = $this->missionRepository->getMissionAuthorsByRoom($room);
 

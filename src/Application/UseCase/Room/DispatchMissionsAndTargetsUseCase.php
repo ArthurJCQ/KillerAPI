@@ -17,7 +17,7 @@ class DispatchMissionsAndTargetsUseCase implements RoomUseCase, LoggerAwareInter
 
     public function execute(Room $room): void
     {
-        $players = $room->getPlayers()->toArray();
+        $players = $room->getAlivePlayers();
 
         // Shuffle array for a more random dispatch.
         shuffle($players);
