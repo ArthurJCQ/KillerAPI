@@ -11,7 +11,6 @@ use App\Domain\Room\Entity\Room;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
@@ -20,7 +19,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[PlayerCanRename]
-class Player implements UserInterface, PasswordAuthenticatedUserInterface
+class Player implements UserInterface
 {
     public const DEFAULT_AVATAR = 'captain';
 
@@ -67,9 +66,6 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(inversedBy: 'target', targetEntity: self::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'player_killer')]
     private ?Player $killer = null;
-
-    #[ORM\Column(type: 'string')]
-    private string $password;
 
     /** @var Collection<int, Mission> */
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: Mission::class)]
@@ -200,19 +196,6 @@ class Player implements UserInterface, PasswordAuthenticatedUserInterface
     public function setKiller(?Player $killer): self
     {
         $this->killer = $killer;
-
-        return $this;
-    }
-
-    /** @see PasswordAuthenticatedUserInterface */
-    public function getPassword(): string
-    {
-        return $this->password;
-    }
-
-    public function setPassword(string $password): self
-    {
-        $this->password = $password;
 
         return $this;
     }

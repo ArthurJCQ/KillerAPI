@@ -66,9 +66,6 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
             [AbstractNormalizer::GROUPS => 'post-player'],
         );
 
-        // random password is set on prePersist event. Here is just for validation. To remove if possible.
-        $player->setPassword('tempP@$$w0rd');
-
         try {
             $this->validator->validate($player);
         } catch (KillerValidationException $e) {
