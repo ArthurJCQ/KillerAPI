@@ -18,7 +18,9 @@
 .phpunit.result.cache
 ###< phpunit/phpunit ###
 
+### misc ###
 build
+.DS_Store
 
 ###> symfony/phpunit-bridge ###
 .phpunit.result.cache
