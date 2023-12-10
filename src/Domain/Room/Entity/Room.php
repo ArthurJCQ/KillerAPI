@@ -32,7 +32,7 @@ class Room
     private string $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['get-room', 'me', 'post-room', 'patch-room', 'publish-mercure'])]
+    #[Groups(['get-room', 'me', 'patch-room', 'publish-mercure'])]
     #[Assert\Length(min: 2, max: 50, minMessage: 'TOO_SHORT_CONTENT', maxMessage: 'TOO_LONG_CONTENT')]
     private string $name;
 
@@ -63,6 +63,10 @@ class Room
     #[ORM\ManyToOne(targetEntity: Player::class)]
     #[Groups(['get-room', 'publish-mercure'])]
     private ?Player $winner = null;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    #[Groups(['get-room', 'publish-mercure', 'me'])]
+    private bool $isGameMastered = false;
 
     public function __construct()
     {
@@ -114,8 +118,8 @@ class Room
         return $this->players;
     }
 
-    /** @return ?array<int, Player> */
-    public function getAlivePlayers(): ?array
+    /** @return array<int, Player> */
+    public function getAlivePlayers(): array
     {
         return array_values(
             array_filter($this->players->toArray(), static fn (Player $player) =>
@@ -236,6 +240,18 @@ class Room
     public function setWinner(?Player $winner): self
     {
         $this->winner = $winner;
+
+        return $this;
+    }
+
+    public function isGameMastered(): bool
+    {
+        return $this->isGameMastered;
+    }
+
+    public function setIsGameMastered(bool $isGameMastered): self
+    {
+        $this->isGameMastered = $isGameMastered;
 
         return $this;
     }

@@ -15,6 +15,6 @@ class RoomCanBeEnded implements RoomSpecification
             return false;
         }
 
-        return \count($room->getAlivePlayers() ?? []) <= 1 || $room->getDateEnd() < new \DateTime();
+        return \count($room->getAlivePlayers()) <= 1 || $room->getDateEnd() < new \DateTime();
     }
 }

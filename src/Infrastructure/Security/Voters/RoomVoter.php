@@ -36,32 +36,27 @@ class RoomVoter extends Voter
             return false;
         }
 
-        /** @var Room $room */
-        $room = $subject;
-
         return match ($attribute) {
-            self::VIEW_ROOM => $this->canView($room, $player),
-            self::EDIT_ROOM => $this->canEdit($room, $player),
+            self::VIEW_ROOM => $this->canView($subject, $player),
+            self::EDIT_ROOM => $this->canEdit($subject, $player),
             self::CREATE_ROOM => $this->canCreate($player),
             default => throw new \LogicException('This code should not be reached'),
         };
     }
 
-    private function canView(Room $room, Player $player): bool
+    private function canView(mixed $room, Player $player): bool
     {
-        return $room->getStatus() === Room::ENDED
-            || in_array($player, $room->getPlayers()->toArray(), true);
+        return $room instanceof Room
+            && ($room->getStatus() === Room::ENDED || in_array($player, $room->getPlayers()->toArray(), true));
     }
 
-    private function canEdit(Room $room, Player $player): bool
+    private function canEdit(mixed $room, Player $player): bool
     {
-        return $room->getAdmin() === $player;
+        return $room instanceof Room && $room->getAdmin() === $player;
     }
 
     private function canCreate(Player $player): bool
     {
-        return true;
-        // TODO : Implements some security checks here ?
-//        return !$player->getRoom() || $player->getRoom()->getStatus() === Room::PENDING;
+        return !$player->getRoom();
     }
 }

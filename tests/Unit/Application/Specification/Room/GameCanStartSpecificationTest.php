@@ -38,6 +38,8 @@ class GameCanStartSpecificationTest extends \Codeception\Test\Unit
     {
         $room = $this->prophesize(Room::class);
 
+        $room->isGameMastered()->shouldBeCalledOnce()->willReturn(false);
+
         $this->enoughPlayerInRoomSpecification
             ->isSatisfiedBy($room->reveal())
             ->shouldBeCalledOnce()
@@ -54,9 +56,32 @@ class GameCanStartSpecificationTest extends \Codeception\Test\Unit
         $this->assertTrue($this->gameCanStartSpecification->isSatisfiedBy($room->reveal()));
     }
 
+    public function testIsSatisfiedForMasteredRoom(): void
+    {
+        $room = $this->prophesize(Room::class);
+
+        $room->isGameMastered()->shouldBeCalledOnce()->willReturn(true);
+
+        $this->enoughPlayerInRoomSpecification
+            ->isSatisfiedBy($room->reveal())
+            ->shouldBeCalledOnce()
+            ->willReturn(true);
+        $this->enoughMissionInRoomSpecification
+            ->isSatisfiedBy($room->reveal())
+            ->shouldBeCalledOnce()
+            ->willReturn(true);
+        $this->allPlayersAddedMissionSpecification
+            ->isSatisfiedBy($room->reveal())
+            ->shouldNotBeCalled();
+
+        $this->assertTrue($this->gameCanStartSpecification->isSatisfiedBy($room->reveal()));
+    }
+
     public function testIsNotSatisfiedByPlayers(): void
     {
         $room = $this->prophesize(Room::class);
+
+        $room->isGameMastered()->shouldBeCalledOnce()->willReturn(false);
 
         $this->enoughPlayerInRoomSpecification
             ->isSatisfiedBy($room->reveal())
@@ -76,6 +101,8 @@ class GameCanStartSpecificationTest extends \Codeception\Test\Unit
     {
         $room = $this->prophesize(Room::class);
 
+        $room->isGameMastered()->shouldBeCalledOnce()->willReturn(false);
+
         $this->enoughPlayerInRoomSpecification
             ->isSatisfiedBy($room->reveal())
             ->shouldBeCalledOnce()
@@ -94,6 +121,8 @@ class GameCanStartSpecificationTest extends \Codeception\Test\Unit
     public function testIsNotSatisfiedByPlayerMissions(): void
     {
         $room = $this->prophesize(Room::class);
+
+        $room->isGameMastered()->shouldBeCalledOnce()->willReturn(false);
 
         $this->enoughPlayerInRoomSpecification
             ->isSatisfiedBy($room->reveal())

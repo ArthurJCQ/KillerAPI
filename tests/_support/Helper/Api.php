@@ -16,7 +16,7 @@ class Api extends Module
 
     public function createPlayerAndUpdateHeaders(ApiTester $I, string $name): void
     {
-        $response = json_decode($I->sendPost('/player', (string) json_encode(['name' => $name])), true);
+        $response = $I->sendPostAsJson('/player', ['name' => $name]);
 
         if (!is_array($response) || !isset($response['token'])) {
             return;
@@ -28,7 +28,7 @@ class Api extends Module
 
     public function createAdminAndUpdateHeaders(ApiTester $I): void
     {
-        $response = json_decode($I->sendPost('/player', (string) json_encode(['name' => self::ADMIN])), true);
+        $response = $I->sendPostAsJson('/player', ['name' => self::ADMIN]);
 
         if (!is_array($response) || !isset($response['token'])) {
             return;

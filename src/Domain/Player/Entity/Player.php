@@ -59,7 +59,7 @@ class Player implements UserInterface
     private ?Room $room = null;
 
     #[ORM\OneToOne(mappedBy: 'killer', targetEntity: self::class, cascade: ['persist'])]
-    #[Groups(['me'])]
+    #[Groups(['me', 'get-player-master', 'get-room-master'])]
     #[MaxDepth(1)]
     private ?Player $target = null;
 
@@ -73,7 +73,7 @@ class Player implements UserInterface
 
     #[ORM\OneToOne(targetEntity: Mission::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'user_assigned_mission')]
-    #[Groups(['me'])]
+    #[Groups(['me', 'get-player-master', 'get-room-master'])]
     private ?Mission $assignedMission = null;
 
     #[ORM\Column(type: 'string', options: ['default' => self::DEFAULT_AVATAR])]

@@ -12,8 +12,8 @@ class EnoughPlayerInRoomSpecification implements RoomSpecification
     // 3 players at least are needed in order to start the game
     public function isSatisfiedBy(Room $room): bool
     {
-        $players = $room->getPlayers();
+        $players = $room->getAlivePlayers();
 
-        return $players->count() > 2;
+        return \count($players) > 2;
     }
 }

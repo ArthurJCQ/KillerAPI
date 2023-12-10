@@ -31,6 +31,7 @@ security:
 
     role_hierarchy:
         ROLE_ADMIN: ROLE_USER
+        ROLE_MASTER: ROLE_ADMIN
 
 
     # Easy way to control access for large sections of your site

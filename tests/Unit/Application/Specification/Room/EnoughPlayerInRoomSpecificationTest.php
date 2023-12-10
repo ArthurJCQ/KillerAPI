@@ -28,9 +28,9 @@ class EnoughPlayerInRoomSpecificationTest extends \Codeception\Test\Unit
         $player3 = $this->prophesize(Player::class);
 
         $room = $this->prophesize(Room::class);
-        $room->getPlayers()
+        $room->getAlivePlayers()
             ->shouldBeCalledOnce()
-            ->willReturn(new ArrayCollection([$player1->reveal(), $player2->reveal(), $player3->reveal()]));
+            ->willReturn([$player1->reveal(), $player2->reveal(), $player3->reveal()]);
 
         $this->assertTrue($this->enoughPlayerInRoomSpecification->isSatisfiedBy($room->reveal()));
     }

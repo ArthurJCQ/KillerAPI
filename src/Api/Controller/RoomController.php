@@ -10,6 +10,7 @@ use App\Application\UseCase\Player\ChangeRoomUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Player\Entity\Player;
+use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
 use App\Domain\Room\RoomWorkflowTransitionInterface;
@@ -29,6 +30,8 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 #[Route('/room', format: 'json')]
 class RoomController extends AbstractController
 {
+    public const IS_GAME_MASTER_ROOM = 'is_game_mastered_room';
+
     public function __construct(
         private readonly RoomRepository $roomRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
@@ -41,14 +44,25 @@ class RoomController extends AbstractController
     }
 
     #[Route(name: 'create_room', methods: [Request::METHOD_POST])]
-    #[IsGranted(RoomVoter::CREATE_ROOM)]
-    public function createRoom(): JsonResponse
+    #[IsGranted(RoomVoter::CREATE_ROOM, message: 'CREATE_ROOM_UNAUTHORIZED')]
+    public function createRoom(Request $request): JsonResponse
     {
         /** @var Player $player */
         $player = $this->getUser();
         $room = (new Room())->setName(sprintf("%s's room", $player->getName()));
 
         $this->changeRoomUseCase->execute($player, $room);
+        $player->setRoles(['ROLE_ADMIN']);
+
+        if ($request->getContent() !== '') {
+            $data = $request->toArray();
+
+            if (isset($data[self::IS_GAME_MASTER_ROOM]) && $data[self::IS_GAME_MASTER_ROOM]) {
+                $room->setIsGameMastered(true);
+                $player->setRoles(['ROLE_MASTER']);
+                $player->setStatus(PlayerStatus::SPECTATING);
+            }
+        }
 
         $this->roomRepository->store($room);
         $this->persistenceAdapter->flush();
@@ -57,14 +71,14 @@ class RoomController extends AbstractController
     }
 
     #[Route('/{id}', name: 'get_room', methods: [Request::METHOD_GET])]
-    #[IsGranted(RoomVoter::VIEW_ROOM, subject: 'room')]
+    #[IsGranted(RoomVoter::VIEW_ROOM, subject: 'room', message: 'VIEW_ROOM_UNAUTHORIZED')]
     public function getRoom(Room $room): JsonResponse
     {
         return $this->json($room, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'get-room']);
     }
 
     #[Route('/{id}', name: 'patch_room', methods: [Request::METHOD_PATCH])]
-    #[IsGranted(RoomVoter::EDIT_ROOM, subject: 'room')]
+    #[IsGranted(RoomVoter::EDIT_ROOM, subject: 'room', message: 'EDIT_ROOM_UNAUTHORIZED')]
     public function patchRoom(Request $request, Room $room): JsonResponse
     {
         $data = $request->toArray();
@@ -109,7 +123,7 @@ class RoomController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete_room', methods: [Request::METHOD_DELETE])]
-    #[IsGranted(RoomVoter::EDIT_ROOM, subject: 'room')]
+    #[IsGranted(RoomVoter::EDIT_ROOM, subject: 'room', message: 'DELETE_ROOM_UNAUTHORIZED')]
     public function deleteRoom(Room $room): JsonResponse
     {
         $roomCode = $room->getId();
@@ -122,6 +136,6 @@ class RoomController extends AbstractController
             $this->serializer->serialize((object) []),
         );
 
-        return $this->json(null, Response::HTTP_NO_CONTENT);
+        return $this->json(null, Response::HTTP_OK);
     }
 }

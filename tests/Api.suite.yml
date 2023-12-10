@@ -1,4 +1,6 @@
 actor: ApiTester
+step_decorators:
+  - \Codeception\Step\AsJson
 suite_namespace: App\Tests\Api
 modules:
     enabled:

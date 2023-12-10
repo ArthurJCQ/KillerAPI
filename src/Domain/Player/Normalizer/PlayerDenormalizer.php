@@ -27,6 +27,7 @@ final readonly class PlayerDenormalizer implements DenormalizerInterface
         return $type === Player::class && is_numeric($data);
     }
 
+    /** @return array<'*'|'object'|string, bool|null> */
     public function getSupportedTypes(?string $format): array
     {
         return ['string' => true];

@@ -8,4 +8,5 @@ enum PlayerStatus: string
 {
     case ALIVE = 'ALIVE';
     case KILLED = 'KILLED';
+    case SPECTATING = 'SPECTATING';
 }

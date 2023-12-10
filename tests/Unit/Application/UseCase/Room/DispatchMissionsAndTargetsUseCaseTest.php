@@ -95,9 +95,9 @@ class DispatchMissionsAndTargetsUseCaseTest extends \Codeception\Test\Unit
         $missionPlayer3->getAuthor()->shouldBeCalled()->willReturn($player2->reveal());
         $missionPlayer3->getId()->shouldBeCalledOnce()->willReturn(3);
 
-        $room->getPlayers()
+        $room->getAlivePlayers()
             ->shouldBeCalled()
-            ->willReturn(new ArrayCollection([$player1->reveal(), $player2->reveal(), $player3->reveal()]));
+            ->willReturn([$player1->reveal(), $player2->reveal(), $player3->reveal()]);
 
         $this->dispatchMissionsUseCase->execute($room->reveal());
     }
