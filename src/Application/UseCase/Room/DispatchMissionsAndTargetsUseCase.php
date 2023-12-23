@@ -41,8 +41,10 @@ class DispatchMissionsAndTargetsUseCase implements RoomUseCase, LoggerAwareInter
                 throw new \LogicException('Any room should have an admin at this point');
             }
 
+            $missions = $admin->getAuthoredMissionsInRoom();
+
             foreach ($players as $player) {
-                $this->assignMissions($admin->getAuthoredMissionsInRoom(), $player);
+                $this->assignMissions($missions, $player);
             }
 
             return;
