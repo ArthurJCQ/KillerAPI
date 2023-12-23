@@ -40,6 +40,7 @@ class DispatchMissionsAndTargetsUseCaseTest extends \Codeception\Test\Unit
 
         /** @var Room|ObjectProphecy $room */
         $room = $this->prophesize(Room::class);
+        $room->isGameMastered()->shouldBeCalledOnce()->willReturn(false);
 
         $player1->getAuthoredMissionsInRoom()
             ->shouldBeCalled()
@@ -53,7 +54,6 @@ class DispatchMissionsAndTargetsUseCaseTest extends \Codeception\Test\Unit
             ->shouldBeCalled();
         $player1->getAssignedMission()->shouldBeCalled();
         $player1->getId()->shouldBeCalledTimes(3)->willReturn(1);
-
 
         $player2->getAuthoredMissionsInRoom()
             ->shouldBeCalled()
