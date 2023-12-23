@@ -30,7 +30,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 #[Route('/room', format: 'json')]
 class RoomController extends AbstractController
 {
-    public const IS_GAME_MASTER_ROOM = 'is_game_mastered_room';
+    public const IS_GAME_MASTER_ROOM = 'isGameMastered';
 
     public function __construct(
         private readonly RoomRepository $roomRepository,
