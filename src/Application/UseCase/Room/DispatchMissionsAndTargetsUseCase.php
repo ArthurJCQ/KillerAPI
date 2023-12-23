@@ -34,6 +34,20 @@ class DispatchMissionsAndTargetsUseCase implements RoomUseCase, LoggerAwareInter
             ]);
         }
 
+        if ($room->isGameMastered()) {
+            $admin = $room->getAdmin();
+
+            if (!$admin) {
+                throw new \LogicException('Any room should have an admin at this point');
+            }
+
+            foreach ($players as $player) {
+                $this->assignMissions($admin->getAuthoredMissionsInRoom(), $player);
+            }
+
+            return;
+        }
+
         usort(
             $players,
             static fn (Player $playerA, Player $playerB) =>
@@ -58,33 +72,39 @@ class DispatchMissionsAndTargetsUseCase implements RoomUseCase, LoggerAwareInter
                     continue;
                 }
 
-                // Shuffle missions so any mission has the same chance to get picked.
                 $missions = $playerMissions->getAuthoredMissionsInRoom();
-                shuffle($missions);
 
                 // Dive into all playerMissions missions.
-                foreach ($missions as $mission) {
-                    // If mission already assigned, skip.
-                    if ($mission->isAssigned()) {
-                        continue;
-                    }
-
-                    // Otherwise, assign it and break to not keep assigning missions.
-                    $player->setAssignedMission($mission);
-
-                    $this->logger->info('Player {player_id} was assigned {mission_id} as a mission.', [
-                        'player_id' => $player->getId(),
-                        'mission_id' => $mission->getId(),
-                    ]);
-
-                    break;
-                }
-
-                // Break to not keep trying to assign mission to the player.
-                if ($player->getAssignedMission() instanceof Mission) {
-                    break;
-                }
+                $this->assignMissions($missions, $player);
             }
+        }
+    }
+
+    /** @param Mission[] $missions */
+    private function assignMissions(array $missions, Player $player): void
+    {
+        // Shuffle missions so any mission has the same chance to get picked.
+        shuffle($missions);
+
+        foreach ($missions as $mission) {
+            // If mission already assigned, skip.
+            if ($mission->isAssigned()) {
+                continue;
+            }
+
+            // Otherwise, assign it and break to not keep assigning missions.
+            $player->setAssignedMission($mission);
+
+            $this->logger->info('Player {player_id} was assigned {mission_id} as a mission.', [
+                'player_id' => $player->getId(),
+                'mission_id' => $mission->getId(),
+            ]);
+
+            break;
+        }
+
+        if (!$player->getAssignedMission()) {
+            throw new \LogicException('Error while assigning mission to player');
         }
     }
 }

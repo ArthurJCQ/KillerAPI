@@ -655,10 +655,10 @@ class RoomControllerCest
         // Create admin and room
         $I->createAdminAndUpdateHeaders($I);
 
-        $I->sendPostAsJson('room', [RoomController::IS_GAME_MASTER_ROOM => true]);
-        $I->sendPostAsJson('/mission', ['content' => 'mission1']);
-        $I->sendPostAsJson('/mission', ['content' => 'mission2']);
-        $I->sendPostAsJson('/mission', ['content' => 'mission3']);
+        $I->sendPostAsJson('room', [RoomController::IS_GAME_MASTERED_ROOM => true]);
+        $I->sendPostAsJson('/mission', ['content' => 'mission']);
+        $I->sendPostAsJson('/mission', ['content' => 'mission']);
+        $I->sendPostAsJson('/mission', ['content' => 'mission']);
 
         $room = $I->grabEntityFromRepository(Room::class, ['name' => 'Admin\'s room']);
 
@@ -701,6 +701,7 @@ class RoomControllerCest
                 'room' => ['id' => $room->getId()],
                 'status' => PlayerStatus::SPECTATING->value,
                 'target' => null,
+                'assignedMission' => null,
             ],
         );
 
@@ -714,6 +715,7 @@ class RoomControllerCest
                 'room' => ['id' => $room->getId()],
                 'status' => PlayerStatus::ALIVE->value,
                 'target' => ['avatar' => Player::DEFAULT_AVATAR],
+                'assignedMission' => ['content' => 'mission'],
             ],
         );
     }
