@@ -45,6 +45,10 @@ class DispatchMissionsAndTargetsUseCase implements RoomUseCase, LoggerAwareInter
 
             foreach ($players as $player) {
                 $this->assignMissions($missions, $player);
+
+                if (!$player->getAssignedMission()) {
+                    throw new \LogicException('Error while assigning mission to the player');
+                }
             }
 
             return;
@@ -78,6 +82,11 @@ class DispatchMissionsAndTargetsUseCase implements RoomUseCase, LoggerAwareInter
 
                 // Dive into all playerMissions missions.
                 $this->assignMissions($missions, $player);
+
+                // Break to not keep trying to assign mission to the player
+                if ($player->getAssignedMission() instanceof Mission) {
+                    break;
+                }
             }
         }
     }
@@ -103,10 +112,6 @@ class DispatchMissionsAndTargetsUseCase implements RoomUseCase, LoggerAwareInter
             ]);
 
             break;
-        }
-
-        if (!$player->getAssignedMission()) {
-            throw new \LogicException('Error while assigning mission to player');
         }
     }
 }
