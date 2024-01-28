@@ -14,20 +14,21 @@ final readonly class PlayerDenormalizer implements DenormalizerInterface
     {
     }
 
-    /** @param array<string, string> $context */
-    public function denormalize(mixed $data, string $type, string $format = null, array $context = []): ?Player
+    /** @param int $data */
+    public function denormalize(mixed $data, string $type, ?string $format = null, array $context = []): ?Player
     {
-        /** @var int $data */
         return $this->playerRepository->find($data);
     }
 
-    /** @param array<string, string> $context */
-    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
-    {
+    public function supportsDenormalization(
+        mixed $data,
+        string $type,
+        ?string $format = null,
+        array $context = [],
+    ): bool {
         return $type === Player::class && is_numeric($data);
     }
 
-    /** @return array<'*'|'object'|string, bool|null> */
     public function getSupportedTypes(?string $format): array
     {
         return ['string' => true];

@@ -14,7 +14,7 @@ use Symfony\Component\Mercure\Update;
 #[AsCommand(name: 'app:ping-mercure', description: 'Ping mercure hub.')]
 class PingMercureCommand extends Command
 {
-    public function __construct(private readonly HubInterface $mercureHub, string $name = null)
+    public function __construct(private readonly HubInterface $mercureHub, ?string $name = null)
     {
         parent::__construct($name);
     }
@@ -28,7 +28,7 @@ class PingMercureCommand extends Command
     {
         try {
             $this->mercureHub->publish(new Update('topic', 'update'));
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $output->writeln('Could not ping mercure because of following error : ' . $e->getMessage());
             $output->writeln('Previous error was : ' . $e->getPrevious()?->getMessage());
 

@@ -8,12 +8,13 @@ use App\Application\UseCase\Room\RoomChangeAdminUseCase;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
+use Codeception\Test\Unit;
 use Doctrine\Common\Collections\ArrayCollection;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
-class RoomChangeAdminTest extends \Codeception\Test\Unit
+class RoomChangeAdminTest extends Unit
 {
     use ProphecyTrait;
 

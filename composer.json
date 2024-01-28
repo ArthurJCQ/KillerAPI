@@ -6,7 +6,7 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": ">=8.2",
+        "php": "^8.3",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "ext-json": "*",
@@ -41,32 +41,30 @@
         "symfony/yaml": "^6.2"
     },
     "require-dev": {
+        "arty/php-coding-standard": "^1.0",
         "codeception/codeception": "^5.0",
         "codeception/module-asserts": "^3.0",
         "codeception/module-db": "^3.0",
         "codeception/module-doctrine2": "^3.0",
         "codeception/module-rest": "^3.3",
-        "codeception/module-symfony": "^3.1",
+        "codeception/module-symfony": "^3.3",
         "doctrine/doctrine-fixtures-bundle": "^3.4",
-        "jangregor/phpstan-prophecy": "^1.0",
-        "phpmd/phpmd": "^2.12",
         "phpspec/prophecy-phpunit": "^2.0",
-        "phpstan/phpstan": "^1.7",
-        "phpunit/phpunit": "^9.5",
+        "phpunit/phpunit": "^10.5",
         "roave/security-advisories": "dev-latest",
-        "squizlabs/php_codesniffer": "^3.6",
         "symfony/browser-kit": "^6.2",
         "symfony/css-selector": "^6.2",
         "symfony/maker-bundle": "^1.43",
         "symfony/phpunit-bridge": "^6.1",
         "symfony/stopwatch": "^6.1",
-        "symfony/web-profiler-bundle": "^6.2"
+        "symfony/web-profiler-bundle": "^6.4"
     },
     "config": {
         "allow-plugins": {
             "composer/package-versions-deprecated": true,
             "symfony/flex": true,
-            "symfony/runtime": true
+            "symfony/runtime": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
         },
         "optimize-autoloader": true,
         "preferred-install": {

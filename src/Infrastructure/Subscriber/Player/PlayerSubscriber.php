@@ -6,8 +6,8 @@ namespace App\Infrastructure\Subscriber\Player;
 
 use App\Application\UseCase\Player\PlayerKilledUseCase;
 use App\Application\UseCase\Player\ResetPlayerUseCase;
-use App\Domain\Player\Event\PlayerKilledEvent;
 use App\Domain\Player\Event\PlayerChangedRoomEvent;
+use App\Domain\Player\Event\PlayerKilledEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 

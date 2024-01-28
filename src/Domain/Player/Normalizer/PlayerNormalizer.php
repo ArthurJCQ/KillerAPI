@@ -14,13 +14,9 @@ readonly class PlayerNormalizer implements NormalizerInterface
     {
     }
 
-    /**
-     * @param array<string, string> $context
-     * @return float|int|bool|\ArrayObject|array<string, string>|string|null
-     */
     public function normalize(
         mixed $object,
-        string $format = null,
+        ?string $format = null,
         array $context = [],
     ): float|int|bool|\ArrayObject|array|string|null {
         if (!$object instanceof Player) {
@@ -29,12 +25,13 @@ readonly class PlayerNormalizer implements NormalizerInterface
 
         $context = array_merge(
             $context,
-            [AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => static fn (Player $object) =>
-                [
+            [
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => static fn (Player $object) => [
                     'id' => $object->getId(),
                     'name' => $object->getName(),
                     'avatar' => $object->getAvatar(),
-                ]],
+                ],
+            ],
         );
 
         $normalizedPlayer = $this->normalizer->normalize($object, $format, $context);
@@ -52,15 +49,13 @@ readonly class PlayerNormalizer implements NormalizerInterface
         return $normalizedPlayer;
     }
 
-    /** @param array<string, string> $context */
-    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof Player;
     }
 
-    /** @return array<'*'|'object'|string, bool|null> */
     public function getSupportedTypes(?string $format): array
     {
-        return [Player::class  => true];
+        return [Player::class => true];
     }
 }

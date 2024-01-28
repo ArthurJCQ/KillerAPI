@@ -23,6 +23,9 @@ phpcs:
 phpcs-ci: prepare-ci
 	vendor/bin/phpcs -sp --report=checkstyle --report-file=$(REPORTS_DIR)/phpcs.xml --standard=phpcs.xml.dist --extensions=php --ignore=*/tests/bootstrap.php src tests
 
+phpmd:
+	 vendor/bin/phpmd src text phpmd.xml
+
 .PHONY: unit-tests
 unit-tests:
 	@vendor/bin/codecept run Unit

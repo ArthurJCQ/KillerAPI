@@ -20,13 +20,9 @@ final readonly class RoomNormalizer implements NormalizerInterface
     ) {
     }
 
-    /**
-     * @param array<string, string> $context
-     * @return float|int|bool|\ArrayObject|array<string, string>|string|null
-     */
     public function normalize(
         mixed $object,
-        string $format = null,
+        ?string $format = null,
         array $context = [],
     ): float|int|bool|\ArrayObject|array|string|null {
         if (!$object instanceof Room) {
@@ -50,13 +46,11 @@ final readonly class RoomNormalizer implements NormalizerInterface
         return $normalizedRoom;
     }
 
-    /** @param array<string, string> $context */
-    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof Room;
     }
 
-    /** @return array<'*'|'object'|string, bool|null> */
     public function getSupportedTypes(?string $format): array
     {
         return [Room::class => true];

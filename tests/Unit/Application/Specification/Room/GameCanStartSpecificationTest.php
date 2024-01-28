@@ -9,10 +9,11 @@ use App\Application\Specification\Room\EnoughMissionInRoomSpecification;
 use App\Application\Specification\Room\EnoughPlayerInRoomSpecification;
 use App\Application\Specification\Room\GameCanStartSpecification;
 use App\Domain\Room\Entity\Room;
+use Codeception\Test\Unit;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
-class GameCanStartSpecificationTest extends \Codeception\Test\Unit
+class GameCanStartSpecificationTest extends Unit
 {
     use ProphecyTrait;
 

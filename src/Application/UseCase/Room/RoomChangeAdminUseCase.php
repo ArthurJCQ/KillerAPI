@@ -15,7 +15,7 @@ readonly class RoomChangeAdminUseCase implements RoomUseCase
     {
     }
 
-    public function execute(Room $room): void
+    public function execute(Room $room, ?Player $newAdmin = null): void
     {
         /** @var ?Player $admin */
         $admin = $room->getAdmin();
@@ -25,15 +25,33 @@ readonly class RoomChangeAdminUseCase implements RoomUseCase
             return;
         }
 
+        if ($newAdmin) {
+            $player = array_filter($playersInRoom, static fn (Player $p) => $p->getName() === $newAdmin->getName());
+
+            if (!$player) {
+                throw new \InvalidArgumentException('Invalid new admin player');
+            }
+
+            $this->saveNewAdmin($room, $newAdmin);
+
+            return;
+        }
+
         /** @var Player[] $eligibleAdmins */
         $eligibleAdmins = array_filter(
             $playersInRoom,
-            static fn(Player $playerRoom) => $playerRoom->getId() !== $admin?->getId()
+            static fn (Player $playerRoom) => $playerRoom->getId() !== $admin?->getId(),
         );
 
         shuffle($eligibleAdmins);
 
         $newAdmin = array_values($eligibleAdmins)[0] ?? null;
+
+        $this->saveNewAdmin($room, $newAdmin);
+    }
+
+    private function saveNewAdmin(Room $room, ?Player $newAdmin = null): void
+    {
         $room->setAdmin($newAdmin);
         $newAdmin?->setRoles(['ROLE_ADMIN']);
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
+use Codeception\Actor;
+
 /**
  * Inherited Methods
  * @method void wantToTest($text)
@@ -18,8 +20,8 @@ namespace App\Tests;
  * @method void pause($vars = [])
  *
  * @SuppressWarnings(PHPMD)
-*/
-class ApiTester extends \Codeception\Actor
+ */
+class ApiTester extends Actor
 {
     use _generated\ApiTesterActions;
 

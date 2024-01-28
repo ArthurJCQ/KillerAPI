@@ -18,7 +18,7 @@ class ClearRoomsCommand extends Command
     public function __construct(
         private readonly RoomRepository $roomRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
-        string $name = null,
+        ?string $name = null,
     ) {
         parent::__construct($name);
     }

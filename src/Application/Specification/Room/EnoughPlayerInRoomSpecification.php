@@ -9,7 +9,9 @@ use App\Domain\Room\RoomSpecification;
 
 class EnoughPlayerInRoomSpecification implements RoomSpecification
 {
-    // 3 players at least are needed in order to start the game
+    /**
+     * 3 players at least are needed in order to start the game
+     */
     public function isSatisfiedBy(Room $room): bool
     {
         $players = $room->getAlivePlayers();

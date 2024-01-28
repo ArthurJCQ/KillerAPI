@@ -7,13 +7,13 @@ namespace App\Tests\Unit\Application\UseCase\Player;
 use App\Application\UseCase\Player\PlayerKilledUseCase;
 use App\Domain\Mission\Entity\Mission;
 use App\Domain\Player\Entity\Player;
-use App\Domain\Room\Entity\Room;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use Codeception\Stub\Expected;
+use Codeception\Test\Unit;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
-class PlayerKilledUseCaseTest extends \Codeception\Test\Unit
+class PlayerKilledUseCaseTest extends Unit
 {
     use ProphecyTrait;
 

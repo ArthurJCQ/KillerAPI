@@ -17,7 +17,7 @@ class ClearMissionsCommand extends Command
     public function __construct(
         private readonly MissionRepository $missionRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
-        string $name = null,
+        ?string $name = null,
     ) {
         parent::__construct($name);
     }

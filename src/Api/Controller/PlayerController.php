@@ -32,7 +32,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
@@ -197,6 +197,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         if ($room instanceof Room) {
             $this->roomStatusTransitionUseCase->executeTransition($room, Room::ENDED);
         }
+
         $this->hub->publish(
             sprintf('room/%s', $room),
             $this->serializer->serialize((object) $room, [AbstractNormalizer::GROUPS => 'publish-mercure']),
