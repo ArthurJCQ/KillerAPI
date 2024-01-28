@@ -128,7 +128,7 @@
         ]
     },
     "squizlabs/php_codesniffer": {
-        "version": "3.6",
+        "version": "3.8",
         "recipe": {
             "repo": "github.com/symfony/recipes-contrib",
             "branch": "main",

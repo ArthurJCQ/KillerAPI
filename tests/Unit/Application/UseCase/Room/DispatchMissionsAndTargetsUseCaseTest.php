@@ -8,13 +8,13 @@ use App\Application\UseCase\Room\DispatchMissionsAndTargetsUseCase;
 use App\Domain\Mission\Entity\Mission;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
-use Doctrine\Common\Collections\ArrayCollection;
+use Codeception\Test\Unit;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Log\NullLogger;
 
-class DispatchMissionsAndTargetsUseCaseTest extends \Codeception\Test\Unit
+class DispatchMissionsAndTargetsUseCaseTest extends Unit
 {
     use ProphecyTrait;
 
@@ -46,11 +46,11 @@ class DispatchMissionsAndTargetsUseCaseTest extends \Codeception\Test\Unit
             ->shouldBeCalled()
             ->willReturn([$missionPlayer1->reveal()]);
         $player1->getTarget()->willReturn($player2->reveal());
-        $player1->setTarget(Argument::that(static fn (Player $player) =>
-                $player instanceof Player && $player !== $player1->reveal()))
+        $player1->setTarget(Argument::that(static fn (Player $player) => $player instanceof Player
+            && $player !== $player1->reveal()))
             ->shouldBeCalled();
-        $player1->setAssignedMission(Argument::that(static fn (Mission $mission) =>
-                $mission->getAuthor() !== $player1->reveal()))
+        $player1->setAssignedMission(Argument::that(static fn (Mission $mission) => $mission->getAuthor()
+            !== $player1->reveal()))
             ->shouldBeCalled();
         $player1->getAssignedMission()->shouldBeCalled();
         $player1->getId()->shouldBeCalledTimes(3)->willReturn(1);
@@ -59,11 +59,11 @@ class DispatchMissionsAndTargetsUseCaseTest extends \Codeception\Test\Unit
             ->shouldBeCalled()
             ->willReturn([$missionPlayer2->reveal()]);
         $player2->getTarget()->willReturn($player3->reveal());
-        $player2->setTarget(Argument::that(static fn (Player $player) =>
-                $player instanceof Player && $player !== $player2->reveal()))
+        $player2->setTarget(Argument::that(static fn (Player $player) => $player instanceof Player
+            && $player !== $player2->reveal()))
             ->shouldBeCalled();
-        $player2->setAssignedMission(Argument::that(static fn (Mission $mission) =>
-                $mission->getAuthor() !== $player2->reveal()))
+        $player2->setAssignedMission(Argument::that(static fn (Mission $mission) => $mission->getAuthor()
+            !== $player2->reveal()))
             ->shouldBeCalled();
         $player2->getAssignedMission()->shouldBeCalled();
         $player2->getId()->shouldBeCalledTimes(3)->willReturn(2);
@@ -73,15 +73,14 @@ class DispatchMissionsAndTargetsUseCaseTest extends \Codeception\Test\Unit
             ->shouldBeCalled()
             ->willReturn([$missionPlayer3->reveal()]);
         $player3->getTarget()->willReturn($player1);
-        $player3->setTarget(Argument::that(static fn (Player $player) =>
-                $player instanceof Player && $player !== $player3->reveal()))
+        $player3->setTarget(Argument::that(static fn (Player $player) => $player instanceof Player
+            && $player !== $player3->reveal()))
             ->shouldBeCalled();
-        $player3->setAssignedMission(Argument::that(static fn (Mission $mission) =>
-                $mission->getAuthor() !== $player3->reveal()))
+        $player3->setAssignedMission(Argument::that(static fn (Mission $mission) => $mission->getAuthor()
+            !== $player3->reveal()))
             ->shouldBeCalled();
         $player3->getAssignedMission()->shouldBeCalled();
         $player3->getId()->shouldBeCalledTimes(3)->willReturn(3);
-
 
         $missionPlayer1->isAssigned()->shouldBeCalled();
         $missionPlayer1->getAuthor()->shouldBeCalled()->willReturn($player1->reveal());
@@ -128,22 +127,22 @@ class DispatchMissionsAndTargetsUseCaseTest extends \Codeception\Test\Unit
 
         $player1->getAuthoredMissionsInRoom()->shouldNotBeCalled();
         $player1->getTarget()->willReturn($player2->reveal());
-        $player1->setTarget(Argument::that(static fn (Player $player) =>
-            $player instanceof Player && $player !== $player1->reveal()))
+        $player1->setTarget(Argument::that(static fn (Player $player) => $player instanceof Player
+            && $player !== $player1->reveal()))
             ->shouldBeCalled();
-        $player1->setAssignedMission(Argument::that(static fn (Mission $mission) =>
-            $mission->getAuthor() === $admin->reveal()))
+        $player1->setAssignedMission(Argument::that(static fn (Mission $mission) => $mission->getAuthor()
+            === $admin->reveal()))
             ->shouldBeCalled();
         $player1->getAssignedMission()->shouldBeCalled();
         $player1->getId()->shouldBeCalledTimes(3)->willReturn(1);
 
         $player2->getAuthoredMissionsInRoom()->shouldNotBeCalled();
         $player2->getTarget()->willReturn($player3->reveal());
-        $player2->setTarget(Argument::that(static fn (Player $player) =>
-            $player instanceof Player && $player !== $player2->reveal()))
+        $player2->setTarget(Argument::that(static fn (Player $player) => $player instanceof Player
+            && $player !== $player2->reveal()))
             ->shouldBeCalled();
-        $player2->setAssignedMission(Argument::that(static fn (Mission $mission) =>
-            $mission->getAuthor() === $admin->reveal()))
+        $player2->setAssignedMission(Argument::that(static fn (Mission $mission) => $mission->getAuthor()
+            === $admin->reveal()))
             ->shouldBeCalled();
         $player2->getAssignedMission()->shouldBeCalled();
         $player2->getId()->shouldBeCalledTimes(3)->willReturn(2);
@@ -151,12 +150,12 @@ class DispatchMissionsAndTargetsUseCaseTest extends \Codeception\Test\Unit
 
         $player3->getAuthoredMissionsInRoom()->shouldNotBeCalled();
         $player3->getTarget()->willReturn($player1);
-        $player3->setTarget(Argument::that(static fn (Player $player) =>
-            $player instanceof Player && $player !== $player3->reveal()))
+        $player3->setTarget(Argument::that(static fn (Player $player) => $player instanceof Player
+            && $player !== $player3->reveal()))
             ->shouldBeCalled();
-        $player3->setAssignedMission(Argument::that(static fn (Mission $mission) =>
-            $mission->getAuthor() === $admin->reveal()))
-            ->shouldBeCalled();
+        $player3->setAssignedMission(Argument::that(
+            static fn (Mission $mission) => $mission->getAuthor() === $admin->reveal()
+        ))->shouldBeCalled();
         $player3->getAssignedMission()->shouldBeCalled();
         $player3->getId()->shouldBeCalledTimes(3)->willReturn(3);
 

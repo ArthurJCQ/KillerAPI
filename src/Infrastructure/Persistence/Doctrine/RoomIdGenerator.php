@@ -15,7 +15,7 @@ class RoomIdGenerator extends AbstractIdGenerator
     {
     }
 
-    /** @param Room $entity */
+    /** @inheritdoc */
     public function generateId(EntityManagerInterface $em, $entity): string
     {
         if (!$entity instanceof Room) {

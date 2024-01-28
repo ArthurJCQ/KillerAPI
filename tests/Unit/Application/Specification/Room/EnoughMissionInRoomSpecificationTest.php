@@ -9,11 +9,12 @@ use App\Domain\Mission\Entity\Mission;
 use App\Domain\Mission\MissionRepository;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
+use Codeception\Test\Unit;
 use Doctrine\Common\Collections\ArrayCollection;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
-class EnoughMissionInRoomSpecificationTest extends \Codeception\Test\Unit
+class EnoughMissionInRoomSpecificationTest extends Unit
 {
     use ProphecyTrait;
 

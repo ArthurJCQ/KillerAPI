@@ -118,12 +118,13 @@ class Room
         return $this->players;
     }
 
-    /** @return array<int, Player> */
     public function getAlivePlayers(): array
     {
         return array_values(
-            array_filter($this->players->toArray(), static fn (Player $player) =>
-                $player->getStatus() === PlayerStatus::ALIVE),
+            array_filter(
+                $this->players->toArray(),
+                static fn (Player $player) => $player->getStatus() === PlayerStatus::ALIVE,
+            ),
         );
     }
 
@@ -185,14 +186,6 @@ class Room
         return $this;
     }
 
-    public function __toString(): string
-    {
-        return $this->getId();
-    }
-
-    /**
-     * @return Collection<int, Mission>
-     */
     public function getMissions(): Collection
     {
         return $this->missions;
@@ -254,5 +247,10 @@ class Room
         $this->isGameMastered = $isGameMastered;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->getId();
     }
 }

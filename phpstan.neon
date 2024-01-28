@@ -1,5 +1,6 @@
 includes:
     - vendor/jangregor/phpstan-prophecy/extension.neon
+    - vendor/arty/php-coding-standard/lib/phpstan/phpstan.neon
 parameters:
     bootstrapFiles:
         - tests/_support/_generated/ApiTesterActions.php
@@ -10,5 +11,3 @@ parameters:
     checkGenericClassInNonGenericObjectType: false
     ignoreErrors:
         - '#^Cannot call method [a-z]+\(\) on Psr\\Log\\LoggerInterface\|null\.$#'
-        - '#^Method App\\Infrastructure\\Http\\Cookie\\CookieProvider\:\:getJwtCookie\(\) has parameter \$claim with no value type specified in iterable type array\.$#'
-        - '#^Method [a-zA-Z\\\:()]+ return type has no value type specified in iterable type iterable\.$#'

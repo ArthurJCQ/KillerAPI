@@ -1,11 +1,12 @@
-<?xml version="1.0"?>
-<ruleset name="ETSGlobal Coding Standard"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="../../vendor/squizlabs/php_codesniffer/phpcs.xsd">
-    <exclude-pattern>tests/_support</exclude-pattern>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
+    <rule ref="./vendor/arty/php-coding-standard/lib/phpcs/phpcs.xml" />
     <rule ref="PSR12">
         <exclude name="PSR2.Methods.MethodDeclaration.Underscore"/>
         <exclude name="SlevomatCodingStandard.Classes.TraitUseSpacing.IncorrectLinesCountAfterLastUse"/>
         <exclude name="PSR1.Files.SideEffects" />
     </rule>
+    <exclude-pattern>tests/_support/*</exclude-pattern>
 </ruleset>

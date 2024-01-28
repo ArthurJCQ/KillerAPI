@@ -14,8 +14,10 @@ class EnoughMissionInRoomSpecification implements RoomSpecification
     {
     }
 
-    // There must be at least as much mission as players.
-    // Also, at least 2 players must have added missions.
+    /**
+     * There must be at least as much mission as players.
+     * Also, at least 2 players must have added missions
+     */
     public function isSatisfiedBy(Room $room): bool
     {
         $players = $room->getAlivePlayers();

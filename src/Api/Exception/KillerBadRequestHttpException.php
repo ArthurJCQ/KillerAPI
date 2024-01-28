@@ -6,8 +6,7 @@ namespace App\Api\Exception;
 
 class KillerBadRequestHttpException extends KillerHttpException
 {
-    /** @param array<string, string> $headers */
-    public function __construct(string $message = '', \Throwable $previous = null, int $code = 0, array $headers = [])
+    public function __construct(string $message = '', ?\Throwable $previous = null, int $code = 0, array $headers = [])
     {
         parent::__construct(400, $message, $previous, $headers, $code);
     }

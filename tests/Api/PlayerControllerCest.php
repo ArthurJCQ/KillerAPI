@@ -32,7 +32,7 @@ class PlayerControllerCest
             [
                 'name' => self::PLAYER_NAME,
                 'room' => null,
-                'status' => PlayerStatus::ALIVE->value
+                'status' => PlayerStatus::ALIVE->value,
             ],
         );
 
@@ -43,7 +43,7 @@ class PlayerControllerCest
             [
                 'name' => self::PLAYER_NAME,
                 'room' => null,
-                'status' => PlayerStatus::ALIVE->value
+                'status' => PlayerStatus::ALIVE->value,
             ],
         );
     }
@@ -61,7 +61,7 @@ class PlayerControllerCest
         $I->seeResponseContainsJson(
             [
                 'name' => 'Hey',
-                'status' => PlayerStatus::ALIVE->value
+                'status' => PlayerStatus::ALIVE->value,
             ],
         );
     }

@@ -7,10 +7,11 @@ namespace App\Tests\Unit\Application\Specification\Room;
 use App\Application\Specification\Room\EnoughPlayerInRoomSpecification;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
+use Codeception\Test\Unit;
 use Doctrine\Common\Collections\ArrayCollection;
 use Prophecy\PhpUnit\ProphecyTrait;
 
-class EnoughPlayerInRoomSpecificationTest extends \Codeception\Test\Unit
+class EnoughPlayerInRoomSpecificationTest extends Unit
 {
     use ProphecyTrait;
 

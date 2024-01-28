@@ -56,8 +56,8 @@ class DispatchMissionsAndTargetsUseCase implements RoomUseCase, LoggerAwareInter
 
         usort(
             $players,
-            static fn (Player $playerA, Player $playerB) =>
-                \count($playerA->getAuthoredMissionsInRoom()) <=> \count($playerB->getAuthoredMissionsInRoom()),
+            static fn (Player $playerA, Player $playerB) => \count($playerA->getAuthoredMissionsInRoom())
+                <=> \count($playerB->getAuthoredMissionsInRoom()),
         );
 
         // Let's assign missions.

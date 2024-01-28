@@ -23,20 +23,24 @@ readonly class RoomSubscriber implements EventSubscriberInterface
     {
         $room = $playerUpdatedEvent->getPreviousRoom();
 
-        if ($room) {
-            // Try to end room after player left room.
-            $this->endRoomTransition($room);
+        if (!$room) {
+            return;
         }
+
+        // Try to end room after player left room.
+        $this->endRoomTransition($room);
     }
 
     public function tryToEndRoom(PlayerUpdatedEvent $playerUpdatedEvent): void
     {
         $room = $playerUpdatedEvent->getPlayer()->getRoom();
 
-        if ($room) {
-            // Try to end room after player update.
-            $this->endRoomTransition($room);
+        if (!$room) {
+            return;
         }
+
+        // Try to end room after player update.
+        $this->endRoomTransition($room);
     }
 
     public function updateAdminIfHeLeft(PlayerChangedRoomEvent $playerLeftRoomEvent): void
@@ -47,9 +51,11 @@ readonly class RoomSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if (!$previousRoom->getAdmin()) {
-            $this->roomChangeAdminUseCase->execute($previousRoom);
+        if ($previousRoom->getAdmin()) {
+            return;
         }
+
+        $this->roomChangeAdminUseCase->execute($previousRoom);
     }
 
     public static function getSubscribedEvents(): array

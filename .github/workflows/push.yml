@@ -9,7 +9,7 @@ jobs:
         php-versions: [ '8.2' ]
     services:
       postgresql:
-        image: postgres:13-alpine
+        image: postgres:16-alpine
         env:
           POSTGRES_PASSWORD: 112358
           POSTGRES_USER: killer

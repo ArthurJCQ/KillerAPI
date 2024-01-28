@@ -35,7 +35,7 @@ class Player implements UserInterface
         min: 2,
         max: 30,
         minMessage: 'PLAYER_NAME_TOO_SHORT_CONTENT',
-        maxMessage: 'PLAYER_NAME_TOO_LONG_CONTENT'
+        maxMessage: 'PLAYER_NAME_TOO_LONG_CONTENT',
     )]
     private string $name;
 
@@ -283,10 +283,12 @@ class Player implements UserInterface
     public function clearMissions(): self
     {
         foreach ($this->getAuthoredMissions() as $mission) {
-            if ($this->authoredMissions->removeElement($mission) && $mission->getAuthor() === $this) {
-                $mission->setAuthor(null);
-                $this->room?->removeMission($mission);
+            if (!$this->authoredMissions->removeElement($mission) || $mission->getAuthor() !== $this) {
+                continue;
             }
+
+            $mission->setAuthor(null);
+            $this->room?->removeMission($mission);
         }
 
         return $this;

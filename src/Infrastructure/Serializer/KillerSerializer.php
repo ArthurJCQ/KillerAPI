@@ -13,7 +13,6 @@ readonly class KillerSerializer implements KillerSerializerInterface
     {
     }
 
-    /** @param array<string, mixed> $context */
     public function serialize(object $entity, array $context = [], string $format = 'json'): string
     {
         return $this->serializer->serialize($entity, $format, $context);
@@ -22,7 +21,6 @@ readonly class KillerSerializer implements KillerSerializerInterface
     /**
      * @template T of object
      * @param class-string<T> $class
-     * @param array<string, mixed> $context
      * @return T
      */
     public function deserialize(
@@ -31,7 +29,6 @@ readonly class KillerSerializer implements KillerSerializerInterface
         array $context = [],
         string $format = 'json',
     ): mixed {
-        /** @var T */
         return $this->serializer->deserialize(
             $data,
             $class,
