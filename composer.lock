@@ -6920,16 +6920,16 @@
     "packages-dev": [
         {
             "name": "arty/php-coding-standard",
-            "version": "v1.0.2",
+            "version": "v1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ArthurJCQ/php-coding-standard.git",
-                "reference": "78741296fdbcf83cb510a737eab7c9319e5f376a"
+                "reference": "c9a8a890275619b71b7215459e9dcf061b3d7293"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ArthurJCQ/php-coding-standard/zipball/78741296fdbcf83cb510a737eab7c9319e5f376a",
-                "reference": "78741296fdbcf83cb510a737eab7c9319e5f376a",
+                "url": "https://api.github.com/repos/ArthurJCQ/php-coding-standard/zipball/c9a8a890275619b71b7215459e9dcf061b3d7293",
+                "reference": "c9a8a890275619b71b7215459e9dcf061b3d7293",
                 "shasum": ""
             },
             "require": {
@@ -6959,9 +6959,9 @@
             "description": "Static analysis tools config for PHP projects, by arty.",
             "support": {
                 "issues": "https://github.com/ArthurJCQ/php-coding-standard/issues",
-                "source": "https://github.com/ArthurJCQ/php-coding-standard/tree/v1.0.2"
+                "source": "https://github.com/ArthurJCQ/php-coding-standard/tree/v1.0.3"
             },
-            "time": "2024-01-22T11:45:13+00:00"
+            "time": "2024-01-28T19:31:02+00:00"
         },
         {
             "name": "behat/gherkin",
