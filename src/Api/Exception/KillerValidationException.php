@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Api\Exception;
 
-class KillerValidationException extends \DomainException
+use Symfony\Component\Validator\Exception\ValidationFailedException;
+
+class KillerValidationException extends ValidationFailedException
 {
 }

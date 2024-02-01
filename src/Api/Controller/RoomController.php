@@ -44,7 +44,7 @@ class RoomController extends AbstractController
     }
 
     #[Route(name: 'create_room', methods: [Request::METHOD_POST])]
-    #[IsGranted(RoomVoter::CREATE_ROOM, message: 'CREATE_ROOM_UNAUTHORIZED')]
+    #[IsGranted(RoomVoter::CREATE_ROOM, message: 'KILLER_CREATE_ROOM_UNAUTHORIZED')]
     public function createRoom(Request $request): JsonResponse
     {
         /** @var Player $player */
@@ -71,14 +71,14 @@ class RoomController extends AbstractController
     }
 
     #[Route('/{id}', name: 'get_room', methods: [Request::METHOD_GET])]
-    #[IsGranted(RoomVoter::VIEW_ROOM, subject: 'room', message: 'VIEW_ROOM_UNAUTHORIZED')]
+    #[IsGranted(RoomVoter::VIEW_ROOM, subject: 'room', message: 'KILLER_VIEW_ROOM_UNAUTHORIZED')]
     public function getRoom(Room $room): JsonResponse
     {
         return $this->json($room, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'get-room']);
     }
 
     #[Route('/{id}', name: 'patch_room', methods: [Request::METHOD_PATCH])]
-    #[IsGranted(RoomVoter::EDIT_ROOM, subject: 'room', message: 'EDIT_ROOM_UNAUTHORIZED')]
+    #[IsGranted(RoomVoter::EDIT_ROOM, subject: 'room', message: 'KILLER_EDIT_ROOM_UNAUTHORIZED')]
     public function patchRoom(Request $request, Room $room): JsonResponse
     {
         $data = $request->toArray();
@@ -89,7 +89,7 @@ class RoomController extends AbstractController
 
                 if (!$transitionSuccess) {
                     // CAN_NOT_MOVE_TO_IN_GAME or CAN_NO_MOVE_TO_ENDED
-                    throw new KillerBadRequestHttpException(sprintf('CAN_NOT_MOVE_TO_%s', $data['status']));
+                    throw new KillerBadRequestHttpException(sprintf('KILLER_CAN_NOT_MOVE_TO_%s', $data['status']));
                 }
             } catch (\DomainException $e) {
                 throw new BadRequestHttpException($e->getMessage());
@@ -123,7 +123,7 @@ class RoomController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete_room', methods: [Request::METHOD_DELETE])]
-    #[IsGranted(RoomVoter::EDIT_ROOM, subject: 'room', message: 'DELETE_ROOM_UNAUTHORIZED')]
+    #[IsGranted(RoomVoter::EDIT_ROOM, subject: 'room', message: 'KILLER_DELETE_ROOM_UNAUTHORIZED')]
     public function deleteRoom(Room $room): JsonResponse
     {
         $roomCode = $room->getId();

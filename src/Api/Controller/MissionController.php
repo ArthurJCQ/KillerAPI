@@ -37,7 +37,7 @@ class MissionController extends AbstractController
     }
 
     #[Route(name: 'create_mission', methods: [Request::METHOD_POST])]
-    #[IsGranted(MissionVoter::CREATE_MISSION, message: 'CREATE_MISSION_UNAUTHORIZED')]
+    #[IsGranted(MissionVoter::CREATE_MISSION, message: 'KILLER_CREATE_MISSION_UNAUTHORIZED')]
     public function createMission(
         #[MapRequestPayload(serializationContext: [AbstractNormalizer::GROUPS => 'post-mission'])] Mission $mission,
     ): JsonResponse {
@@ -46,7 +46,7 @@ class MissionController extends AbstractController
         $room = $player->getRoom();
 
         if (!$room || $room->getStatus() !== Room::PENDING) {
-            throw new KillerBadRequestHttpException('CAN_NOT_ADD_MISSIONS');
+            throw new KillerBadRequestHttpException('KILLER_CAN_NOT_ADD_MISSIONS');
         }
 
         $player->addAuthoredMission($mission);
@@ -63,14 +63,14 @@ class MissionController extends AbstractController
     }
 
     #[Route('/{id}', name: 'get-mission', methods: [Request::METHOD_GET])]
-    #[IsGranted(MissionVoter::VIEW_MISSION, subject: 'mission', message: 'VIEW_MISSION_UNAUTHORIZED')]
+    #[IsGranted(MissionVoter::VIEW_MISSION, subject: 'mission', message: 'KILLER_VIEW_MISSION_UNAUTHORIZED')]
     public function getMission(Mission $mission): JsonResponse
     {
         return $this->json($mission, Response::HTTP_OK, [AbstractNormalizer::GROUPS => 'get-mission']);
     }
 
     #[Route('/{id}', name: 'patch_mission', methods: [Request::METHOD_PATCH])]
-    #[IsGranted(MissionVoter::EDIT_MISSION, subject: 'mission', message: 'EDIT_MISSION_UNAUTHORIZED')]
+    #[IsGranted(MissionVoter::EDIT_MISSION, subject: 'mission', message: 'KILLER_EDIT_MISSION_UNAUTHORIZED')]
     public function patchMission(Request $request, Mission $mission): JsonResponse
     {
         $this->serializer->deserialize(
@@ -102,7 +102,7 @@ class MissionController extends AbstractController
     }
 
     #[Route('/{id}', name: 'delete_mission', methods: [Request::METHOD_DELETE])]
-    #[IsGranted(MissionVoter::EDIT_MISSION, subject: 'mission', message: 'DELETE_MISSION_UNAUTHORIZED')]
+    #[IsGranted(MissionVoter::EDIT_MISSION, subject: 'mission', message: 'KILLER_DELETE_MISSION_UNAUTHORIZED')]
     public function deleteMission(Mission $mission): JsonResponse
     {
         $this->missionRepository->remove($mission);

@@ -22,6 +22,6 @@ readonly class KillerValidator implements KillerValidatorInterface
             return;
         }
 
-        throw new KillerValidationException((string) $violations->get(0)->getMessage());
+        throw new KillerValidationException('KILLER_VALIDATION_ERROR', $violations);
     }
 }

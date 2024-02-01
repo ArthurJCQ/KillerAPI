@@ -82,7 +82,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         $player = $this->getUser();
 
         if ($player === null) {
-            throw new NotFoundHttpException('Player not found.');
+            throw new NotFoundHttpException('KILLER_PLAYER_NOT_FOUND');
         }
 
         $response = $this->json(
@@ -119,13 +119,13 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
     }
 
     #[Route('/{id}', name: 'patch_player', methods: [Request::METHOD_PATCH])]
-    #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player', message: 'EDIT_PLAYER_UNAUTHORIZED')]
+    #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player', message: 'KILLER_EDIT_PLAYER_UNAUTHORIZED')]
     public function patchPlayer(Request $request, Player $player): JsonResponse
     {
         $data = $request->toArray();
 
         if (isset($data['role']) && $player !== $player->getRoom()?->getAdmin()) {
-            throw new UnauthorizedHttpException('CAN_NOT_UPDATE_PLAYER_ROLE');
+            throw new UnauthorizedHttpException('KILLER_CAN_NOT_UPDATE_PLAYER_ROLE');
         }
 
         // If room is about to be updated, keep the reference of the previous one
@@ -188,7 +188,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
     }
 
     #[Route('/{id}', name: 'delete_player', methods: [Request::METHOD_DELETE])]
-    #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player', message: 'DELETE_PLAYER_UNAUTHORIZED')]
+    #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player', message: 'KILLER_DELETE_PLAYER_UNAUTHORIZED')]
     public function deletePlayer(Player $player): JsonResponse
     {
         $room = $player->getRoom();
