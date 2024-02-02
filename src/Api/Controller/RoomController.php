@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Api\Controller;
 
 use App\Api\Exception\KillerBadRequestHttpException;
-use App\Api\Exception\KillerValidationException;
 use App\Application\UseCase\Player\ChangeRoomUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
@@ -89,7 +88,7 @@ class RoomController extends AbstractController
 
                 if (!$transitionSuccess) {
                     // CAN_NOT_MOVE_TO_IN_GAME or CAN_NO_MOVE_TO_ENDED
-                    throw new KillerBadRequestHttpException(sprintf('KILLER_CAN_NOT_MOVE_TO_%s', $data['status']));
+                    throw new KillerBadRequestHttpException(sprintf('CAN_NOT_MOVE_TO_%s', $data['status']));
                 }
             } catch (\DomainException $e) {
                 throw new BadRequestHttpException($e->getMessage());
@@ -106,11 +105,7 @@ class RoomController extends AbstractController
             ],
         );
 
-        try {
-            $this->validator->validate($room);
-        } catch (KillerValidationException $e) {
-            throw new KillerBadRequestHttpException($e->getMessage());
-        }
+        $this->validator->validate($room);
 
         $this->persistenceAdapter->flush();
 

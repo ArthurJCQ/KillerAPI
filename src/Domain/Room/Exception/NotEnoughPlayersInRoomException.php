@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Room\Exception;
 
-class NotEnoughPlayersInRoomException extends \DomainException
+use App\Domain\KillerExceptionInterface;
+
+class NotEnoughPlayersInRoomException extends \DomainException implements KillerExceptionInterface
 {
 }

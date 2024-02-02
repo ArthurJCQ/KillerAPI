@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Player\Exception;
 
-class PlayerHasNoKillerOrTargetException extends \DomainException
+use App\Domain\KillerExceptionInterface;
+
+class PlayerHasNoKillerOrTargetException extends \DomainException implements KillerExceptionInterface
 {
 }

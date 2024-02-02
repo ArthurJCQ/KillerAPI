@@ -34,8 +34,8 @@ class Player implements UserInterface
     #[Assert\Length(
         min: 2,
         max: 30,
-        minMessage: 'KILLER_PLAYER_NAME_TOO_SHORT_CONTENT',
-        maxMessage: 'KILLER_PLAYER_NAME_TOO_LONG_CONTENT',
+        minMessage: 'PLAYER_NAME_TOO_SHORT_CONTENT',
+        maxMessage: 'PLAYER_NAME_TOO_LONG_CONTENT',
     )]
     private string $name;
 

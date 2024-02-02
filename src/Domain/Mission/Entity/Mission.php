@@ -25,8 +25,8 @@ class Mission
     #[Assert\Length(
         min: 5,
         max: 1000,
-        minMessage: 'KILLER_MISSION_TOO_SHORT_CONTENT',
-        maxMessage: 'KILLER_MISSION_TOO_LONG_CONTENT',
+        minMessage: 'MISSION_TOO_SHORT_CONTENT',
+        maxMessage: 'MISSION_TOO_LONG_CONTENT',
     )]
     #[Groups(['get-mission', 'get-player', 'post-mission', 'me'])]
     private string $content;

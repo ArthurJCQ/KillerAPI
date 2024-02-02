@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Player\Exception;
 
-class PlayerNotFoundException extends \DomainException
+use App\Domain\KillerExceptionInterface;
+
+class PlayerNotFoundException extends \DomainException implements KillerExceptionInterface
 {
 }
