@@ -50,7 +50,7 @@ when@prod:
                 type: rotating_file
                 path: "%kernel.logs_dir%/%kernel.environment%.log"
                 level: info
-                max_file: 10
+                max_files: 10
             console:
                 type: console
                 process_psr_3_messages: false
