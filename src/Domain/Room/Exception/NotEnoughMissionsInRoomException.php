@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Room\Exception;
 
-class NotEnoughMissionsInRoomException extends \DomainException
+use App\Domain\KillerExceptionInterface;
+
+class NotEnoughMissionsInRoomException extends \DomainException implements KillerExceptionInterface
 {
 }

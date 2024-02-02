@@ -19,7 +19,7 @@ final readonly class ChangeRoomUseCase
     public function execute(Player $player, ?Room $newRoom = null): void
     {
         if ($newRoom?->getStatus() === Room::IN_GAME) {
-            throw new PlayerCanNotJoinRoomException('KILLER_ROOM_ALREADY_IN_GAME');
+            throw new PlayerCanNotJoinRoomException('ROOM_ALREADY_IN_GAME');
         }
 
         $previousRoom = $player->getRoom();

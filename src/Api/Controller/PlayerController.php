@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Api\Controller;
 
-use App\Api\Exception\KillerBadRequestHttpException;
-use App\Api\Exception\KillerValidationException;
 use App\Application\UseCase\Player\ChangeRoomUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
@@ -155,11 +153,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
             ],
         );
 
-        try {
-            $this->validator->validate($player);
-        } catch (KillerValidationException $e) {
-            throw new KillerBadRequestHttpException($e->getMessage());
-        }
+        $this->validator->validate($player);
 
         $this->logger->info('KILLER : player target : {player_target}', ['player_target' => $player->getTarget()]);
 

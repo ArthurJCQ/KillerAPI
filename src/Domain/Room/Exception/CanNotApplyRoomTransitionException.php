@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Room\Exception;
 
-class CanNotApplyRoomTransitionException extends \DomainException
+use App\Domain\KillerExceptionInterface;
+
+class CanNotApplyRoomTransitionException extends \DomainException implements KillerExceptionInterface
 {
 }

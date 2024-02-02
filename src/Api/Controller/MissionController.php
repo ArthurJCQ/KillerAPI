@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Api\Controller;
 
 use App\Api\Exception\KillerBadRequestHttpException;
-use App\Api\Exception\KillerValidationException;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Mission\Entity\Mission;
@@ -46,7 +45,7 @@ class MissionController extends AbstractController
         $room = $player->getRoom();
 
         if (!$room || $room->getStatus() !== Room::PENDING) {
-            throw new KillerBadRequestHttpException('KILLER_CAN_NOT_ADD_MISSIONS');
+            throw new KillerBadRequestHttpException('CAN_NOT_ADD_MISSIONS');
         }
 
         $player->addAuthoredMission($mission);
@@ -82,11 +81,7 @@ class MissionController extends AbstractController
             ],
         );
 
-        try {
-            $this->validator->validate($mission);
-        } catch (KillerValidationException $e) {
-            throw new KillerBadRequestHttpException($e->getMessage());
-        }
+        $this->validator->validate($mission);
 
         $this->persistenceAdapter->flush();
 

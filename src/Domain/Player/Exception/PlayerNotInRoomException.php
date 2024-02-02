@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Player\Exception;
 
-class PlayerNotInRoomException extends \DomainException
+use App\Domain\KillerExceptionInterface;
+
+class PlayerNotInRoomException extends \DomainException implements KillerExceptionInterface
 {
 }
