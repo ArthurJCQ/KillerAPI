@@ -32,6 +32,8 @@ class KillerProblemNormalizer implements NormalizerInterface, SerializerAwareInt
         $this->inner->setSerializer($this->serializer);
         $normalizedException = $this->inner->normalize($object, $format, $context);
 
+        $normalizedException['detail'] = 'SERVER_ERROR';
+
         if ($context['exception'] instanceof KillerExceptionInterface) {
             $normalizedException['detail'] = $context['exception']->getMessage();
         }
