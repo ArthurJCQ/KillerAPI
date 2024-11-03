@@ -4,30 +4,28 @@
         "recipe": {
             "repo": "github.com/symfony/recipes-contrib",
             "branch": "main",
-            "version": "2.3",
-            "ref": "89689e24507d8cb2c4a7937ece549db3836b608c"
+            "version": "5.0",
+            "ref": "0d213956834c5652a34e4bf9456ef26119132a8a"
         },
         "files": [
             "codeception.yml",
-            "tests/_data/.gitignore",
-            "tests/_output/.gitignore",
-            "tests/_support/AcceptanceTester.php",
-            "tests/_support/FunctionalTester.php",
-            "tests/_support/Helper/Acceptance.php",
-            "tests/_support/Helper/Functional.php",
-            "tests/_support/Helper/Unit.php",
-            "tests/_support/UnitTester.php",
-            "tests/_support/_generated/.gitignore",
-            "tests/acceptance.suite.yml",
-            "tests/acceptance/.gitignore",
-            "tests/functional.suite.yml",
-            "tests/functional/.gitignore",
-            "tests/unit.suite.yml",
-            "tests/unit/.gitignore"
+            "tests/Acceptance.suite.yml",
+            "tests/Acceptance/.gitignore",
+            "tests/Functional.suite.yml",
+            "tests/Functional/.gitignore",
+            "tests/Support/AcceptanceTester.php",
+            "tests/Support/Data/.gitignore",
+            "tests/Support/FunctionalTester.php",
+            "tests/Support/Helper/.gitignore",
+            "tests/Support/UnitTester.php",
+            "tests/Support/_generated/.gitignore",
+            "tests/Unit.suite.yml",
+            "tests/Unit/.gitignore",
+            "tests/_output/.gitignore"
         ]
     },
     "doctrine/annotations": {
-        "version": "1.13",
+        "version": "2.0",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -41,7 +39,7 @@
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "2.10",
-            "ref": "0db4b12b5df45f5122213b4ecd18733ab7fa7d53"
+            "ref": "c170ded8fc587d6bd670550c43dafcf093762245"
         },
         "files": [
             "config/packages/doctrine.yaml",
@@ -50,7 +48,7 @@
         ]
     },
     "doctrine/doctrine-fixtures-bundle": {
-        "version": "3.4",
+        "version": "3.5",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -87,10 +85,10 @@
         ]
     },
     "marvin255/random-string-generator": {
-        "version": "v1.6.0"
+        "version": "v2.0.0"
     },
     "nelmio/cors-bundle": {
-        "version": "2.2",
+        "version": "2.4",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -114,7 +112,7 @@
         ]
     },
     "phpunit/phpunit": {
-        "version": "9.6",
+        "version": "10.5",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -140,12 +138,12 @@
         ]
     },
     "symfony/console": {
-        "version": "6.1",
+        "version": "6.4",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "5.3",
-            "ref": "da0c8be8157600ad34f10ff0c9cc91232522e047"
+            "ref": "1781ff40d8a17d87cf53f8d4cf0c8346ed2bb461"
         },
         "files": [
             "bin/console"
@@ -169,7 +167,7 @@
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "6.4",
-            "ref": "a91c965766ad3ff2ae15981801643330eb42b6a5"
+            "ref": "32126346f25e1cee607cc4aa6783d46034920554"
         },
         "files": [
             "config/packages/cache.yaml",
@@ -183,7 +181,7 @@
         ]
     },
     "symfony/maker-bundle": {
-        "version": "1.43",
+        "version": "1.52",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -197,19 +195,19 @@
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "0.3",
-            "ref": "851667ac03fd113c5bd2215fb743974f6709bc62"
+            "ref": "528285147494380298f8f991ee8c47abebaf79db"
         },
         "files": [
             "config/packages/mercure.yaml"
         ]
     },
     "symfony/monolog-bundle": {
-        "version": "3.8",
+        "version": "3.10",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "3.7",
-            "ref": "213676c4ec929f046dfde5ea8e97625b81bc0578"
+            "ref": "aff23899c4440dd995907613c1dd709b6f59503f"
         },
         "files": [
             "config/packages/monolog.yaml"
@@ -221,7 +219,7 @@
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "6.3",
-            "ref": "1f5830c331065b6e4c9d5fa2105e322d29fcd573"
+            "ref": "a411a0480041243d97382cac7984f7dce7813c08"
         },
         "files": [
             ".env.test",
@@ -270,8 +268,8 @@
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
-            "version": "6.3",
-            "ref": "b7772eb20e92f3fb4d4fe756e7505b4ba2ca1a2c"
+            "version": "6.4",
+            "ref": "cab5fd2a13a45c266d45a7d9337e28dee6272877"
         },
         "files": [
             "config/packages/twig.yaml",
@@ -279,7 +277,7 @@
         ]
     },
     "symfony/validator": {
-        "version": "6.1",
+        "version": "6.4",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -291,7 +289,7 @@
         ]
     },
     "symfony/web-profiler-bundle": {
-        "version": "6.2",
+        "version": "6.4",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -304,7 +302,7 @@
         ]
     },
     "symfony/workflow": {
-        "version": "6.1",
+        "version": "6.4",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",

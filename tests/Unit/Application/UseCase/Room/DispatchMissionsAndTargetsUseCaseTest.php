@@ -154,7 +154,7 @@ class DispatchMissionsAndTargetsUseCaseTest extends Unit
             && $player !== $player3->reveal()))
             ->shouldBeCalled();
         $player3->setAssignedMission(Argument::that(
-            static fn (Mission $mission) => $mission->getAuthor() === $admin->reveal()
+            static fn (Mission $mission) => $mission->getAuthor() === $admin->reveal(),
         ))->shouldBeCalled();
         $player3->getAssignedMission()->shouldBeCalled();
         $player3->getId()->shouldBeCalledTimes(3)->willReturn(3);
