@@ -1,3 +1,0 @@
-when@test:
-    twig:
-        strict_variables: true
