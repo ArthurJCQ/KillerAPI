@@ -1,0 +1,9 @@
+framework:
+    notifier:
+        chatter_transports:
+        texter_transports:
+            expo: '%env(EXPO_DSN)%'
+        channel_policy:
+            # use chat/slack, chat/telegram, sms/twilio or sms/nexmo
+            urgent: ['push/expo']
+            high: ['push/expo']

@@ -7,18 +7,20 @@ namespace App\Infrastructure\Serializer;
 use App\Domain\KillerExceptionInterface;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ProblemNormalizer;
 use Symfony\Component\Serializer\SerializerAwareInterface;
 use Symfony\Component\Serializer\SerializerAwareTrait;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 #[AsDecorator(decorates: ProblemNormalizer::class)]
 class KillerProblemNormalizer implements NormalizerInterface, SerializerAwareInterface
 {
     use SerializerAwareTrait;
 
-    public const CUSTOM_ERROR_PREFIX = 'KILLER';
+    public const string CUSTOM_ERROR_PREFIX = 'KILLER';
 
     public function __construct(#[AutowireDecorated] private ProblemNormalizer $inner)
     {
@@ -32,10 +34,13 @@ class KillerProblemNormalizer implements NormalizerInterface, SerializerAwareInt
         $this->inner->setSerializer($this->serializer);
         $normalizedException = $this->inner->normalize($object, $format, $context);
 
-        $normalizedException['detail'] = 'SERVER_ERROR';
-
         if ($context['exception'] instanceof KillerExceptionInterface) {
             $normalizedException['detail'] = $context['exception']->getMessage();
+        }
+
+        if ($context['exception'] instanceof ValidationFailedException) {
+            $errors = $context['exception']->getViolations();
+            $normalizedException['detail'] = $errors->get(0)->getMessage();
         }
 
         if ($context['exception'] instanceof HttpExceptionInterface) {

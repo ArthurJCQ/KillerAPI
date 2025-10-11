@@ -13,4 +13,6 @@ interface RoomRepository extends BaseRepository
     public function getRoomByIdOrCode(mixed $identifier): mixed;
 
     public function getEmptyRooms(): iterable;
+
+    public function countInGameRooms(): int;
 }

@@ -19,9 +19,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[CanPatchRoom]
 class Room
 {
-    public const PENDING = 'PENDING';
-    public const IN_GAME = 'IN_GAME';
-    public const ENDED = 'ENDED';
+    public const string PENDING = 'PENDING';
+    public const string IN_GAME = 'IN_GAME';
+    public const string ENDED = 'ENDED';
 
     #[ORM\Id]
     #[ORM\Column(type: 'string', length: 5, unique: true)]

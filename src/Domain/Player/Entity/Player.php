@@ -11,6 +11,8 @@ use App\Domain\Room\Entity\Room;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Notifier\Recipient\Recipient;
+use Symfony\Component\Notifier\Recipient\RecipientInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
@@ -19,9 +21,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[PlayerCanRename]
-class Player implements UserInterface
+class Player implements UserInterface, RecipientInterface
 {
-    public const DEFAULT_AVATAR = 'captain';
+    public const string DEFAULT_AVATAR = 'captain';
 
     #[ORM\Id]
     #[ORM\Column(type: 'integer', unique: true)]
@@ -79,6 +81,10 @@ class Player implements UserInterface
     #[ORM\Column(type: 'string', options: ['default' => self::DEFAULT_AVATAR])]
     #[Groups(['me', 'get-room', 'post-player', 'create-player', 'get-player', 'patch-player'])]
     private string $avatar = self::DEFAULT_AVATAR;
+
+    #[ORM\Column(type: 'string', options: ['default' => ''])]
+    #[Groups(['me'])]
+    private string $expoPushToken = '';
 
     private string $token = '';
 
@@ -201,6 +207,7 @@ class Player implements UserInterface
     }
 
     /** @see UserInterface */
+    #[\Deprecated]
     public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
@@ -305,6 +312,23 @@ class Player implements UserInterface
         $this->token = $token;
 
         return $this;
+    }
+
+    public function getExpoPushToken(): string
+    {
+        return $this->expoPushToken;
+    }
+
+    public function setExpoPushToken(string $expoPushToken): self
+    {
+        $this->expoPushToken = $expoPushToken;
+
+        return $this;
+    }
+
+    public function getRecipient(): Recipient
+    {
+        return new Recipient($this->name);
     }
 
     #[SerializedName('hasAtLeastOneMission')]

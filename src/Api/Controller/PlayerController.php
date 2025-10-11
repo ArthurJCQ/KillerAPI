@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Api\Controller;
 
 use App\Application\UseCase\Player\ChangeRoomUseCase;
+use App\Application\UseCase\Player\KillRequestOnTargetUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Player\Entity\Player;
@@ -24,6 +25,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -53,6 +55,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly Security $security,
         private readonly ChangeRoomUseCase $changeRoomUseCase,
+        private readonly KillRequestOnTargetUseCase $killRequestOnTargetUseCase,
     ) {
     }
 
@@ -201,6 +204,15 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         $this->security->logout(validateCsrfToken: false);
         $this->playerRepository->remove($player);
         $this->persistenceAdapter->flush();
+
+        return $this->json(null, Response::HTTP_OK);
+    }
+
+    #[Route('/{id}/kill-request', name: 'kill_request', methods: [Request::METHOD_POST])]
+    #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player', message: 'KILLER_KILL_PLAYER_UNAUTHORIZED')]
+    public function killRequest(Player $player): JsonResponse
+    {
+        $this->killRequestOnTargetUseCase->execute($player);
 
         return $this->json(null, Response::HTTP_OK);
     }
