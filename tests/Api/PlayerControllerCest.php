@@ -11,7 +11,7 @@ use App\Tests\ApiTester;
 
 class PlayerControllerCest
 {
-    public const PLAYER_NAME = 'John';
+    public const string PLAYER_NAME = 'John';
 
     public function _before(ApiTester $I): void
     {

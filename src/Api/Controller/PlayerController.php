@@ -25,7 +25,6 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -208,11 +207,13 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         return $this->json(null, Response::HTTP_OK);
     }
 
-    #[Route('/{id}/kill-request', name: 'kill_request', methods: [Request::METHOD_POST])]
+    #[Route('/{id}/kill-target-request', name: 'kill_request', methods: [Request::METHOD_PATCH])]
     #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player', message: 'KILLER_KILL_PLAYER_UNAUTHORIZED')]
-    public function killRequest(Player $player): JsonResponse
+    public function killTarget(Player $player): JsonResponse
     {
         $this->killRequestOnTargetUseCase->execute($player);
+
+        $this->persistenceAdapter->flush();
 
         return $this->json(null, Response::HTTP_OK);
     }

@@ -12,7 +12,7 @@ use App\Tests\ApiTester;
 
 class RoomControllerCest
 {
-    public const PLAYER_NAME = 'John';
+    public const string PLAYER_NAME = 'John';
 
     public function testCreateRoom(ApiTester $I): void
     {
@@ -246,7 +246,7 @@ class RoomControllerCest
         // Create admin and room
         $I->createAdminAndUpdateHeaders($I);
 
-        $I->sendPostAsJson('room');
+        $I->sendPostAsJson('/room');
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
 
         $room = $I->grabEntityFromRepository(Room::class, ['name' => 'Admin\'s room']);
@@ -256,7 +256,7 @@ class RoomControllerCest
 
         /** @var string $player1Id */
         $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson(sprintf('/player/%s', $player1Id), ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
 
         // Join room with player 2
@@ -264,7 +264,7 @@ class RoomControllerCest
 
         /** @var string $player2Id */
         $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
-        $I->sendPatchAsJson(sprintf('player/%s', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson(sprintf('/player/%s', $player2Id), ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
 
         // Start the game with admin
@@ -359,12 +359,18 @@ class RoomControllerCest
             'target' => null,
         ]);
 
+        $I->setAdminJwtHeader($I);
+        /** @var string $adminId */
+        $adminId = $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin']);
+        $I->sendPatch(sprintf('/player/%s/kill-target-request', $adminId));
+        $I->seeResponseCodeIs(200);
+
         $I->setJwtHeader($I, 'Doe');
 
         $I->sendGetAsJson('/player/me');
         $I->seeResponseContainsJson([
             'name' => 'Doe',
-            'status' => PlayerStatus::ALIVE->value,
+            'status' => PlayerStatus::DYING->value,
             'assignedMission' => ['content' => 'mission'],
             'target' => ['avatar' => Player::DEFAULT_AVATAR],
         ]);

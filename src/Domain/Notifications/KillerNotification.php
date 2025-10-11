@@ -9,7 +9,9 @@ use App\Domain\Player\Entity\Player;
 abstract class KillerNotification
 {
     public string $title = '';
+
     public string $content = '';
+
     /** @var array<Player> */
     public array $recipients = [];
 

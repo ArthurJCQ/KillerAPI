@@ -7,7 +7,6 @@ namespace App\Infrastructure\Serializer;
 use App\Domain\KillerExceptionInterface;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
-use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ProblemNormalizer;
@@ -31,6 +30,10 @@ class KillerProblemNormalizer implements NormalizerInterface, SerializerAwareInt
         ?string $format = null,
         array $context = [],
     ): float|int|bool|\ArrayObject|array|string|null {
+        if (!$this->serializer) {
+            throw new \LogicException('The serializer must be set.');
+        }
+
         $this->inner->setSerializer($this->serializer);
         $normalizedException = $this->inner->normalize($object, $format, $context);
 
