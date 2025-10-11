@@ -7,6 +7,7 @@ namespace App\Domain\Player\Enum;
 enum PlayerStatus: string
 {
     case ALIVE = 'ALIVE';
+    case DYING = 'DYING';
     case KILLED = 'KILLED';
     case SPECTATING = 'SPECTATING';
 }

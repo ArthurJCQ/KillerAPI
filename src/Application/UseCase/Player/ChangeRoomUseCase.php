@@ -26,7 +26,6 @@ final readonly class ChangeRoomUseCase
         $previousRoom?->removePlayer($player);
         $newRoom?->addPlayer($player);
 
-
         $this->eventDispatcher->dispatch(new PlayerChangedRoomEvent($player, $previousRoom));
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\UseCase\Room;
 
+use App\Domain\Notifications\GameStartedNotification;
+use App\Domain\Notifications\KillerNotifier;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomUseCase;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
@@ -17,6 +19,7 @@ final class StartGameUseCase implements RoomUseCase, LoggerAwareInterface
     public function __construct(
         private readonly DispatchMissionsAndTargetsUseCase $dispatchMissionsAndTargetsUseCase,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
+        private readonly KillerNotifier $notifier,
     ) {
     }
 
@@ -29,5 +32,7 @@ final class StartGameUseCase implements RoomUseCase, LoggerAwareInterface
         $this->logger->info('Room {room_id} has started successfully.', ['room_id' => $room->getId()]);
 
         $this->persistenceAdapter->flush();
+
+        $this->notifier->notify(GameStartedNotification::to(...$room->getPlayers()));
     }
 }

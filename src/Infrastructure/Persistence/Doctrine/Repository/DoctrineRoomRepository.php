@@ -36,4 +36,9 @@ final class DoctrineRoomRepository extends DoctrineBaseRepository implements Roo
             ->getQuery()
             ->toIterable();
     }
+
+    public function countInGameRooms(): int
+    {
+        return $this->repository->count(['status' => Room::IN_GAME]);
+    }
 }

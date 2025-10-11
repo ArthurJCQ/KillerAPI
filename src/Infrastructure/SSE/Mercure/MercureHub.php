@@ -25,7 +25,7 @@ final class MercureHub implements SseInterface, LoggerAwareInterface
         try {
             $this->hub->publish(new Update($topics, $data));
         } catch (ExceptionInterface $e) {
-            $this->logger->warning(sprintf('Could not send Mercure update : %s', $e->getMessage()));
+            $this->logger->error(sprintf('Could not send Mercure update : %s', $e->getMessage()));
         }
     }
 }

@@ -10,7 +10,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class PlayerVoter extends Voter
 {
-    public const EDIT_PLAYER = 'edit_player';
+    public const string EDIT_PLAYER = 'edit_player';
 
     protected function supports(string $attribute, mixed $subject): bool
     {

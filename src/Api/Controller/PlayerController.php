@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Api\Controller;
 
 use App\Application\UseCase\Player\ChangeRoomUseCase;
+use App\Application\UseCase\Player\KillRequestOnTargetUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Player\Entity\Player;
@@ -53,6 +54,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly Security $security,
         private readonly ChangeRoomUseCase $changeRoomUseCase,
+        private readonly KillRequestOnTargetUseCase $killRequestOnTargetUseCase,
     ) {
     }
 
@@ -200,6 +202,17 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
         $this->security->logout(validateCsrfToken: false);
         $this->playerRepository->remove($player);
+        $this->persistenceAdapter->flush();
+
+        return $this->json(null, Response::HTTP_OK);
+    }
+
+    #[Route('/{id}/kill-target-request', name: 'kill_request', methods: [Request::METHOD_PATCH])]
+    #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player', message: 'KILLER_KILL_PLAYER_UNAUTHORIZED')]
+    public function killTarget(Player $player): JsonResponse
+    {
+        $this->killRequestOnTargetUseCase->execute($player);
+
         $this->persistenceAdapter->flush();
 
         return $this->json(null, Response::HTTP_OK);
