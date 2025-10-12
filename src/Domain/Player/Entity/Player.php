@@ -83,7 +83,7 @@ class Player implements UserInterface, RecipientInterface
     private string $avatar = self::DEFAULT_AVATAR;
 
     #[ORM\Column(type: 'string', options: ['default' => ''])]
-    #[Groups(['me'])]
+    #[Groups(['me', 'post-player', 'create-player', 'patch-player'])]
     private string $expoPushToken = '';
 
     private string $token = '';
