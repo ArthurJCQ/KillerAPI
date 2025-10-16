@@ -6,6 +6,6 @@ namespace App\Domain\Notifications;
 
 final class GameStartedNotification extends KillerNotification
 {
-    public string $title = 'La partie de Killer a commencé !';
-    public string $content = 'Tué ou être tué ...';
+    public string $title = 'La partie de Killer a commencé';
+    public string $content = 'Nouvelle partie lancée ! Votre mission et votre cible vous attendent. Que la chasse commence ! 🔪';
 }
