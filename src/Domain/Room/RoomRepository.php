@@ -10,8 +10,6 @@ use App\Infrastructure\Persistence\BaseRepository;
 /** @extends BaseRepository<Room> */
 interface RoomRepository extends BaseRepository
 {
-    public function getRoomByIdOrCode(mixed $identifier): mixed;
-
     public function getEmptyRooms(): iterable;
 
     public function countInGameRooms(): int;

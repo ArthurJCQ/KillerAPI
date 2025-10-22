@@ -33,3 +33,5 @@ build
 ###> phpstan/phpstan ###
 phpstan.neon
 ###< phpstan/phpstan ###
+
+/deploy-instruction.md

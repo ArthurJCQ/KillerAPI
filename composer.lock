@@ -5379,12 +5379,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/mcp-bundle.git",
-                "reference": "e648bce7bcc28864557b065343d338ae4dec2a62"
+                "reference": "5b86a5395e1eae2d25c33f542669fb5bc1b891d2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/mcp-bundle/zipball/e648bce7bcc28864557b065343d338ae4dec2a62",
-                "reference": "e648bce7bcc28864557b065343d338ae4dec2a62",
+                "url": "https://api.github.com/repos/symfony/mcp-bundle/zipball/5b86a5395e1eae2d25c33f542669fb5bc1b891d2",
+                "reference": "5b86a5395e1eae2d25c33f542669fb5bc1b891d2",
                 "shasum": ""
             },
             "require": {
@@ -5406,6 +5406,12 @@
             },
             "default-branch": true,
             "type": "symfony-bundle",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/ai",
+                    "name": "symfony/ai"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Symfony\\AI\\McpBundle\\": "src/"
@@ -5443,7 +5449,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-10-07T15:16:53+00:00"
+            "time": "2025-10-20T20:02:10+00:00"
         },
         {
             "name": "symfony/mercure",
