@@ -215,6 +215,12 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
         $this->persistenceAdapter->flush();
 
+        $playerTarget = $player->getTarget();
+        $this->hub->publish(
+            sprintf('player/%s', $playerTarget?->getId()),
+            $this->serializer->serialize((object) $playerTarget, [AbstractNormalizer::GROUPS => 'publish-mercure']),
+        );
+
         return $this->json(null, Response::HTTP_OK);
     }
 }

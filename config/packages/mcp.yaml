@@ -1,0 +1,20 @@
+mcp:
+    app: 'killer-party-app' # Application name to be exposed to clients
+    version: '1.0.0' # Application version to be exposed to clients
+    pagination_limit: 50 # Maximum number of items returned per list request (default: 50)
+    instructions: | # Instructions describing server purpose and usage context (for LLMs)
+        This server provides information about the Killer Party game data.
+
+        Use when being ask about game data like players, rooms created, missions, etc.
+        This server provides stats and figures about the game.
+    client_transports:
+        stdio: true
+        http: true # Enable HTTP transport via controller
+
+    # HTTP transport configuration (optional)
+    http:
+        path: /_mcp # HTTP endpoint path (default: /_mcp)
+        session:
+            store: file # Session store type: 'file' or 'memory' (default: file)
+            directory: '%kernel.cache_dir%/mcp-sessions' # Directory for file store (default: cache_dir/mcp-sessions)
+            ttl: 3600 # Session TTL in seconds (default: 3600)

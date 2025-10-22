@@ -1,3 +1,7 @@
 controllers:
     resource: ../src/Api/Controller/
     type: attribute
+
+_mcp:
+    resource: .
+    type: mcp
