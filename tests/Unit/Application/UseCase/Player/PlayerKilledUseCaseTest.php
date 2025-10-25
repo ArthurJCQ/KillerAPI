@@ -6,10 +6,13 @@ namespace App\Tests\Unit\Application\UseCase\Player;
 
 use App\Application\UseCase\Player\PlayerKilledUseCase;
 use App\Domain\Mission\Entity\Mission;
+use App\Domain\Notifications\DeathConfirmationNotification;
+use App\Domain\Notifications\KillerNotifier;
 use App\Domain\Player\Entity\Player;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
@@ -17,15 +20,18 @@ class PlayerKilledUseCaseTest extends Unit
 {
     use ProphecyTrait;
 
-    /** @var PersistenceAdapterInterface|ObjectProphecy */
     private ObjectProphecy $persistenceAdapter;
-
+    private ObjectProphecy $killerNotifier;
     private PlayerKilledUseCase $playerKilledUseCase;
 
     protected function setUp(): void
     {
         $this->persistenceAdapter = $this->prophesize(PersistenceAdapterInterface::class);
-        $this->playerKilledUseCase = new PlayerKilledUseCase($this->persistenceAdapter->reveal());
+        $this->killerNotifier = $this->prophesize(KillerNotifier::class);
+        $this->playerKilledUseCase = new PlayerKilledUseCase(
+            $this->persistenceAdapter->reveal(),
+            $this->killerNotifier->reveal(),
+        );
 
         parent::setUp();
     }
@@ -48,6 +54,8 @@ class PlayerKilledUseCaseTest extends Unit
             'setTarget' => Expected::once(new Player()),
             'setAssignedMission' => Expected::once(new Player()),
         ]);
+
+        $this->killerNotifier->notify(Argument::type(DeathConfirmationNotification::class))->shouldBeCalledOnce();
 
         $this->playerKilledUseCase->execute($player);
     }
