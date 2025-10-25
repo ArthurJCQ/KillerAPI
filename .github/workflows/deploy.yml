@@ -1,0 +1,113 @@
+name: Deploy Killer API to Production
+
+on:
+  push:
+    tags:
+      - 'v*'  # Déclenche sur les tags v1.0.0, v2.1.0, etc.
+
+jobs:
+  deploy:
+    name: Deploy to Killer API Ubuntu VPS
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract tag name
+        id: tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          PROD_APP_SECRET: ${{ secrets.PROD_APP_SECRET }}
+          PROD_SENTRY_DSN: ${{ secrets.PROD_SENTRY_DSN }}
+          PROD_EXPO_DSN: ${{ secrets.PROD_EXPO_DSN }}
+          PROD_MERCURE_JWT_SECRET: ${{ secrets.PROD_MERCURE_JWT_SECRET }}
+          PROD_DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+          PROD_SERVER_NAME: ${{ secrets.PROD_SERVER_NAME || 'api.killerparty.app' }}
+          TAG_NAME: ${{ steps.tag.outputs.TAG_NAME }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST << 'ENDSSH'
+            set -e
+          
+            # Variables
+            APP_DIR="/home/deploy/KillerAPI"
+            BRANCH="main"
+          
+            echo "🚀 Starting deployment of tag: $TAG_NAME"
+          
+            # Se placer dans le répertoire de l'application
+            cd $APP_DIR
+          
+            # Récupérer les dernières modifications
+            echo "📥 Fetching latest changes from GitHub..."
+            git fetch --tags origin
+          
+            # Checkout le tag spécifique
+            echo "🏷️  Checking out tag: $TAG_NAME"
+            git checkout $TAG_NAME
+          
+            # Vérifier si le Dockerfile a changé
+            REBUILD_FLAG=""
+            if git diff --name-only HEAD@{1} HEAD | grep -q "Dockerfile\|compose\.yaml"; then
+              echo "📦 Dockerfile changed, rebuilding images..."
+              REBUILD_FLAG="--build"
+            else
+              echo "📦 No Dockerfile changes, skipping rebuild..."
+              REBUILD_FLAG=""
+            fi
+          
+            # Arrêter les conteneurs existants
+            echo "🛑 Stopping existing containers..."
+            docker compose down
+          
+            # Démarrer les conteneurs avec les variables d'environnement
+            echo "▶️ Starting containers with production configuration..."
+            APP_ENV=prod \
+            SERVER_NAME="$PROD_SERVER_NAME" \
+            APP_SECRET="$PROD_APP_SECRET" \
+            SENTRY_DSN="$PROD_SENTRY_DSN" \
+            EXPO_DSN="$PROD_EXPO_DSN" \
+            CADDY_MERCURE_JWT_SECRET="$PROD_MERCURE_JWT_SECRET" \
+            DATABASE_URL="$PROD_DATABASE_URL" \
+            docker compose up -d $REBUILD_FLAG --wait --force-recreate --no-deps php mercure
+          
+            # Attendre que les conteneurs soient prêts
+            echo "⏳ Waiting for containers to be ready..."
+            sleep 15
+
+            # Vider le cache
+            echo "🧹 Clearing cache..."
+            docker compose exec -T php bin/console cache:clear --env=prod || echo "⚠️ Cache clear failed"
+          
+            # Nettoyer les anciennes images Docker
+            echo "🧹 Cleaning up old Docker images..."
+            docker image prune -f
+          
+            # Vérifier l'état des conteneurs
+            echo "✅ Checking container status..."
+            docker compose ps
+          
+            echo "🎉 Deployment of tag $TAG_NAME completed successfully!"
+          ENDSSH
+
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ Deployment of tag ${{ steps.tag.outputs.TAG_NAME }} successful!"
+          else
+            echo "❌ Deployment of tag ${{ steps.tag.outputs.TAG_NAME }} failed!"
+            exit 1
+          fi
