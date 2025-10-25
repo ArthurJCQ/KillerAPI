@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Application\UseCase\Room;
 
 use App\Application\UseCase\Mission\CreateMissionUseCase;
+use App\Domain\Mission\Enum\MissionTheme;
 use App\Domain\Mission\MissionGeneratorInterface;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\NullLogger;
 
 /**
  * Use case for creating a game-mastered room with AI-generated missions
@@ -33,13 +35,14 @@ class GenerateRoomWithMissionUseCase implements LoggerAwareInterface
         private readonly CreateRoomUseCase $createRoomUseCase,
         private readonly CreateMissionUseCase $createMissionUseCase,
     ) {
+        $this->logger = new NullLogger();
     }
 
     public function execute(
         string $roomName,
         Player $gameMaster,
         int $missionsCount = self::DEFAULT_MISSIONS_COUNT,
-        ?string $theme = null,
+        ?MissionTheme $theme = null,
     ): Room {
         $this->logger?->info('Creating game-mastered room with AI missions', [
             'room_name' => $roomName,
@@ -73,6 +76,9 @@ class GenerateRoomWithMissionUseCase implements LoggerAwareInterface
                 'room_id' => $room ? $room->getId() : 'N/A',
                 'error' => $e->getMessage(),
             ]);
+
+            $gameMaster->setRoom(null);
+            $this->persistenceAdapter->flush();
 
             throw new \RuntimeException(
                 sprintf('Failed to create game-mastered room: %s', $e->getMessage()),

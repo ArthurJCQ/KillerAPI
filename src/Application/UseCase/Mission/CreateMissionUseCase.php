@@ -11,11 +11,11 @@ use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 
-readonly class CreateMissionUseCase
+class CreateMissionUseCase
 {
     public function __construct(
-        private MissionRepository $missionRepository,
-        private PersistenceAdapterInterface $persistenceAdapter,
+        private readonly MissionRepository $missionRepository,
+        private readonly PersistenceAdapterInterface $persistenceAdapter,
     ) {
     }
 
@@ -29,7 +29,6 @@ readonly class CreateMissionUseCase
 
         $mission = new Mission();
         $mission->setContent($content);
-
         $author->addAuthoredMission($mission);
 
         $this->missionRepository->store($mission);

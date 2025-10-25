@@ -11,12 +11,12 @@ use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 
-readonly class CreateRoomUseCase
+class CreateRoomUseCase
 {
     public function __construct(
-        private RoomRepository $roomRepository,
-        private PersistenceAdapterInterface $persistenceAdapter,
-        private ChangeRoomUseCase $changeRoomUseCase,
+        private readonly RoomRepository $roomRepository,
+        private readonly PersistenceAdapterInterface $persistenceAdapter,
+        private readonly ChangeRoomUseCase $changeRoomUseCase,
     ) {
     }
 

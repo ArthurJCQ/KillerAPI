@@ -725,4 +725,46 @@ class RoomControllerCest
             ],
         );
     }
+
+    public function testGenerateRoomWithMissions(ApiTester $I): void
+    {
+        $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
+
+        $I->sendPostAsJson('/room/generate-with-missions', [
+            'roomName' => 'AI Generated Room',
+            'missionsCount' => 5,
+            'theme' => 'spy',
+        ]);
+
+        $I->seeResponseCodeIs(201);
+
+        $playerId = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
+
+        $I->seeResponseContainsJson([
+            'name' => 'AI Generated Room',
+            'admin' => ['id' => $playerId],
+            'isGameMastered' => true,
+        ]);
+
+        // Verify room was created
+        $I->seeInRepository(Room::class, [
+            'name' => 'AI Generated Room',
+            'isGameMastered' => true,
+        ]);
+    }
+
+    public function testGenerateRoomWithMissionsWithDefaults(ApiTester $I): void
+    {
+        $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
+
+        // Send empty body to test defaults
+        $I->sendPostAsJson('/room/generate-with-missions', []);
+
+        $I->seeResponseCodeIs(201);
+
+        // Should use default room name
+        $I->seeResponseContainsJson([
+            'name' => sprintf("%s's room", self::PLAYER_NAME),
+        ]);
+    }
 }

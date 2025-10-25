@@ -4,42 +4,42 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Ai\Agent;
 
+use App\Domain\Mission\Enum\MissionTheme;
 use App\Domain\Mission\MissionGeneratorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\AI\Agent\Agent;
-use Symfony\AI\Platform\Bridge\Albert\PlatformFactory;
+use Symfony\AI\Platform\Bridge\OpenRouter\PlatformFactory;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 readonly class KillerMissionsAgent implements MissionGeneratorInterface
 {
+    public const string SYSTEM_PROMPT = 'You are a creative game designer for "Killer Party",'
+    . 'an assassination game where players are secretly assigned targets and missions.'
+    . 'Each player has to make its target do what the mission says to kill it and win. Missions MUST BE in french.';
+
     public function __construct(
         private LoggerInterface $logger,
         #[Autowire(env: 'OPENROUTER_API_KEY')]
         private string $openRouterApiKey,
         #[Autowire(env: 'OPENROUTER_MODEL')]
         private string $openRouterModel,
-        #[Autowire(env: 'OPENROUTER_URL')]
-        private string $openRouterUrl,
     ) {
     }
 
-    public function generateMissions(int $count, ?string $theme = null): array
+    public function generateMissions(int $count, ?MissionTheme $theme = null): array
     {
         $this->logger->info('Generating missions with OpenRouter AI', [
             'count' => $count,
-            'theme' => $theme,
+            'theme' => $theme?->value,
         ]);
 
         $prompt = $this->buildMissionGenerationPrompt($count, $theme);
 
         try {
             // Create AI Platform instance
-            $platform = PlatformFactory::create(
-                apiKey: $this->openRouterApiKey,
-                baseUrl: $this->openRouterUrl,
-            );
+            $platform = PlatformFactory::create(apiKey: $this->openRouterApiKey);
 
             // Ensure model is non-empty
             if ($this->openRouterModel === '') {
@@ -51,8 +51,7 @@ readonly class KillerMissionsAgent implements MissionGeneratorInterface
 
             // Create message bag with system and user messages
             $messages = new MessageBag(
-                Message::forSystem('You are a creative game designer for "Killer Party",'
-                    . 'an assassination game where players are secretly assigned targets and missions.'),
+                Message::forSystem(self::SYSTEM_PROMPT),
                 Message::ofUser($prompt),
             );
 
@@ -96,11 +95,12 @@ readonly class KillerMissionsAgent implements MissionGeneratorInterface
         }
     }
 
-    private function buildMissionGenerationPrompt(int $count, ?string $theme): string
+    private function buildMissionGenerationPrompt(int $count, ?MissionTheme $theme): string
     {
         $basePrompt = <<<PROMPT
 Generate {$count} fun, creative, and challenging missions for the game. Each mission should:
 - Be between 10-100 words
+- 255 characters maximum
 - Be appropriate for a party game (nothing dangerous or inappropriate)
 - Be achievable in a social setting
 - Be entertaining and engaging
@@ -109,9 +109,9 @@ Generate {$count} fun, creative, and challenging missions for the game. Each mis
 
 PROMPT;
 
-        if ($theme !== null) {
-            $basePrompt .= sprintf("\nTheme: %s. All missions should fit this theme.\n", $theme);
-        }
+//        if ($theme !== null) {
+//            $basePrompt .= sprintf("\nTheme: %s. All missions should fit this theme.\n", $theme->value);
+//        }
 
         $basePrompt .= <<<PROMPT
 
@@ -120,7 +120,7 @@ Examples of good missions:
 - "Take a selfie with your target without them knowing and show it to another player"
 - "Get your target to say a specific word three times in conversation"
 - "Convince your target to perform an embarrassing dance move"
-- "Steal an object from your target's pocket or bag without being noticed"
+- "Make your target taste your cocktail"
 
 Please provide exactly {$count} missions, each on a new line, numbered from 1 to {$count}.
 Format: Just the numbered list, no additional commentary.
