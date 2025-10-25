@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Api\Controller;
 
-use App\Api\Exception\KillerBadRequestHttpException;
+use App\Application\UseCase\Mission\CreateMissionUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Mission\Entity\Mission;
@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -32,26 +33,30 @@ class MissionController extends AbstractController
         private readonly SseInterface $hub,
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
+        private readonly CreateMissionUseCase $createMissionUseCase,
     ) {
     }
 
     #[Route(name: 'create_mission', methods: [Request::METHOD_POST])]
     #[IsGranted(MissionVoter::CREATE_MISSION, message: 'KILLER_CREATE_MISSION_UNAUTHORIZED')]
     public function createMission(
-        #[MapRequestPayload(serializationContext: [AbstractNormalizer::GROUPS => 'post-mission'])] Mission $mission,
+        #[MapRequestPayload(serializationContext: [AbstractNormalizer::GROUPS => 'post-mission'])] Mission $missionDto,
     ): JsonResponse {
         /** @var Player $player */
         $player = $this->getUser();
-        $room = $player->getRoom();
 
-        if (!$room || $room->getStatus() !== Room::PENDING) {
-            throw new KillerBadRequestHttpException('CAN_NOT_ADD_MISSIONS');
+        $content = $missionDto->getContent();
+        if ($content === null) {
+            throw new BadRequestHttpException('Mission content is required');
         }
 
-        $player->addAuthoredMission($mission);
+        $mission = $this->createMissionUseCase->execute($content, $player);
 
-        $this->missionRepository->store($mission);
-        $this->persistenceAdapter->flush();
+        $room = $player->getRoom();
+
+        if ($room === null) {
+            throw new BadRequestHttpException('Player must be in a room');
+        }
 
         $this->hub->publish(
             sprintf('room/%s', $room),

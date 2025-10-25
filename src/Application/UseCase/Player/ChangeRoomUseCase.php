@@ -10,9 +10,9 @@ use App\Domain\Player\Exception\PlayerCanNotJoinRoomException;
 use App\Domain\Room\Entity\Room;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-final readonly class ChangeRoomUseCase
+class ChangeRoomUseCase
 {
-    public function __construct(private EventDispatcherInterface $eventDispatcher)
+    public function __construct(private readonly EventDispatcherInterface $eventDispatcher)
     {
     }
 

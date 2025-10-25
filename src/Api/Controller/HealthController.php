@@ -17,10 +17,6 @@ class HealthController extends AbstractController implements LoggerAwareInterfac
 {
     use LoggerAwareTrait;
 
-    public function __construct()
-    {
-    }
-
     #[Route('/', name: 'health', methods: [Request::METHOD_GET])]
     public function health(): JsonResponse
     {

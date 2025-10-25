@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make:*)",
+      "Bash(vendor/bin/codecept run:*)",
+      "Bash(vendor/bin/phpcbf:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
