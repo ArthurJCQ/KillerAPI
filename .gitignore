@@ -35,3 +35,4 @@ phpstan.neon
 ###< phpstan/phpstan ###
 
 /deploy-instruction.md
+/.claude/
