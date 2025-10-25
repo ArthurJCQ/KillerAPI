@@ -30,17 +30,30 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
-          PROD_APP_SECRET: ${{ secrets.PROD_APP_SECRET }}
-          PROD_SENTRY_DSN: ${{ secrets.PROD_SENTRY_DSN }}
-          PROD_EXPO_DSN: ${{ secrets.PROD_EXPO_DSN }}
-          PROD_MERCURE_JWT_SECRET: ${{ secrets.PROD_MERCURE_JWT_SECRET }}
-          PROD_DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
-          PROD_SERVER_NAME: ${{ secrets.PROD_SERVER_NAME || 'api.killerparty.app' }}
           TAG_NAME: ${{ steps.tag.outputs.TAG_NAME }}
         run: |
+          # Créer le fichier avec les variables d'environnement
+          cat > /tmp/env_vars << EOF
+          export APP_ENV=prod
+          export SERVER_NAME="${{ secrets.PROD_SERVER_NAME || 'api.killerparty.app' }}"
+          export APP_SECRET="${{ secrets.PROD_APP_SECRET }}"
+          export SENTRY_DSN="${{ secrets.PROD_SENTRY_DSN }}"
+          export EXPO_DSN="${{ secrets.PROD_EXPO_DSN }}"
+          export CADDY_MERCURE_JWT_SECRET="${{ secrets.PROD_MERCURE_JWT_SECRET }}"
+          export DATABASE_URL="${{ secrets.PROD_DATABASE_URL }}"
+          export TAG_NAME="${{ steps.tag.outputs.TAG_NAME }}"
+          EOF
+
+          scp -i ~/.ssh/deploy_key -P $SSH_PORT /tmp/env_vars $SSH_USER@$SSH_HOST:/tmp/env_vars
+          
+          # Nettoyer localement
+          rm /tmp/env_vars
+          
           ssh -i ~/.ssh/deploy_key -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST << 'ENDSSH'
             set -e
-          
+            source /tmp/env_vars
+            rm /tmp/env_vars
+
             # Variables
             APP_DIR="/home/deploy/KillerAPI"
             BRANCH="main"
@@ -56,7 +69,7 @@ jobs:
           
             # Checkout le tag spécifique
             echo "🏷️  Checking out tag: $TAG_NAME"
-            git checkout $TAG_NAME
+            git checkout ${TAG_NAME}
           
             # Vérifier si le Dockerfile a changé
             REBUILD_FLAG=""
@@ -74,7 +87,7 @@ jobs:
           
             # Démarrer les conteneurs avec les variables d'environnement
             echo "▶️ Starting containers with production configuration..."
-            APP_ENV=prod \
+            APP_ENV=$APP_ENV \
             SERVER_NAME="$PROD_SERVER_NAME" \
             APP_SECRET="$PROD_APP_SECRET" \
             SENTRY_DSN="$PROD_SENTRY_DSN" \
