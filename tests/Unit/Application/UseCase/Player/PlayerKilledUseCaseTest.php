@@ -6,8 +6,8 @@ namespace App\Tests\Unit\Application\UseCase\Player;
 
 use App\Application\UseCase\Player\PlayerKilledUseCase;
 use App\Domain\Mission\Entity\Mission;
-use App\Domain\Notifications\KillerNotifier;
 use App\Domain\Notifications\DeathConfirmationNotification;
+use App\Domain\Notifications\KillerNotifier;
 use App\Domain\Player\Entity\Player;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use Codeception\Stub\Expected;
@@ -30,7 +30,7 @@ class PlayerKilledUseCaseTest extends Unit
         $this->killerNotifier = $this->prophesize(KillerNotifier::class);
         $this->playerKilledUseCase = new PlayerKilledUseCase(
             $this->persistenceAdapter->reveal(),
-            $this->killerNotifier->reveal()
+            $this->killerNotifier->reveal(),
         );
 
         parent::setUp();
