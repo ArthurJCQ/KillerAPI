@@ -19,10 +19,7 @@ class KillerProblemNormalizerTest extends TestCase
 {
     use ProphecyTrait;
 
-    /** @var ProblemNormalizer|ObjectProphecy */
     private ObjectProphecy $problemNormalizer;
-
-    /** @var SerializerInterface|ObjectProphecy */
     private ObjectProphecy $serializer;
 
     private KillerProblemNormalizer $killerProblemNormalizer;

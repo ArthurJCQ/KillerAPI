@@ -46,7 +46,6 @@ class ChangeRoomAdminCommand extends Command
         /** @var string $newAdminName */
         $newAdminName = $helper->ask($input, $output, $playerNameQuestion);
 
-        /** @var Room $room */
         $room = $this->roomRepository->find($roomCode);
 
         if (!$room instanceof Room) {
@@ -62,7 +61,7 @@ class ChangeRoomAdminCommand extends Command
             ),
         );
 
-        if (\count($newAdmin) === 0 || !$newAdmin[0] instanceof Player) {
+        if (\count($newAdmin) === 0) {
             $output->writeln(sprintf('Player %s not found in this room', $newAdminName));
 
             return Command::FAILURE;

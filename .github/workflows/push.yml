@@ -6,7 +6,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php-versions: [ '8.3' ]
+        php-versions: [ '8.4' ]
     services:
       postgresql:
         image: postgres:16-alpine

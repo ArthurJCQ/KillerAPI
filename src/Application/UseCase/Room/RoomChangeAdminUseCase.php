@@ -45,7 +45,7 @@ readonly class RoomChangeAdminUseCase implements RoomUseCase
 
         shuffle($eligibleAdmins);
 
-        $newAdmin = array_values($eligibleAdmins)[0] ?? null;
+        $newAdmin = $eligibleAdmins[0] ?? null;
 
         $this->saveNewAdmin($room, $newAdmin);
     }

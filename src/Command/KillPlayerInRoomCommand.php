@@ -49,7 +49,6 @@ class KillPlayerInRoomCommand extends Command
         /** @var string $playerName */
         $playerName = $helper->ask($input, $output, $playerNameQuestion);
 
-        /** @var Room $room */
         $room = $this->roomRepository->find($roomCode);
 
         if (!$room instanceof Room) {
@@ -71,7 +70,7 @@ class KillPlayerInRoomCommand extends Command
             ),
         );
 
-        if (\count($player) === 0 || !$player[0] instanceof Player) {
+        if (\count($player) === 0) {
             $output->writeln(sprintf('Player %s not found in this room', $playerName));
 
             return Command::FAILURE;

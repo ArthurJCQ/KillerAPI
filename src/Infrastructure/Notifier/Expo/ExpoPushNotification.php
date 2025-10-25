@@ -17,7 +17,7 @@ class ExpoPushNotification extends Notification implements PushNotificationInter
 
     public function asPushMessage(RecipientInterface $recipient, ?string $transport = null): ?PushMessage
     {
-        if ($transport === self::TRANSPORT && $recipient instanceof Player && $recipient->getExpoPushToken() !== null) {
+        if ($transport === self::TRANSPORT && $recipient instanceof Player && $recipient->getExpoPushToken() !== '') {
             $pushMessage = PushMessage::fromNotification($this);
 
             $pushMessage->options(new ExpoOptions($recipient->getExpoPushToken()));
