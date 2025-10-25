@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Api\Controller;
 
+use App\Api\Dto\GenerateRoomWithMissionsDto;
 use App\Api\Exception\KillerBadRequestHttpException;
-use App\Application\UseCase\Player\ChangeRoomUseCase;
+use App\Application\UseCase\Room\CreateRoomUseCase;
+use App\Application\UseCase\Room\GenerateRoomWithMissionUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Player\Entity\Player;
-use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
 use App\Domain\Room\RoomWorkflowTransitionInterface;
@@ -20,6 +21,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -29,7 +31,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 #[Route('/room', format: 'json')]
 class RoomController extends AbstractController
 {
-    public const IS_GAME_MASTERED_ROOM = 'isGameMastered';
+    public const string IS_GAME_MASTERED_ROOM = 'isGameMastered';
 
     public function __construct(
         private readonly RoomRepository $roomRepository,
@@ -38,7 +40,8 @@ class RoomController extends AbstractController
         private readonly SseInterface $hub,
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
-        private readonly ChangeRoomUseCase $changeRoomUseCase,
+        private readonly CreateRoomUseCase $createRoomUseCase,
+        private readonly GenerateRoomWithMissionUseCase $generateRoomWithMissionUseCase,
     ) {
     }
 
@@ -48,23 +51,30 @@ class RoomController extends AbstractController
     {
         /** @var Player $player */
         $player = $this->getUser();
-        $room = (new Room())->setName(sprintf("%s's room", $player->getName()));
-
-        $this->changeRoomUseCase->execute($player, $room);
-        $player->setRoles(['ROLE_ADMIN']);
+        $roomName = sprintf("%s's room", $player->getName());
+        $isGameMastered = false;
 
         if ($request->getContent() !== '') {
             $data = $request->toArray();
-
-            if (isset($data[self::IS_GAME_MASTERED_ROOM]) && $data[self::IS_GAME_MASTERED_ROOM]) {
-                $room->setIsGameMastered(true);
-                $player->setRoles(['ROLE_MASTER']);
-                $player->setStatus(PlayerStatus::SPECTATING);
-            }
+            $isGameMastered = $data[self::IS_GAME_MASTERED_ROOM] ?? false;
         }
 
-        $this->roomRepository->store($room);
-        $this->persistenceAdapter->flush();
+        $room = $this->createRoomUseCase->execute($player, $roomName, $isGameMastered);
+
+        return $this->json($room, Response::HTTP_CREATED, [], [AbstractNormalizer::GROUPS => 'get-room']);
+    }
+
+    #[Route('/generate-with-missions', name: 'generate_room_with_missions', methods: [Request::METHOD_POST])]
+    #[IsGranted(RoomVoter::CREATE_ROOM, message: 'KILLER_CREATE_ROOM_UNAUTHORIZED')]
+    public function generateRoomWithMissions(
+        #[MapRequestPayload] GenerateRoomWithMissionsDto $dto,
+    ): JsonResponse {
+        /** @var Player $player */
+        $player = $this->getUser();
+        $roomName = $dto->roomName ?? sprintf("%s's room", $player->getName());
+        $missionsCount = $dto->missionsCount ?? 10;
+
+        $room = $this->generateRoomWithMissionUseCase->execute($roomName, $player, $missionsCount, $dto->theme);
 
         return $this->json($room, Response::HTTP_CREATED, [], [AbstractNormalizer::GROUPS => 'get-room']);
     }
