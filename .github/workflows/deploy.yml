@@ -82,8 +82,9 @@ jobs:
             fi
           
             # Arrêter les conteneurs existants
-            echo "🛑 Stopping existing containers..."
-            docker compose down
+            echo "🛑 Stopping PHP container..."
+            docker compose stop php
+            docker compose rm -f php
           
             # Démarrer les conteneurs avec les variables d'environnement
             echo "▶️ Starting containers with production configuration..."
@@ -94,7 +95,7 @@ jobs:
             EXPO_DSN="$EXPO_DSN" \
             CADDY_MERCURE_JWT_SECRET="$MERCURE_JWT_SECRET" \
             DATABASE_URL="$DATABASE_URL" \
-            docker compose up -d $REBUILD_FLAG --wait --force-recreate --no-deps php mercure
+            docker compose up -d $REBUILD_FLAG --wait --force-recreate --no-deps php
           
             # Attendre que les conteneurs soient prêts
             echo "⏳ Waiting for containers to be ready..."
