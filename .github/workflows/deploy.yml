@@ -88,12 +88,12 @@ jobs:
             # Démarrer les conteneurs avec les variables d'environnement
             echo "▶️ Starting containers with production configuration..."
             APP_ENV=$APP_ENV \
-            SERVER_NAME="$PROD_SERVER_NAME" \
-            APP_SECRET="$PROD_APP_SECRET" \
-            SENTRY_DSN="$PROD_SENTRY_DSN" \
-            EXPO_DSN="$PROD_EXPO_DSN" \
-            CADDY_MERCURE_JWT_SECRET="$PROD_MERCURE_JWT_SECRET" \
-            DATABASE_URL="$PROD_DATABASE_URL" \
+            SERVER_NAME="$SERVER_NAME" \
+            APP_SECRET="$APP_SECRET" \
+            SENTRY_DSN="$SENTRY_DSN" \
+            EXPO_DSN="$EXPO_DSN" \
+            CADDY_MERCURE_JWT_SECRET="$MERCURE_JWT_SECRET" \
+            DATABASE_URL="$DATABASE_URL" \
             docker compose up -d $REBUILD_FLAG --wait --force-recreate --no-deps php mercure
           
             # Attendre que les conteneurs soient prêts
