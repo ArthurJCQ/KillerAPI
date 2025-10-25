@@ -88,6 +88,8 @@ class Player implements UserInterface, RecipientInterface
 
     private string $token = '';
 
+    private string $refreshToken = '';
+
     public function __construct()
     {
         $this->authoredMissions = new ArrayCollection();
@@ -310,6 +312,19 @@ class Player implements UserInterface, RecipientInterface
     public function setToken(string $token): self
     {
         $this->token = $token;
+
+        return $this;
+    }
+
+    #[Groups(['create-player'])]
+    public function getRefreshToken(): string
+    {
+        return $this->refreshToken;
+    }
+
+    public function setRefreshToken(string $refreshToken): self
+    {
+        $this->refreshToken = $refreshToken;
 
         return $this;
     }

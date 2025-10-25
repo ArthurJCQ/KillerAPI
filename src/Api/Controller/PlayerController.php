@@ -18,6 +18,7 @@ use App\Domain\Room\RoomRepository;
 use App\Domain\Room\RoomWorkflowTransitionInterface;
 use App\Infrastructure\Http\Cookie\CookieProvider;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
+use App\Infrastructure\Security\RefreshTokenManager;
 use App\Infrastructure\Security\Voters\PlayerVoter;
 use App\Infrastructure\SSE\SseInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -50,6 +51,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
         private readonly JWTTokenManagerInterface $tokenManager,
+        private readonly RefreshTokenManager $refreshTokenManager,
         private readonly RoomWorkflowTransitionInterface $roomStatusTransitionUseCase,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly Security $security,
@@ -66,7 +68,9 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         $this->persistenceAdapter->flush();
 
         $player->setToken($this->tokenManager->create($player));
-        $this->logger->info('Token created for player {user_id}', ['user_id' => $player->getId()]);
+        $refreshToken = $this->refreshTokenManager->create($player);
+        $player->setRefreshToken($refreshToken->getToken());
+        $this->logger->info('Token and refresh token created for player {user_id}', ['user_id' => $player->getId()]);
 
         return $this->json(
             $player,

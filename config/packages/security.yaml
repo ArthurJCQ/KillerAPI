@@ -17,6 +17,12 @@ security:
             stateless: true
             lazy: true
             provider: app_user_provider
+        refresh_token:
+            pattern: ^/refresh-token
+            methods: [POST]
+            stateless: true
+            lazy: true
+            provider: app_user_provider
         main:
             stateless: true
             lazy: true
@@ -40,6 +46,7 @@ security:
          - { path: ^/health, roles: PUBLIC_ACCESS }
          - { path: ^/_mcp, roles: PUBLIC_ACCESS }
          - { path: ^/player, roles: PUBLIC_ACCESS, method: [POST] }
+         - { path: ^/refresh-token, roles: PUBLIC_ACCESS }
          - { path: ^/player, roles: ROLE_USER }
          - { path: ^/room, roles: ROLE_USER }
          - { path: ^/mission, roles: ROLE_USER }

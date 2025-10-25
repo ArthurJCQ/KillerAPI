@@ -22,6 +22,9 @@ services:
             - '../src/Domain/*/Entity/'
             - '../src/Kernel.php'
 
+    # Bind repository interfaces to their implementations
+    App\Domain\Player\RefreshTokenRepository: '@App\Infrastructure\Persistence\Doctrine\Repository\DoctrineRefreshTokenRepository'
+
     App\Domain\Player\Normalizer\PlayerNormalizer:
         arguments:
             $normalizer: '@serializer.normalizer.object'
