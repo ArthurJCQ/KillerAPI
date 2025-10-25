@@ -50,7 +50,7 @@ class KillerProblemNormalizer implements NormalizerInterface, SerializerAwareInt
             $errorDetail = $context['exception']->getMessage();
             $errorDetail = explode('_', $errorDetail, 2);
 
-            if (isset($errorDetail[0]) && $errorDetail[0] === self::CUSTOM_ERROR_PREFIX) {
+            if ($errorDetail[0] === self::CUSTOM_ERROR_PREFIX) {
                 $normalizedException['detail'] = $errorDetail[1];
             }
         }

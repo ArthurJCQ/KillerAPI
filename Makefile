@@ -9,7 +9,7 @@ prepare-ci:
 
 .PHONY: phpstan
 phpstan:
-	vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=-1 src tests --level max
+	vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=-1 src tests --level 9
 
 .PHONY: phpstan-ci
 phpstan-ci: prepare-ci

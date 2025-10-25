@@ -18,8 +18,8 @@ final class DoctrineMissionRepository extends DoctrineBaseRepository implements 
         parent::__construct($entityManager, Mission::class);
     }
 
-    /** @return ?Mission[] */
-    public function findByUserId(Player $player): ?array
+    /** @return Mission[] */
+    public function findByUserId(Player $player): array
     {
         return $this->repository->findBy(['author' => $player]);
     }
