@@ -83,9 +83,9 @@ jobs:
           
             # Arrêter les conteneurs existants
             echo "🛑 Stopping PHP container..."
-            docker compose stop php
-            docker compose rm -f php
-          
+            docker compose -f compose.yaml -f compose.prod.yaml stop php
+            docker compose -f compose.yaml -f compose.prod.yaml rm -f php
+
             # Démarrer les conteneurs avec les variables d'environnement
             echo "▶️ Starting containers with production configuration..."
             APP_ENV=$APP_ENV \
@@ -93,9 +93,9 @@ jobs:
             APP_SECRET="$APP_SECRET" \
             SENTRY_DSN="$SENTRY_DSN" \
             EXPO_DSN="$EXPO_DSN" \
-            CADDY_MERCURE_JWT_SECRET="$MERCURE_JWT_SECRET" \
+            CADDY_MERCURE_JWT_SECRET="$CADDY_MERCURE_JWT_SECRET" \
             DATABASE_URL="$DATABASE_URL" \
-            docker compose up -d $REBUILD_FLAG --wait --force-recreate --no-deps php
+            docker compose -f compose.yaml -f compose.prod.yaml up -d $REBUILD_FLAG --wait --force-recreate --no-deps php
           
             # Attendre que les conteneurs soient prêts
             echo "⏳ Waiting for containers to be ready..."
@@ -103,15 +103,15 @@ jobs:
 
             # Vider le cache
             echo "🧹 Clearing cache..."
-            docker compose exec -T php bin/console cache:clear --env=prod || echo "⚠️ Cache clear failed"
-          
+            docker compose -f compose.yaml -f compose.prod.yaml exec -T php bin/console cache:clear --env=prod || echo "⚠️ Cache clear failed"
+
             # Nettoyer les anciennes images Docker
             echo "🧹 Cleaning up old Docker images..."
             docker image prune -f
-          
+
             # Vérifier l'état des conteneurs
             echo "✅ Checking container status..."
-            docker compose ps
+            docker compose -f compose.yaml -f compose.prod.yaml ps
           
             echo "🎉 Deployment of tag $TAG_NAME completed successfully!"
           ENDSSH
