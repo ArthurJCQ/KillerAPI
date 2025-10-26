@@ -21,7 +21,10 @@ security:
             stateless: true
             lazy: true
             provider: app_user_provider
+            entry_point: jwt
             jwt: ~
+            refresh_jwt:
+                check_path: gesdinet_jwt_refresh_token
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
