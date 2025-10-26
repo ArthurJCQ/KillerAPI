@@ -21,6 +21,7 @@ use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Infrastructure\Security\Voters\PlayerVoter;
 use App\Infrastructure\SSE\SseInterface;
 use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
+use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -52,6 +53,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly KillerValidatorInterface $validator,
         private readonly JWTTokenManagerInterface $tokenManager,
         private readonly RefreshTokenGeneratorInterface $refreshTokenGenerator,
+        private readonly RefreshTokenManagerInterface $refreshTokenManager,
         private readonly RoomWorkflowTransitionInterface $roomStatusTransitionUseCase,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly Security $security,
@@ -67,12 +69,14 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         $this->playerRepository->store($player);
         $this->persistenceAdapter->flush();
 
-        $player->setToken($this->tokenManager->create($player));
-
-        // Create refresh token with 6-month TTL (15552000 seconds = 180 days)
+        $jwtToken = $this->tokenManager->create($player);
         $refreshToken = $this->refreshTokenGenerator->createForUserWithTtl($player, 15552000);
+        $this->refreshTokenManager->save($refreshToken);
 
+        $player->setToken($jwtToken);
         $player->setRefreshToken($refreshToken->getRefreshToken() ?? '');
+
+
         $this->logger->info('Token and refresh token created for player {user_id}', ['user_id' => $player->getId()]);
 
         return $this->json(
