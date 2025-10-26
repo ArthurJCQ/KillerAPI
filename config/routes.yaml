@@ -2,6 +2,9 @@ controllers:
     resource: ../src/Api/Controller/
     type: attribute
 
+gesdinet_jwt_refresh_token:
+    path: /refresh-token
+
 _mcp:
     resource: .
     type: mcp

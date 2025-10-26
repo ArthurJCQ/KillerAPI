@@ -1,0 +1,20 @@
+gesdinet_jwt_refresh_token:
+    # 6 months in seconds (180 days)
+    ttl: 15552000
+
+    # Set to false if you want to use the default refresh token entity
+    # or provide your own entity class
+    refresh_token_class: Gesdinet\JWTRefreshTokenBundle\Entity\RefreshToken
+
+    # Firewall name
+    firewall: main
+
+    # User provider
+    user_provider: app_user_provider
+
+    # Token parameter name in request
+    token_parameter_name: refresh_token
+
+    # Return the refresh token in the response
+    return_expiration: true
+    return_expiration_parameter_name: refresh_token_expiration

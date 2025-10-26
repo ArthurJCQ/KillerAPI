@@ -21,7 +21,10 @@ security:
             stateless: true
             lazy: true
             provider: app_user_provider
+            entry_point: jwt
             jwt: ~
+            refresh_jwt:
+                check_path: gesdinet_jwt_refresh_token
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -40,6 +43,7 @@ security:
          - { path: ^/health, roles: PUBLIC_ACCESS }
          - { path: ^/_mcp, roles: PUBLIC_ACCESS }
          - { path: ^/player, roles: PUBLIC_ACCESS, method: [POST] }
+         - { path: ^/refresh-token, roles: PUBLIC_ACCESS }
          - { path: ^/player, roles: ROLE_USER }
          - { path: ^/room, roles: ROLE_USER }
          - { path: ^/mission, roles: ROLE_USER }
