@@ -20,7 +20,7 @@ use App\Infrastructure\Http\Cookie\CookieProvider;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Infrastructure\Security\Voters\PlayerVoter;
 use App\Infrastructure\SSE\SseInterface;
-use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
+use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -51,7 +51,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
         private readonly JWTTokenManagerInterface $tokenManager,
-        private readonly RefreshTokenManagerInterface $refreshTokenManager,
+        private readonly RefreshTokenGeneratorInterface $refreshTokenGenerator,
         private readonly RoomWorkflowTransitionInterface $roomStatusTransitionUseCase,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly Security $security,
@@ -69,12 +69,8 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
         $player->setToken($this->tokenManager->create($player));
 
-        // Create refresh token with 6-month TTL
-        $refreshToken = $this->refreshTokenManager->create();
-        $refreshToken->setUsername($player->getUserIdentifier());
-        $refreshToken->setRefreshToken();
-        $refreshToken->setValid((new \DateTime())->modify('+180 days'));
-        $this->refreshTokenManager->save($refreshToken);
+        // Create refresh token with 6-month TTL (15552000 seconds = 180 days)
+        $refreshToken = $this->refreshTokenGenerator->createForUserWithTtl($player, 15552000);
 
         $player->setRefreshToken($refreshToken->getRefreshToken() ?? '');
         $this->logger->info('Token and refresh token created for player {user_id}', ['user_id' => $player->getId()]);
