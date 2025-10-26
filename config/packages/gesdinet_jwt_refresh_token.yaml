@@ -13,8 +13,8 @@ gesdinet_jwt_refresh_token:
     user_provider: app_user_provider
 
     # Token parameter name in request
-    token_parameter_name: refresh_token
+    token_parameter_name: refreshToken
 
     # Return the refresh token in the response
     return_expiration: true
-    return_expiration_parameter_name: refresh_token_expiration
+    return_expiration_parameter_name: refreshTokenExpiration
