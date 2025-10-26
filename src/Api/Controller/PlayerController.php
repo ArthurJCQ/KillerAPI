@@ -76,7 +76,6 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         $player->setToken($jwtToken);
         $player->setRefreshToken($refreshToken->getRefreshToken() ?? '');
 
-
         $this->logger->info('Token and refresh token created for player {user_id}', ['user_id' => $player->getId()]);
 
         return $this->json(
