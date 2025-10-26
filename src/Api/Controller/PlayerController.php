@@ -76,7 +76,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         $refreshToken->setValid((new \DateTime())->modify('+180 days'));
         $this->refreshTokenManager->save($refreshToken);
 
-        $player->setRefreshToken($refreshToken->getRefreshToken());
+        $player->setRefreshToken($refreshToken->getRefreshToken() ?? '');
         $this->logger->info('Token and refresh token created for player {user_id}', ['user_id' => $player->getId()]);
 
         return $this->json(
