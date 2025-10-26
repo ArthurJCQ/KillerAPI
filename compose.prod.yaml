@@ -16,8 +16,8 @@ services:
       MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
       MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
       MERCURE_JWT_SECRET: ${CADDY_MERCURE_JWT_SECRET}
-      MERCURE_URL: ${CADDY_MERCURE_URL:-http://mercure/.well-known/mercure}
-      MERCURE_PUBLIC_URL: ${CADDY_MERCURE_PUBLIC_URL:-https://${SERVER_NAME:-api.killerparty.app}/.well-known/mercure}
+      MERCURE_URL: ${CADDY_MERCURE_URL:-http://php/.well-known/mercure}
+      MERCURE_PUBLIC_URL: ${CADDY_MERCURE_PUBLIC_URL:-https://${SERVER_NAME:-localhost}/.well-known/mercure}
     volumes:
       - caddy_data:/data
       - caddy_config:/config
