@@ -71,13 +71,8 @@ jobs:
             echo "🏷️  Checking out tag: $TAG_NAME"
             git checkout ${TAG_NAME}
 
-            # Arrêter les conteneurs existants
-            echo "🛑 Stopping PHP container..."
-            docker compose -f compose.prod.yaml stop php
-            docker compose -f compose.prod.yaml rm -f php
-
-            # Démarrer les conteneurs avec les variables d'environnement
-            echo "▶️ Building and starting containers with production configuration..."
+            # Construire la nouvelle image Docker avant d'arrêter les conteneurs
+            echo "📦 Building new Docker image..."
             APP_ENV=$APP_ENV \
             SERVER_NAME="$SERVER_NAME" \
             APP_SECRET="$APP_SECRET" \
@@ -85,7 +80,23 @@ jobs:
             EXPO_DSN="$EXPO_DSN" \
             CADDY_MERCURE_JWT_SECRET="$CADDY_MERCURE_JWT_SECRET" \
             DATABASE_URL="$DATABASE_URL" \
-            docker compose -f compose.prod.yaml up -d --build --wait --force-recreate --no-deps php
+            docker compose -f compose.prod.yaml build php
+
+            # Arrêter les conteneurs existants
+            echo "🛑 Stopping PHP container..."
+            docker compose -f compose.prod.yaml stop php
+            docker compose -f compose.prod.yaml rm -f php
+
+            # Démarrer les conteneurs avec la nouvelle image
+            echo "▶️ Starting containers with production configuration..."
+            APP_ENV=$APP_ENV \
+            SERVER_NAME="$SERVER_NAME" \
+            APP_SECRET="$APP_SECRET" \
+            SENTRY_DSN="$SENTRY_DSN" \
+            EXPO_DSN="$EXPO_DSN" \
+            CADDY_MERCURE_JWT_SECRET="$CADDY_MERCURE_JWT_SECRET" \
+            DATABASE_URL="$DATABASE_URL" \
+            docker compose -f compose.prod.yaml up -d --wait --force-recreate --no-deps php
           
             # Attendre que les conteneurs soient prêts
             echo "⏳ Waiting for containers to be ready..."
