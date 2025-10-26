@@ -18,9 +18,9 @@ use App\Domain\Room\RoomRepository;
 use App\Domain\Room\RoomWorkflowTransitionInterface;
 use App\Infrastructure\Http\Cookie\CookieProvider;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
-use App\Infrastructure\Security\RefreshTokenManager;
 use App\Infrastructure\Security\Voters\PlayerVoter;
 use App\Infrastructure\SSE\SseInterface;
+use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -51,7 +51,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
         private readonly JWTTokenManagerInterface $tokenManager,
-        private readonly RefreshTokenManager $refreshTokenManager,
+        private readonly RefreshTokenManagerInterface $refreshTokenManager,
         private readonly RoomWorkflowTransitionInterface $roomStatusTransitionUseCase,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly Security $security,
@@ -68,8 +68,15 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         $this->persistenceAdapter->flush();
 
         $player->setToken($this->tokenManager->create($player));
-        $refreshToken = $this->refreshTokenManager->create($player);
-        $player->setRefreshToken($refreshToken->getToken());
+
+        // Create refresh token with 6-month TTL
+        $refreshToken = $this->refreshTokenManager->create();
+        $refreshToken->setUsername($player->getUserIdentifier());
+        $refreshToken->setRefreshToken();
+        $refreshToken->setValid((new \DateTime())->modify('+180 days'));
+        $this->refreshTokenManager->save($refreshToken);
+
+        $player->setRefreshToken($refreshToken->getRefreshToken());
         $this->logger->info('Token and refresh token created for player {user_id}', ['user_id' => $player->getId()]);
 
         return $this->json(
