@@ -5,23 +5,27 @@ declare(strict_types=1);
 namespace App\Application\UseCase\Player;
 
 use App\Domain\Notifications\KillerEliminatedByGuessNotification;
+use App\Domain\Notifications\KillerNotifier;
 use App\Domain\Notifications\WrongGuessEliminatedNotification;
 use App\Domain\Notifications\YourTargetEliminatedNotification;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;
+use App\Domain\Player\Event\PlayerKilledEvent;
 use App\Domain\Player\Exception\PlayerHasNoKillerOrTargetException;
 use App\Domain\Player\Exception\PlayerKilledException;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\Exception\RoomNotInGameException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 readonly class GuessKillerUseCase implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
     public function __construct(
-        private PlayerKilledUseCase $playerKilledUseCase,
+        private EventDispatcherInterface $eventDispatcher,
+        private KillerNotifier $killerNotifier,
     ) {
     }
 
@@ -62,16 +66,21 @@ readonly class GuessKillerUseCase implements LoggerAwareInterface
         // Get the killer's killer to notify them
         $killersKiller = $killer->getKiller();
 
-        // Use PlayerKilledUseCase to handle the elimination logic
-        // Pass custom notifications and don't award points (killer was guessed, not killed by their hunter)
-        $this->playerKilledUseCase->execute(
-            player: $killer,
-            killerNotification: KillerEliminatedByGuessNotification::to($killer),
-            killersKillerNotification: $killersKiller !== null
-                ? YourTargetEliminatedNotification::to($killersKiller)
-                : null,
-            awardPoints: false,
+        // Dispatch PlayerKilledEvent to handle the elimination logic
+        // Pass custom notification and don't award points (killer was guessed, not killed by their hunter)
+        $this->eventDispatcher->dispatch(
+            new PlayerKilledEvent(
+                player: $killer,
+                room: null,
+                killerNotification: KillerEliminatedByGuessNotification::to($killer),
+                awardPoints: false,
+            )
         );
+
+        // Notify the killer's killer separately (this is specific to the guess killer feature)
+        if ($killersKiller !== null) {
+            $this->killerNotifier->notify(YourTargetEliminatedNotification::to($killersKiller));
+        }
 
         $this->logger?->info(
             'Player {guesser} correctly guessed their killer {killer}',
@@ -84,13 +93,15 @@ readonly class GuessKillerUseCase implements LoggerAwareInterface
         // The guesser is eliminated for guessing wrong
         $guesser->setStatus(PlayerStatus::KILLED);
 
-        // Use PlayerKilledUseCase to handle the elimination logic
+        // Dispatch PlayerKilledEvent to handle the elimination logic
         // Pass custom notification and award points to the killer
-        $this->playerKilledUseCase->execute(
-            player: $guesser,
-            killerNotification: WrongGuessEliminatedNotification::to($actualKiller),
-            killersKillerNotification: null,
-            awardPoints: true,
+        $this->eventDispatcher->dispatch(
+            new PlayerKilledEvent(
+                player: $guesser,
+                room: null,
+                killerNotification: WrongGuessEliminatedNotification::to($actualKiller),
+                awardPoints: true,
+            )
         );
 
         $this->logger?->info(
