@@ -6,6 +6,7 @@ namespace App\Api\Controller;
 
 use App\Api\Exception\KillerBadRequestHttpException;
 use App\Application\UseCase\Player\ChangeRoomUseCase;
+use App\Application\UseCase\Player\GuessKillerUseCase;
 use App\Application\UseCase\Player\KillRequestOnTargetUseCase;
 use App\Application\UseCase\Player\SwitchMissionUseCase;
 use App\Domain\KillerExceptionInterface;
@@ -63,6 +64,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly ChangeRoomUseCase $changeRoomUseCase,
         private readonly KillRequestOnTargetUseCase $killRequestOnTargetUseCase,
         private readonly SwitchMissionUseCase $switchMissionUseCase,
+        private readonly GuessKillerUseCase $guessKillerUseCase,
     ) {
     }
 
@@ -254,5 +256,39 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         );
 
         return $this->json($player, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'me']);
+    }
+
+    #[Route('/{id}/guess-killer', name: 'guess_killer', methods: [Request::METHOD_PATCH])]
+    #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player', message: 'KILLER_GUESS_KILLER_UNAUTHORIZED')]
+    public function guessKiller(Request $request, Player $player): JsonResponse
+    {
+        $data = $request->toArray();
+
+        if (!isset($data['guessedPlayerId'])) {
+            throw new KillerBadRequestHttpException('GUESSED_PLAYER_ID_REQUIRED');
+        }
+
+        $guessedPlayerId = $data['guessedPlayerId'];
+
+        try {
+            $this->guessKillerUseCase->execute($player, $guessedPlayerId);
+        } catch (KillerExceptionInterface $e) {
+            throw new KillerBadRequestHttpException($e->getMessage());
+        }
+
+        $this->persistenceAdapter->flush();
+
+        // Publish update for the player's room
+        $room = $player->getRoom();
+        if ($room !== null) {
+            $this->hub->publish(
+                sprintf('room/%s', $room->getId()),
+                $this->serializer->serialize((object) $room, [AbstractNormalizer::GROUPS => 'publish-mercure']),
+            );
+        }
+
+        $this->logger->info('Guess killer request processed for player {user_id}', ['user_id' => $player->getId()]);
+
+        return $this->json(null, Response::HTTP_OK);
     }
 }
