@@ -43,6 +43,8 @@ class PlayerKilledUseCaseTest extends Unit
         $killer = $this->make(Player::class, [
             'setTarget' => Expected::once(new Player()),
             'setAssignedMission' => Expected::once(new Player()),
+            'setMissionSwitchUsed' => Expected::once(new Player()),
+            'addPoints' => Expected::once(new Player()),
         ]);
 
         $target = $this->make(Player::class);
