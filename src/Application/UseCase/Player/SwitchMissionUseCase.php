@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Application\UseCase\Player;
 
-use App\Application\Dto\NewMissionDto;
 use App\Application\UseCase\Mission\CreateMissionUseCase;
 use App\Domain\Mission\MissionGeneratorInterface;
+use App\Domain\Mission\MissionRepository;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Player\Exception\MissionSwitchAlreadyUsedException;
@@ -26,6 +26,7 @@ class SwitchMissionUseCase implements LoggerAwareInterface
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly MissionGeneratorInterface $missionGenerator,
         private readonly CreateMissionUseCase $createMissionUseCase,
+        private readonly MissionRepository $missionRepository,
     ) {
     }
 
@@ -67,14 +68,10 @@ class SwitchMissionUseCase implements LoggerAwareInterface
             $missions = $this->missionGenerator->generateMissions(1);
             $newMissionContent = $missions[0];
 
-            $missionDto = new NewMissionDto(
-                content: $newMissionContent,
-                author: null,
-                room: $room,
-                isSecondaryMission: false,
-            );
+            $newMission = $this->createMissionUseCase->execute($newMissionContent);
+            $newMission->setRoom($room);
 
-            $newMission = $this->createMissionUseCase->execute($missionDto);
+            $this->missionRepository->store($newMission);
         }
 
         // Replace the old mission with the new one

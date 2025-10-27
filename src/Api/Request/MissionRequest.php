@@ -2,13 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Dto;
+namespace App\Api\Request;
 
-use App\Domain\Player\Entity\Player;
-use App\Domain\Room\Entity\Room;
 use Symfony\Component\Validator\Constraints as Assert;
 
-final readonly class NewMissionDto
+final readonly class MissionRequest
 {
     public function __construct(
         #[Assert\NotBlank(message: 'MISSION_CONTENT_REQUIRED')]
@@ -19,9 +17,6 @@ final readonly class NewMissionDto
             maxMessage: 'MISSION_TOO_LONG_CONTENT',
         )]
         public string $content,
-        public ?Player $author = null,
-        public ?Room $room = null,
-        public bool $isSecondaryMission = false,
     ) {
     }
 }
