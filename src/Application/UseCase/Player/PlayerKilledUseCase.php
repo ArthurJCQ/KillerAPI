@@ -39,6 +39,8 @@ class PlayerKilledUseCase implements PlayerUseCase, LoggerAwareInterface
 
         $killer->setTarget($target);
         $killer->setAssignedMission($assignedMission);
+        $killer->setMissionSwitchUsed(false);
+        $killer->addPoints(10);
 
         $this->killerNotifier->notify(DeathConfirmationNotification::to($killer));
     }

@@ -46,6 +46,8 @@ class DispatchMissionsAndTargetsUseCaseTest extends Unit
         $player1->getTarget()->willReturn($player2->reveal());
         $player1->setTarget(Argument::that(static fn (Player $player) => $player !== $player1->reveal()))
             ->shouldBeCalled();
+        $player1->setMissionSwitchUsed(false)->shouldBeCalled();
+        $player1->setPoints(0)->shouldBeCalled();
         $player1->setAssignedMission(Argument::that(static fn (Mission $mission) => $mission->getAuthor()
             !== $player1->reveal()))
             ->shouldBeCalled();
@@ -58,6 +60,8 @@ class DispatchMissionsAndTargetsUseCaseTest extends Unit
         $player2->getTarget()->willReturn($player3->reveal());
         $player2->setTarget(Argument::that(static fn (Player $player) => $player !== $player2->reveal()))
             ->shouldBeCalled();
+        $player2->setMissionSwitchUsed(false)->shouldBeCalled();
+        $player2->setPoints(0)->shouldBeCalled();
         $player2->setAssignedMission(Argument::that(static fn (Mission $mission) => $mission->getAuthor()
             !== $player2->reveal()))
             ->shouldBeCalled();
@@ -71,6 +75,8 @@ class DispatchMissionsAndTargetsUseCaseTest extends Unit
         $player3->getTarget()->willReturn($player1);
         $player3->setTarget(Argument::that(static fn (Player $player) => $player !== $player3->reveal()))
             ->shouldBeCalled();
+        $player3->setMissionSwitchUsed(false)->shouldBeCalled();
+        $player3->setPoints(0)->shouldBeCalled();
         $player3->setAssignedMission(Argument::that(static fn (Mission $mission) => $mission->getAuthor()
             !== $player3->reveal()))
             ->shouldBeCalled();
@@ -123,6 +129,8 @@ class DispatchMissionsAndTargetsUseCaseTest extends Unit
         $player1->getTarget()->willReturn($player2->reveal());
         $player1->setTarget(Argument::that(static fn (Player $player) => $player !== $player1->reveal()))
             ->shouldBeCalled();
+        $player1->setMissionSwitchUsed(false)->shouldBeCalled();
+        $player1->setPoints(0)->shouldBeCalled();
         $player1->setAssignedMission(Argument::that(static fn (Mission $mission) => $mission->getAuthor()
             === $admin->reveal()))
             ->shouldBeCalled();
@@ -133,6 +141,8 @@ class DispatchMissionsAndTargetsUseCaseTest extends Unit
         $player2->getTarget()->willReturn($player3->reveal());
         $player2->setTarget(Argument::that(static fn (Player $player) => $player !== $player2->reveal()))
             ->shouldBeCalled();
+        $player2->setMissionSwitchUsed(false)->shouldBeCalled();
+        $player2->setPoints(0)->shouldBeCalled();
         $player2->setAssignedMission(Argument::that(static fn (Mission $mission) => $mission->getAuthor()
             === $admin->reveal()))
             ->shouldBeCalled();
@@ -144,6 +154,8 @@ class DispatchMissionsAndTargetsUseCaseTest extends Unit
         $player3->getTarget()->willReturn($player1);
         $player3->setTarget(Argument::that(static fn (Player $player) => $player !== $player3->reveal()))
             ->shouldBeCalled();
+        $player3->setMissionSwitchUsed(false)->shouldBeCalled();
+        $player3->setPoints(0)->shouldBeCalled();
         $player3->setAssignedMission(Argument::that(
             static fn (Mission $mission) => $mission->getAuthor() === $admin->reveal(),
         ))->shouldBeCalled();

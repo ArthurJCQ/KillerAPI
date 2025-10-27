@@ -10,6 +10,8 @@ use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Room\Entity\Room;
 use App\Tests\ApiTester;
 
+use function PHPUnit\Framework\assertEquals;
+
 class RoomControllerCest
 {
     public const string PLAYER_NAME = 'John';
@@ -724,5 +726,151 @@ class RoomControllerCest
                 'assignedMission' => ['content' => 'mission'],
             ],
         );
+    }
+
+    public function testMissionSwitchAndPointsTracking(ApiTester $I): void
+    {
+        // Create admin and room
+        $I->createAdminAndUpdateHeaders($I);
+
+        $I->sendPostAsJson('room');
+        $I->sendPostAsJson('/mission', ['content' => 'Original mission 1']);
+        $I->sendPostAsJson('/mission', ['content' => 'Original mission 2']);
+
+        $room = $I->grabEntityFromRepository(Room::class, ['name' => 'Admin\'s room']);
+
+        // Join room with player1 (John)
+        $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
+
+        /** @var string $player1Id */
+        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
+        $I->sendPatchAsJson(sprintf('player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPostAsJson('/mission', ['content' => 'John mission']);
+
+        // Join room with player 2 (Doe)
+        $I->createPlayerAndUpdateHeaders($I, 'Doe');
+
+        /** @var string $player2Id */
+        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
+        $I->sendPatchAsJson(sprintf('player/%s', $player2Id), ['room' => $room->getId()]);
+        $I->sendPostAsJson('/mission', ['content' => 'Doe mission']);
+
+        // Start the game with admin
+        $I->setAdminJwtHeader($I);
+
+        $I->sendPatchAsJson(sprintf('/room/%s', $room->getId()), ['status' => 'IN_GAME']);
+        $I->seeResponseCodeIs(200);
+
+        // Verify all players start with 0 points
+        $I->sendGetAsJson('/player/me');
+        $I->seeResponseContainsJson(['points' => 0]);
+
+        $I->setJwtHeader($I, self::PLAYER_NAME);
+        $I->sendGetAsJson('/player/me');
+        $I->seeResponseContainsJson(['points' => 0]);
+
+        $I->setJwtHeader($I, 'Doe');
+        $I->sendGetAsJson('/player/me');
+        $I->seeResponseContainsJson(['points' => 0]);
+
+        // Player John switches mission (costs 5 points)
+        $I->setJwtHeader($I, self::PLAYER_NAME);
+        $I->sendPatch(sprintf('/player/%s/switch-mission', $player1Id));
+        $I->seeResponseCodeIs(200);
+
+        // Verify John now has -5 points and a different mission
+        $I->sendGetAsJson('/player/me');
+        $I->seeResponseContainsJson(['points' => -5]);
+        $I->dontSeeResponseContainsJson(['assignedMission' => ['content' => 'John mission']]);
+
+        // Try to switch mission again - should fail
+        $I->sendPatch(sprintf('/player/%s/switch-mission', $player1Id));
+        $I->seeResponseCodeIs(400);
+
+        // Admin kills John (Admin should get 10 points)
+        $I->setAdminJwtHeader($I);
+        /** @var string $adminId */
+        $adminId = $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin']);
+
+        // Get Admin's target to find who they need to kill
+        $I->sendGetAsJson('/player/me');
+        /** @var array $response */
+        $response = json_decode($I->grabResponse(), true);
+        $adminTargetId = $response['target']['id'];
+
+        // Request kill on Admin's target
+        $I->sendPatch(sprintf('/player/%s/kill-target-request', $adminId));
+        $I->seeResponseCodeIs(200);
+
+        // Confirm the kill from the victim's side
+        $victimName = $adminTargetId === $player1Id ? self::PLAYER_NAME : 'Doe';
+        $victimId = $adminTargetId;
+
+        $I->setJwtHeader($I, $victimName);
+        $I->sendPatchAsJson(sprintf('/player/%s', $victimId), ['status' => PlayerStatus::KILLED->value]);
+        $I->seeResponseCodeIs(200);
+
+        // Verify the killed player's points didn't change
+        $I->sendGetAsJson('/player/me');
+        if ($victimName === self::PLAYER_NAME) {
+            $I->seeResponseContainsJson(['points' => -5, 'status' => PlayerStatus::KILLED->value]);
+        } else {
+            $I->seeResponseContainsJson(['points' => 0, 'status' => PlayerStatus::KILLED->value]);
+        }
+
+        // Verify Admin now has 10 points
+        $I->setAdminJwtHeader($I);
+        $I->sendGetAsJson('/player/me');
+        $I->seeResponseContainsJson(['points' => 10]);
+
+        // Admin kills the second player
+        $I->sendPatch(sprintf('/player/%s/kill-target-request', $adminId));
+        $I->seeResponseCodeIs(200);
+
+        // Get the remaining alive player
+        $I->sendGetAsJson('/player/me');
+        /** @var array $response */
+        $response = json_decode($I->grabResponse(), true);
+        $secondTargetId = $response['target']['id'];
+        $secondVictimName = $secondTargetId === $player1Id ? self::PLAYER_NAME : 'Doe';
+
+        // Confirm the second kill
+        $I->setJwtHeader($I, $secondVictimName);
+        $I->sendPatchAsJson(sprintf('/player/%s', $secondTargetId), ['status' => PlayerStatus::KILLED->value]);
+        $I->seeResponseCodeIs(200);
+
+        // Verify game has ended
+        $I->sendGetAsJson('/player/me');
+        $I->seeResponseContainsJson([
+            'room' => ['status' => Room::ENDED],
+            'status' => PlayerStatus::KILLED->value,
+        ]);
+
+        // Verify Admin is the winner with 20 points (2 kills * 10 points)
+        $I->setAdminJwtHeader($I);
+        $I->sendGetAsJson(sprintf('/room/%s', $room->getId()));
+        $I->seeResponseContainsJson([
+            'status' => Room::ENDED,
+            'winner' => ['name' => 'Admin'],
+        ]);
+
+        $I->sendGetAsJson('/player/me');
+        $I->seeResponseContainsJson([
+            'points' => 20,
+            'status' => PlayerStatus::ALIVE->value,
+        ]);
+
+        // Verify final points for all players
+        /** @var Player $adminPlayer */
+        $adminPlayer = $I->grabEntityFromRepository(Player::class, ['name' => 'Admin']);
+        assertEquals(20, $adminPlayer->getPoints(), 'Admin should have 20 points (2 kills)');
+
+        /** @var Player $johnPlayer */
+        $johnPlayer = $I->grabEntityFromRepository(Player::class, ['name' => self::PLAYER_NAME]);
+        assertEquals(-5, $johnPlayer->getPoints(), 'John should have -5 points (1 mission switch)');
+
+        /** @var Player $doePlayer */
+        $doePlayer = $I->grabEntityFromRepository(Player::class, ['name' => 'Doe']);
+        assertEquals(0, $doePlayer->getPoints(), 'Doe should have 0 points (no kills, no switches)');
     }
 }
