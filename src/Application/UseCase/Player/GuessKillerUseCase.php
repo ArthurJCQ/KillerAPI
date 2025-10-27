@@ -19,13 +19,13 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-readonly class GuessKillerUseCase implements LoggerAwareInterface
+class GuessKillerUseCase implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
     public function __construct(
-        private EventDispatcherInterface $eventDispatcher,
-        private KillerNotifier $killerNotifier,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly KillerNotifier $killerNotifier,
     ) {
     }
 
