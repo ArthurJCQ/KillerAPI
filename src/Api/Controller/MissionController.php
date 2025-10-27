@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Api\Controller;
 
 use App\Api\Exception\KillerBadRequestHttpException;
+use App\Application\Dto\NewMissionDto;
+use App\Application\UseCase\Mission\CreateMissionUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Mission\Entity\Mission;
@@ -32,13 +34,14 @@ class MissionController extends AbstractController
         private readonly SseInterface $hub,
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
+        private readonly CreateMissionUseCase $createMissionUseCase,
     ) {
     }
 
     #[Route(name: 'create_mission', methods: [Request::METHOD_POST])]
     #[IsGranted(MissionVoter::CREATE_MISSION, message: 'KILLER_CREATE_MISSION_UNAUTHORIZED')]
     public function createMission(
-        #[MapRequestPayload(serializationContext: [AbstractNormalizer::GROUPS => 'post-mission'])] Mission $mission,
+        #[MapRequestPayload] NewMissionDto $dto,
     ): JsonResponse {
         /** @var Player $player */
         $player = $this->getUser();
@@ -48,10 +51,14 @@ class MissionController extends AbstractController
             throw new KillerBadRequestHttpException('CAN_NOT_ADD_MISSIONS');
         }
 
-        $player->addAuthoredMission($mission);
+        $missionDto = new NewMissionDto(
+            content: $dto->content,
+            author: $player,
+            room: $room,
+            isSecondaryMission: false,
+        );
 
-        $this->missionRepository->store($mission);
-        $this->persistenceAdapter->flush();
+        $mission = $this->createMissionUseCase->executeAndFlush($missionDto);
 
         $this->hub->publish(
             sprintf('room/%s', $room),

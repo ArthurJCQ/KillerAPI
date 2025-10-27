@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\UseCase\Room;
 
-use App\Domain\Mission\Entity\Mission;
+use App\Application\Dto\NewMissionDto;
+use App\Application\UseCase\Mission\CreateMissionUseCase;
 use App\Domain\Mission\MissionGeneratorInterface;
 use App\Domain\Notifications\GameStartedNotification;
 use App\Domain\Notifications\KillerNotifier;
@@ -23,6 +24,7 @@ final class StartGameUseCase implements RoomUseCase, LoggerAwareInterface
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly KillerNotifier $notifier,
         private readonly MissionGeneratorInterface $missionGenerator,
+        private readonly CreateMissionUseCase $createMissionUseCase,
     ) {
     }
 
@@ -44,11 +46,14 @@ final class StartGameUseCase implements RoomUseCase, LoggerAwareInterface
         $generatedMissions = $this->missionGenerator->generateMissions($secondaryMissionsCount);
 
         foreach ($generatedMissions as $missionContent) {
-            $mission = new Mission();
-            $mission->setContent($missionContent);
-            $mission->setRoom($room);
-            $mission->setAuthor(null); // Generated missions have no author
+            $missionDto = new NewMissionDto(
+                content: $missionContent,
+                author: null,
+                room: $room,
+                isSecondaryMission: true,
+            );
 
+            $mission = $this->createMissionUseCase->execute($missionDto);
             $room->addSecondaryMission($mission);
         }
 
