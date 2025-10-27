@@ -249,6 +249,52 @@ class Room
         return $this;
     }
 
+    /** @return Collection<int, Mission> */
+    public function getSecondaryMissions(): Collection
+    {
+        return $this->missions->filter(
+            static fn (Mission $mission) => $mission->isSecondaryMission(),
+        );
+    }
+
+    public function addSecondaryMission(Mission $mission): self
+    {
+        $mission->setIsSecondaryMission(true);
+        $mission->setRoom($this);
+
+        if (!$this->missions->contains($mission)) {
+            $this->missions[] = $mission;
+        }
+
+        return $this;
+    }
+
+    public function removeSecondaryMission(Mission $mission): self
+    {
+        if ($this->missions->removeElement($mission)) {
+            // set the owning side to null (unless already changed)
+            if ($mission->getRoom() === $this) {
+                $mission->setRoom(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function popSecondaryMission(): ?Mission
+    {
+        $secondaryMissions = $this->getSecondaryMissions();
+
+        if ($secondaryMissions->isEmpty()) {
+            return null;
+        }
+
+        $mission = $secondaryMissions->first();
+        $this->removeSecondaryMission($mission);
+
+        return $mission;
+    }
+
     public function __toString(): string
     {
         return $this->getId();

@@ -15,13 +15,17 @@ use App\Domain\Player\Exception\PlayerKilledException;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\Exception\RoomNotInGameException;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
-readonly class SwitchMissionUseCase
+class SwitchMissionUseCase implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     public function __construct(
-        private PersistenceAdapterInterface $persistenceAdapter,
-        private MissionGeneratorInterface $missionGenerator,
-        private MissionRepository $missionRepository,
+        private readonly PersistenceAdapterInterface $persistenceAdapter,
+        private readonly MissionGeneratorInterface $missionGenerator,
+        private readonly MissionRepository $missionRepository,
     ) {
     }
 
@@ -46,15 +50,28 @@ readonly class SwitchMissionUseCase
             throw new MissionSwitchAlreadyUsedException('MISSION_SWITCH_ALREADY_USED');
         }
 
-        // Generate new mission content
-        $missions = $this->missionGenerator->generateMissions(1);
-        $newMissionContent = $missions[0];
+        // Try to get a mission from the secondary missions pool
+        $newMission = $room->popSecondaryMission();
 
-        // Create new mission entity
-        $newMission = new Mission();
-        $newMission->setContent($newMissionContent);
-        $newMission->setRoom($room);
-        $newMission->setAuthor(null); // Generated missions have no author
+        if ($newMission !== null) {
+            $this->logger->info('Using mission from secondary pool for player {player_id} in room {room_id}', [
+                'player_id' => $player->getId(),
+                'room_id' => $room->getId(),
+            ]);
+        } else {
+            // Fallback: generate new mission if pool is empty
+            $this->logger->warning('Secondary missions pool is empty for room {room_id}, generating new mission', [
+                'room_id' => $room->getId(),
+            ]);
+
+            $missions = $this->missionGenerator->generateMissions(1);
+            $newMissionContent = $missions[0];
+
+            $newMission = new Mission();
+            $newMission->setContent($newMissionContent);
+            $newMission->setRoom($room);
+            $newMission->setAuthor(null); // Generated missions have no author
+        }
 
         // Replace the old mission with the new one
         $player->setAssignedMission($newMission);
