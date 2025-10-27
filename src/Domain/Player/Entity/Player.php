@@ -86,6 +86,13 @@ class Player implements UserInterface, RecipientInterface
     #[Groups(['me', 'post-player', 'create-player', 'patch-player'])]
     private string $expoPushToken = '';
 
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    #[Groups(['me', 'get-player', 'get-room', 'publish-mercure'])]
+    private int $points = 0;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $missionSwitchUsed = false;
+
     private string $token = '';
 
     private string $refreshToken = '';
@@ -351,5 +358,43 @@ class Player implements UserInterface, RecipientInterface
     public function hasAtLeastOneMission(): bool
     {
         return \count($this->getAuthoredMissionsInRoom()) > 0;
+    }
+
+    public function getPoints(): int
+    {
+        return $this->points;
+    }
+
+    public function setPoints(int $points): self
+    {
+        $this->points = $points;
+
+        return $this;
+    }
+
+    public function addPoints(int $points): self
+    {
+        $this->points += $points;
+
+        return $this;
+    }
+
+    public function removePoints(int $points): self
+    {
+        $this->points -= $points;
+
+        return $this;
+    }
+
+    public function hasMissionSwitchUsed(): bool
+    {
+        return $this->missionSwitchUsed;
+    }
+
+    public function setMissionSwitchUsed(bool $missionSwitchUsed): self
+    {
+        $this->missionSwitchUsed = $missionSwitchUsed;
+
+        return $this;
     }
 }

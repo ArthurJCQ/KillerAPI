@@ -28,6 +28,10 @@ class DispatchMissionsAndTargetsUseCase implements RoomUseCase, LoggerAwareInter
 
             $player->setTarget($target);
 
+            // Reset mission switch and points for each new game
+            $player->setMissionSwitchUsed(false);
+            $player->setPoints(0);
+
             $this->logger->info('Player {player_id} was assigned {target_id} as a target', [
                 'player_id' => $player->getId(),
                 'target_id' => $target->getId(),

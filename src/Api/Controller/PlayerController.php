@@ -6,6 +6,7 @@ namespace App\Api\Controller;
 
 use App\Application\UseCase\Player\ChangeRoomUseCase;
 use App\Application\UseCase\Player\KillRequestOnTargetUseCase;
+use App\Application\UseCase\Player\SwitchMissionUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Player\Entity\Player;
@@ -59,6 +60,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly Security $security,
         private readonly ChangeRoomUseCase $changeRoomUseCase,
         private readonly KillRequestOnTargetUseCase $killRequestOnTargetUseCase,
+        private readonly SwitchMissionUseCase $switchMissionUseCase,
     ) {
     }
 
@@ -232,5 +234,21 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         );
 
         return $this->json(null, Response::HTTP_OK);
+    }
+
+    #[Route('/{id}/switch-mission', name: 'switch_mission', methods: [Request::METHOD_PATCH])]
+    #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player', message: 'KILLER_SWITCH_MISSION_UNAUTHORIZED')]
+    public function switchMission(Player $player): JsonResponse
+    {
+        $this->switchMissionUseCase->execute($player);
+
+        $this->persistenceAdapter->flush();
+
+        $this->hub->publish(
+            sprintf('player/%s', $player->getId()),
+            $this->serializer->serialize((object) $player, [AbstractNormalizer::GROUPS => 'publish-mercure']),
+        );
+
+        return $this->json($player, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'me']);
     }
 }
