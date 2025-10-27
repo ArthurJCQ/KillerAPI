@@ -98,13 +98,13 @@ class GuessKillerUseCase implements LoggerAwareInterface
         $guesser->setStatus(PlayerStatus::KILLED);
 
         // Dispatch PlayerKilledEvent to handle the elimination logic
-        // Pass custom notification and award points to the killer
+        // Pass custom notification and don't award points (wrong guess doesn't reward the killer)
         $this->eventDispatcher->dispatch(
             new PlayerKilledEvent(
                 player: $guesser,
                 room: null,
                 killerNotification: WrongGuessEliminatedNotification::to($actualKiller),
-                awardPoints: true,
+                awardPoints: false,
             )
         );
 

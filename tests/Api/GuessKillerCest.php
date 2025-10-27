@@ -135,12 +135,12 @@ class GuessKillerCest
             'assignedMission' => null,
         ]);
 
-        // Verify John's actual killer received 10 points and John's target
+        // Verify John's actual killer received no points but got John's target
         $killerName = $johnKillerId === $data['adminId'] ? 'Admin' : 'Doe';
         $I->setJwtHeader($I, $killerName);
         $I->sendGetAsJson('/player/me');
         $I->seeResponseContainsJson([
-            'points' => 10,
+            'points' => 0,
             'status' => PlayerStatus::ALIVE->value,
         ]);
 
