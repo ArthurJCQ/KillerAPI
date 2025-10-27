@@ -61,6 +61,9 @@ readonly class GuessKillerUseCase implements LoggerAwareInterface
 
     private function handleCorrectGuess(Player $guesser, Player $killer): void
     {
+        // Award points to the player who correctly guessed their killer
+        $guesser->addPoints(5);
+
         // The killer is eliminated
         $killer->setStatus(PlayerStatus::KILLED);
 
