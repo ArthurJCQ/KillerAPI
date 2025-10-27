@@ -6,6 +6,7 @@ namespace App\Application\UseCase\Player;
 
 use App\Domain\Mission\Entity\Mission;
 use App\Domain\Mission\MissionGeneratorInterface;
+use App\Domain\Mission\MissionRepository;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Player\Exception\MissionSwitchAlreadyUsedException;
@@ -20,6 +21,7 @@ readonly class SwitchMissionUseCase
     public function __construct(
         private PersistenceAdapterInterface $persistenceAdapter,
         private MissionGeneratorInterface $missionGenerator,
+        private MissionRepository $missionRepository,
     ) {
     }
 
@@ -64,7 +66,7 @@ readonly class SwitchMissionUseCase
         $player->removePoints(5);
 
         // Persist changes
-        $this->persistenceAdapter->persist($newMission);
+        $this->missionRepository->store($newMission);
         $this->persistenceAdapter->flush();
     }
 }
