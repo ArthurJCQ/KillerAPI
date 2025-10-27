@@ -53,9 +53,10 @@ readonly class GuessKillerUseCase implements LoggerAwareInterface
 
         if ($isCorrectGuess) {
             $this->handleCorrectGuess($guesser, $actualKiller);
-        } else {
-            $this->handleWrongGuess($guesser, $actualKiller);
+            return;
         }
+
+        $this->handleWrongGuess($guesser, $actualKiller);
     }
 
     private function handleCorrectGuess(Player $guesser, Player $killer): void
