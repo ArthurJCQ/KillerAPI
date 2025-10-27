@@ -87,10 +87,11 @@ class Player implements UserInterface, RecipientInterface
     private string $expoPushToken = '';
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
-    #[Groups(['me', 'get-player', 'get-room', 'publish-mercure'])]
+    #[Groups(['me', 'get-player', 'get-room'])]
     private int $points = 0;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    #[Groups(['me'])]
     private bool $missionSwitchUsed = false;
 
     private string $token = '';

@@ -34,9 +34,6 @@ services:
         arguments:
             $debug: '%kernel.debug%'
 
-    App\Domain\Mission\MissionGeneratorInterface:
-        class: App\Domain\Mission\InMemoryMissionGenerator
-
 when@test:
     services:
         App\Infrastructure\SSE\SseInterface:
