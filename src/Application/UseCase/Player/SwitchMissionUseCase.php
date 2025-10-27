@@ -45,7 +45,8 @@ readonly class SwitchMissionUseCase
         }
 
         // Generate new mission content
-        $newMissionContent = $this->missionGenerator->generate();
+        $missions = $this->missionGenerator->generateMissions(1);
+        $newMissionContent = $missions[0];
 
         // Create new mission entity
         $newMission = new Mission();

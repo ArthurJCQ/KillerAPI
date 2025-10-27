@@ -17,5 +17,7 @@ readonly class ResetPlayerUseCase implements PlayerUseCase
         $player->setStatus(PlayerStatus::ALIVE);
         $player->clearMissions();
         $player->setRoles(['ROLE_USER']);
+        $player->setPoints(0);
+        $player->setMissionSwitchUsed(false);
     }
 }
