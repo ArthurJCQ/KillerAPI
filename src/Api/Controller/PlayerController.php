@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Api\Controller;
 
+use App\Api\Exception\KillerBadRequestHttpException;
 use App\Application\UseCase\Player\ChangeRoomUseCase;
 use App\Application\UseCase\Player\KillRequestOnTargetUseCase;
 use App\Application\UseCase\Player\SwitchMissionUseCase;
+use App\Domain\KillerExceptionInterface;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Player\Entity\Player;
@@ -240,13 +242,15 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
     #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player', message: 'KILLER_SWITCH_MISSION_UNAUTHORIZED')]
     public function switchMission(Player $player): JsonResponse
     {
-        $this->switchMissionUseCase->execute($player);
-
-        $this->persistenceAdapter->flush();
+        try {
+            $this->switchMissionUseCase->execute($player);
+        } catch (KillerExceptionInterface $e) {
+            throw new KillerBadRequestHttpException($e->getMessage());
+        }
 
         $this->hub->publish(
             sprintf('player/%s', $player->getId()),
-            $this->serializer->serialize((object) $player, [AbstractNormalizer::GROUPS => 'publish-mercure']),
+            $this->serializer->serialize($player, [AbstractNormalizer::GROUPS => 'publish-mercure']),
         );
 
         return $this->json($player, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'me']);

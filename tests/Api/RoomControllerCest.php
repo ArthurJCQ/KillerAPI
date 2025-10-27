@@ -10,6 +10,8 @@ use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Room\Entity\Room;
 use App\Tests\ApiTester;
 
+use function PHPUnit\Framework\assertEquals;
+
 class RoomControllerCest
 {
     public const string PLAYER_NAME = 'John';
@@ -792,6 +794,7 @@ class RoomControllerCest
 
         // Get Admin's target to find who they need to kill
         $I->sendGetAsJson('/player/me');
+        /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
         $adminTargetId = $response['target']['id'];
 
@@ -826,6 +829,7 @@ class RoomControllerCest
 
         // Get the remaining alive player
         $I->sendGetAsJson('/player/me');
+        /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
         $secondTargetId = $response['target']['id'];
         $secondVictimName = $secondTargetId === $player1Id ? self::PLAYER_NAME : 'Doe';
@@ -859,14 +863,14 @@ class RoomControllerCest
         // Verify final points for all players
         /** @var Player $adminPlayer */
         $adminPlayer = $I->grabEntityFromRepository(Player::class, ['name' => 'Admin']);
-        $I->assertEquals(20, $adminPlayer->getPoints(), 'Admin should have 20 points (2 kills)');
+        assertEquals(20, $adminPlayer->getPoints(), 'Admin should have 20 points (2 kills)');
 
         /** @var Player $johnPlayer */
         $johnPlayer = $I->grabEntityFromRepository(Player::class, ['name' => self::PLAYER_NAME]);
-        $I->assertEquals(-5, $johnPlayer->getPoints(), 'John should have -5 points (1 mission switch)');
+        assertEquals(-5, $johnPlayer->getPoints(), 'John should have -5 points (1 mission switch)');
 
         /** @var Player $doePlayer */
         $doePlayer = $I->grabEntityFromRepository(Player::class, ['name' => 'Doe']);
-        $I->assertEquals(0, $doePlayer->getPoints(), 'Doe should have 0 points (no kills, no switches)');
+        assertEquals(0, $doePlayer->getPoints(), 'Doe should have 0 points (no kills, no switches)');
     }
 }
