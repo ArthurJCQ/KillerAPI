@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Application\UseCase\Player;
 use App\Application\UseCase\Player\PlayerKilledUseCase;
 use App\Domain\Mission\Entity\Mission;
 use App\Domain\Notifications\DeathConfirmationNotification;
+use App\Domain\Notifications\KillerNotification;
 use App\Domain\Notifications\KillerNotifier;
 use App\Domain\Player\Entity\Player;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
@@ -60,5 +61,59 @@ class PlayerKilledUseCaseTest extends Unit
         $this->killerNotifier->notify(Argument::type(DeathConfirmationNotification::class))->shouldBeCalledOnce();
 
         $this->playerKilledUseCase->execute($player);
+    }
+
+    public function testKillPlayerWithCustomNotification(): void
+    {
+        $mission = $this->makeEmpty(Mission::class);
+
+        $killer = $this->make(Player::class, [
+            'setTarget' => Expected::once(new Player()),
+            'setAssignedMission' => Expected::once(new Player()),
+            'setMissionSwitchUsed' => Expected::once(new Player()),
+            'addPoints' => Expected::once(new Player()),
+        ]);
+
+        $target = $this->make(Player::class);
+
+        $player = $this->make(Player::class, [
+            'getKiller' => Expected::once($killer),
+            'getTarget' => Expected::once($target),
+            'getAssignedMission' => Expected::once($mission),
+            'setTarget' => Expected::once(new Player()),
+            'setAssignedMission' => Expected::once(new Player()),
+        ]);
+
+        $customNotification = $this->prophesize(KillerNotification::class)->reveal();
+
+        $this->killerNotifier->notify($customNotification)->shouldBeCalledOnce();
+
+        $this->playerKilledUseCase->execute($player, $customNotification);
+    }
+
+    public function testKillPlayerWithoutAwardingPoints(): void
+    {
+        $mission = $this->makeEmpty(Mission::class);
+
+        $killer = $this->make(Player::class, [
+            'setTarget' => Expected::once(new Player()),
+            'setAssignedMission' => Expected::once(new Player()),
+            'setMissionSwitchUsed' => Expected::once(new Player()),
+            'addPoints' => Expected::never(),
+        ]);
+
+        $target = $this->make(Player::class);
+
+        $player = $this->make(Player::class, [
+            'getKiller' => Expected::once($killer),
+            'getTarget' => Expected::once($target),
+            'getAssignedMission' => Expected::once($mission),
+            'setTarget' => Expected::once(new Player()),
+            'setAssignedMission' => Expected::once(new Player()),
+        ]);
+
+        $this->killerNotifier->notify(Argument::type(DeathConfirmationNotification::class))->shouldBeCalledOnce();
+
+        $this->playerKilledUseCase->execute($player, null, false);
     }
 }
