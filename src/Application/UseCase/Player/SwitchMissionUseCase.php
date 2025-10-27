@@ -59,7 +59,9 @@ class SwitchMissionUseCase implements LoggerAwareInterface
                 'player_id' => $player->getId(),
                 'room_id' => $room->getId(),
             ]);
-        } else {
+        }
+
+        if ($newMission === null) {
             // Fallback: generate new mission if pool is empty
             $this->logger->warning('Secondary missions pool is empty for room {room_id}, generating new mission', [
                 'room_id' => $room->getId(),
