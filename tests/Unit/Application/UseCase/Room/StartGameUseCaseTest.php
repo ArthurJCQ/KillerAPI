@@ -16,6 +16,7 @@ use App\Domain\Player\Entity\Player;
 use App\Domain\Room\Entity\Room;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use Codeception\Test\Unit;
+use Doctrine\Common\Collections\ArrayCollection;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -65,7 +66,7 @@ class StartGameUseCaseTest extends Unit
         $room = $this->prophesize(Room::class);
         $room->getId()->willReturn('ABC12');
         $room->getAlivePlayers()->willReturn([$player1, $player2, $player3]);
-        $room->getPlayers()->willReturn([$player1, $player2, $player3]);
+        $room->getPlayers()->willReturn(new ArrayCollection([$player1, $player2, $player3]));
         $room->addSecondaryMission(Argument::type(Mission::class))->shouldBeCalledTimes(6);
 
         // Should dispatch missions and targets first
@@ -113,12 +114,12 @@ class StartGameUseCaseTest extends Unit
     public function testExecuteGeneratesCorrectNumberOfSecondaryMissionsForDifferentPlayerCounts(): void
     {
         // Test with 5 players - should generate 10 missions
-        $players = array_map(fn() => $this->prophesize(Player::class)->reveal(), range(1, 5));
+        $players = array_map(fn () => $this->prophesize(Player::class)->reveal(), range(1, 5));
 
         $room = $this->prophesize(Room::class);
         $room->getId()->willReturn('XYZ99');
         $room->getAlivePlayers()->willReturn($players);
-        $room->getPlayers()->willReturn($players);
+        $room->getPlayers()->willReturn(new ArrayCollection($players));
         $room->addSecondaryMission(Argument::type(Mission::class))->shouldBeCalledTimes(10);
 
         $this->dispatchMissionsAndTargetsUseCase->execute($room->reveal())->shouldBeCalledOnce();

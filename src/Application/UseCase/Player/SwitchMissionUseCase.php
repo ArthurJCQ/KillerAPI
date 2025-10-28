@@ -17,6 +17,7 @@ use App\Domain\Room\Exception\RoomNotInGameException;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\NullLogger;
 
 class SwitchMissionUseCase implements LoggerAwareInterface
 {
@@ -28,6 +29,7 @@ class SwitchMissionUseCase implements LoggerAwareInterface
         private readonly CreateMissionUseCase $createMissionUseCase,
         private readonly MissionRepository $missionRepository,
     ) {
+        $this->logger = new NullLogger();
     }
 
     public function execute(Player $player): void
@@ -39,7 +41,7 @@ class SwitchMissionUseCase implements LoggerAwareInterface
             throw new PlayerKilledException('PLAYER_IS_KILLED');
         }
 
-        if ($room?->getStatus() !== Room::IN_GAME) {
+        if (!$room || $room->getStatus() !== Room::IN_GAME) {
             throw new RoomNotInGameException('ROOM_NOT_IN_GAME');
         }
 

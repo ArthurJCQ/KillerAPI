@@ -46,8 +46,6 @@ class SwitchMissionUseCaseTest extends Unit
             $this->createMissionUseCase->reveal(),
             $this->missionRepository->reveal(),
         );
-
-        parent::setUp();
     }
 
     public function testExecuteSuccessfullyWithMissionFromPool(): void
@@ -55,6 +53,7 @@ class SwitchMissionUseCaseTest extends Unit
         $newMission = $this->make(Mission::class);
 
         $room = $this->make(Room::class, [
+            'getId' => Expected::atLeastOnce('XXXXX'),
             'getStatus' => Expected::once(Room::IN_GAME),
             'popSecondaryMission' => Expected::once($newMission),
         ]);
@@ -62,6 +61,7 @@ class SwitchMissionUseCaseTest extends Unit
         $currentMission = $this->make(Mission::class);
 
         $player = $this->make(Player::class, [
+            'getId' => Expected::atLeastOnce(1),
             'getStatus' => Expected::once(PlayerStatus::ALIVE),
             'getRoom' => Expected::atLeastOnce($room),
             'getAssignedMission' => Expected::once($currentMission),
@@ -84,6 +84,7 @@ class SwitchMissionUseCaseTest extends Unit
         $generatedMission = $this->make(Mission::class);
 
         $room = $this->make(Room::class, [
+            'getId' => Expected::atLeastOnce('XXXXX'),
             'getStatus' => Expected::once(Room::IN_GAME),
             'popSecondaryMission' => Expected::once(null),
         ]);

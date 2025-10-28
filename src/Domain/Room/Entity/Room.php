@@ -286,6 +286,7 @@ class Room
             return null;
         }
 
+        /** @var Mission $mission */
         $mission = $this->secondaryMissions->first();
         $this->removeSecondaryMission($mission);
 
