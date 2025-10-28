@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Application\UseCase\Mission;
 
 use App\Application\UseCase\Mission\CreateMissionUseCase;
 use App\Domain\Player\Entity\Player;
+use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Prophecy\PhpUnit\ProphecyTrait;
 
@@ -22,35 +23,51 @@ class CreateMissionUseCaseTest extends Unit
         parent::setUp();
     }
 
-    public function testExecuteCreatesMissionWithContentAndAuthor(): void
+    public function testExecuteCreatesMissionSuccessfully(): void
     {
-        $author = $this->prophesize(Player::class);
-        $author->getId()->willReturn(1);
-        $content = 'Complete the mission while wearing sunglasses';
+        $author = null;
+        $author = $this->make(Player::class, [
+            'getId' => 1,
+            'addAuthoredMission' => Expected::once(static function () use (&$author) {
+                return $author;
+            }),
+        ]);
 
-        $mission = $this->createMissionUseCase->execute($content, $author->reveal());
+        $missionContent = 'Test mission content';
 
-        $this->assertSame($content, $mission->getContent());
-        $this->assertSame($author->reveal(), $mission->getAuthor());
+        $mission = $this->createMissionUseCase->execute($missionContent, $author);
+
+        $this->assertEquals($missionContent, $mission->getContent());
     }
 
-    public function testExecuteCreatesMissionWithContentOnly(): void
+    public function testExecuteAssociatesMissionWithAuthor(): void
     {
-        $content = 'Eliminate your target while dancing';
+        $missionAddedToAuthor = false;
+        $author = $this->make(Player::class, [
+            'getId' => 1,
+            'addAuthoredMission' => Expected::once(
+                static function () use (&$missionAddedToAuthor, &$author) {
+                    $missionAddedToAuthor = true;
 
-        $mission = $this->createMissionUseCase->execute($content);
+                    return $author;
+                },
+            ),
+        ]);
 
-        $this->assertSame($content, $mission->getContent());
-        $this->assertNull($mission->getAuthor());
+        $missionContent = 'Associated mission';
+
+        $this->createMissionUseCase->execute($missionContent, $author);
+
+        $this->assertTrue($missionAddedToAuthor);
     }
 
-    public function testExecuteCreatesMissionWithNullAuthor(): void
+    public function testExecuteAssociatesMissionWithoutAuthor(): void
     {
-        $content = 'Complete the mission in complete silence';
+        $author = null;
+        $missionContent = 'Associated mission';
 
-        $mission = $this->createMissionUseCase->execute($content);
+        $mission = $this->createMissionUseCase->execute($missionContent, $author);
 
-        $this->assertSame($content, $mission->getContent());
-        $this->assertNull($mission->getAuthor());
+        $this->assertEquals($missionContent, $mission->getContent());
     }
 }
