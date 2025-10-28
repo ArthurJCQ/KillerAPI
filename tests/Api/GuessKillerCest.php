@@ -10,6 +10,7 @@ use App\Domain\Room\Entity\Room;
 use App\Tests\ApiTester;
 
 use function PHPUnit\Framework\assertEquals;
+use function PHPUnit\Framework\assertNotNull;
 
 class GuessKillerCest
 {
@@ -55,27 +56,31 @@ class GuessKillerCest
         $I->setJwtHeader($I, 'John');
         $I->sendGetAsJson('/player/me');
         $response = json_decode($I->grabResponse(), true);
-        $johnKillerId = $response['killer']['id'];
+        $johnTargetId = $response['target']['id'];
+        $johnId = $response['id'];
+        $targetName = $I->grabFromRepository(Player::class, 'name', ['id' => $johnTargetId]);
 
-        // Verify John starts with 0 points
+        $I->setJwtHeader($I, $targetName);
+        $I->sendGetAsJson('/player/me');
+
+        // Verify Target starts with 0 points
         $I->seeResponseContainsJson(['points' => 0]);
 
-        // John guesses his killer correctly
-        $I->sendPatchAsJson(sprintf('/player/%s/guess-killer', $data['johnId']), [
-            'guessedPlayerId' => $johnKillerId,
+        // Target guesses his killer correctly
+        $I->sendPatchAsJson(sprintf('/player/%s/guess-killer', $johnTargetId), [
+            'guessedPlayerId' => $johnId,
         ]);
         $I->seeResponseCodeIs(200);
 
-        // Verify John now has 5 points
+        // Verify Target now has 5 points
         $I->sendGetAsJson('/player/me');
         $I->seeResponseContainsJson([
             'points' => 5,
             'status' => PlayerStatus::ALIVE->value,
         ]);
 
-        // Verify the killer has been eliminated
-        $killerName = $johnKillerId === $data['adminId'] ? 'Admin' : 'Doe';
-        $I->setJwtHeader($I, $killerName);
+        // Verify John has been eliminated
+        $I->setJwtHeader($I, 'John');
         $I->sendGetAsJson('/player/me');
         $I->seeResponseContainsJson([
             'status' => PlayerStatus::KILLED->value,
@@ -83,8 +88,8 @@ class GuessKillerCest
             'assignedMission' => null,
         ]);
 
-        // Verify the eliminated killer's killer got notification and now has a new target
-        $killerEntity = $I->grabEntityFromRepository(Player::class, ['id' => $johnKillerId]);
+        $newKillerId = $johnTargetId === $data['adminId'] ? 'Doe' : 'Admin';
+        $killerEntity = $I->grabEntityFromRepository(Player::class, ['id' => $newKillerId]);
         $killersKiller = $killerEntity->getKiller();
 
         if ($killersKiller !== null) {
@@ -94,7 +99,7 @@ class GuessKillerCest
 
             // The killer's killer should now have the eliminated player's target
             $response = json_decode($I->grabResponse(), true);
-            $I->assertNotNull($response['target'], 'Killer\'s killer should have a new target');
+            assertNotNull($response['target'], 'Killer\'s killer should have a new target');
         }
     }
 

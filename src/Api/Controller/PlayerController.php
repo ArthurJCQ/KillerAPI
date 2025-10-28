@@ -271,7 +271,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         $guessedPlayerId = $data['guessedPlayerId'];
 
         try {
-            $this->guessKillerUseCase->execute($player, $guessedPlayerId);
+            $this->guessKillerUseCase->execute($player, (int) $guessedPlayerId);
         } catch (KillerExceptionInterface $e) {
             throw new KillerBadRequestHttpException($e->getMessage());
         }
@@ -283,7 +283,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         if ($room !== null) {
             $this->hub->publish(
                 sprintf('room/%s', $room->getId()),
-                $this->serializer->serialize((object) $room, [AbstractNormalizer::GROUPS => 'publish-mercure']),
+                $this->serializer->serialize($room, [AbstractNormalizer::GROUPS => 'publish-mercure']),
             );
         }
 

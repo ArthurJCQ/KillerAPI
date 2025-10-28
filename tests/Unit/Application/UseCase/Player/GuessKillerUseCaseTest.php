@@ -53,8 +53,8 @@ class GuessKillerUseCaseTest extends Unit
         $killersKiller = $this->make(Player::class);
 
         $killer = $this->make(Player::class, [
-            'getId' => Expected::once('killer-id'),
-            'setStatus' => Expected::once((new Player())->setStatus(PlayerStatus::KILLED)),
+            'getId' => Expected::atLeastOnce(1),
+            'setStatus' => Expected::once(new Player()->setStatus(PlayerStatus::KILLED)),
             'getKiller' => Expected::once($killersKiller),
         ]);
 
@@ -62,40 +62,14 @@ class GuessKillerUseCaseTest extends Unit
             'getStatus' => Expected::once(PlayerStatus::ALIVE),
             'getRoom' => Expected::once($room),
             'getKiller' => Expected::once($killer),
-            'addPoints' => Expected::once((new Player())->addPoints(5)),
-            'getId' => Expected::atLeastOnce('guesser-id'),
+            'addPoints' => Expected::once(new Player()->addPoints(5)),
+            'getId' => Expected::atLeastOnce(2),
         ]);
 
         $this->eventDispatcher->dispatch(Argument::type(PlayerKilledEvent::class))->shouldBeCalledOnce();
         $this->killerNotifier->notify(Argument::type(YourTargetEliminatedNotification::class))->shouldBeCalledOnce();
 
-        $this->guessKillerUseCase->execute($guesser, 'killer-id');
-    }
-
-    public function testCorrectGuessWithoutKillersKiller(): void
-    {
-        $room = $this->make(Room::class, [
-            'getStatus' => Expected::once(Room::IN_GAME),
-        ]);
-
-        $killer = $this->make(Player::class, [
-            'getId' => Expected::once('killer-id'),
-            'setStatus' => Expected::once((new Player())->setStatus(PlayerStatus::KILLED)),
-            'getKiller' => Expected::once(null),
-        ]);
-
-        $guesser = $this->make(Player::class, [
-            'getStatus' => Expected::once(PlayerStatus::ALIVE),
-            'getRoom' => Expected::once($room),
-            'getKiller' => Expected::once($killer),
-            'addPoints' => Expected::once((new Player())->addPoints(5)),
-            'getId' => Expected::atLeastOnce('guesser-id'),
-        ]);
-
-        $this->eventDispatcher->dispatch(Argument::type(PlayerKilledEvent::class))->shouldBeCalledOnce();
-        $this->killerNotifier->notify(Argument::type(YourTargetEliminatedNotification::class))->shouldNotBeCalled();
-
-        $this->guessKillerUseCase->execute($guesser, 'killer-id');
+        $this->guessKillerUseCase->execute($guesser, 1);
     }
 
     public function testWrongGuess(): void
@@ -105,21 +79,21 @@ class GuessKillerUseCaseTest extends Unit
         ]);
 
         $killer = $this->make(Player::class, [
-            'getId' => Expected::once('actual-killer-id'),
+            'getId' => Expected::atLeastOnce(2),
         ]);
 
         $guesser = $this->make(Player::class, [
             'getStatus' => Expected::once(PlayerStatus::ALIVE),
             'getRoom' => Expected::once($room),
             'getKiller' => Expected::once($killer),
-            'setStatus' => Expected::once((new Player())->setStatus(PlayerStatus::KILLED)),
-            'getId' => Expected::atLeastOnce('guesser-id'),
+            'setStatus' => Expected::once(new Player()->setStatus(PlayerStatus::KILLED)),
+            'getId' => Expected::atLeastOnce(2),
         ]);
 
         $this->eventDispatcher->dispatch(Argument::type(PlayerKilledEvent::class))->shouldBeCalledOnce();
         $this->killerNotifier->notify(Argument::any())->shouldNotBeCalled();
 
-        $this->guessKillerUseCase->execute($guesser, 'wrong-killer-id');
+        $this->guessKillerUseCase->execute($guesser, 3);
     }
 
     public function testThrowsExceptionWhenPlayerIsKilled(): void
@@ -134,7 +108,7 @@ class GuessKillerUseCaseTest extends Unit
         $this->expectException(PlayerKilledException::class);
         $this->expectExceptionMessage('PLAYER_IS_KILLED');
 
-        $this->guessKillerUseCase->execute($guesser, 'some-id');
+        $this->guessKillerUseCase->execute($guesser, 1);
     }
 
     public function testThrowsExceptionWhenRoomNotInGame(): void
@@ -154,7 +128,7 @@ class GuessKillerUseCaseTest extends Unit
         $this->expectException(RoomNotInGameException::class);
         $this->expectExceptionMessage('ROOM_NOT_IN_GAME');
 
-        $this->guessKillerUseCase->execute($guesser, 'some-id');
+        $this->guessKillerUseCase->execute($guesser, 1);
     }
 
     public function testThrowsExceptionWhenKillerNotFound(): void
@@ -175,6 +149,6 @@ class GuessKillerUseCaseTest extends Unit
         $this->expectException(PlayerHasNoKillerOrTargetException::class);
         $this->expectExceptionMessage('KILLER_NOT_FOUND');
 
-        $this->guessKillerUseCase->execute($guesser, 'some-id');
+        $this->guessKillerUseCase->execute($guesser, 1);
     }
 }

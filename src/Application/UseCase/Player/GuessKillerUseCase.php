@@ -17,6 +17,7 @@ use App\Domain\Room\Entity\Room;
 use App\Domain\Room\Exception\RoomNotInGameException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\NullLogger;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class GuessKillerUseCase implements LoggerAwareInterface
@@ -27,9 +28,10 @@ class GuessKillerUseCase implements LoggerAwareInterface
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly KillerNotifier $killerNotifier,
     ) {
+        $this->logger = new NullLogger();
     }
 
-    public function execute(Player $guesser, string $guessedPlayerId): void
+    public function execute(Player $guesser, int $guessedPlayerId): void
     {
         // Validation: Player must be alive
         if ($guesser->getStatus() !== PlayerStatus::ALIVE) {
@@ -38,12 +40,14 @@ class GuessKillerUseCase implements LoggerAwareInterface
 
         // Validation: Room must be in game
         $room = $guesser->getRoom();
+
         if ($room?->getStatus() !== Room::IN_GAME) {
             throw new RoomNotInGameException('ROOM_NOT_IN_GAME');
         }
 
         // Validation: Player must have a killer
         $actualKiller = $guesser->getKiller();
+
         if ($actualKiller === null) {
             throw new PlayerHasNoKillerOrTargetException('KILLER_NOT_FOUND');
         }
@@ -53,6 +57,7 @@ class GuessKillerUseCase implements LoggerAwareInterface
 
         if ($isCorrectGuess) {
             $this->handleCorrectGuess($guesser, $actualKiller);
+
             return;
         }
 
@@ -81,10 +86,11 @@ class GuessKillerUseCase implements LoggerAwareInterface
             )
         );
 
-        // Notify the killer's killer separately (this is specific to the guess killer feature)
-        if ($killersKiller !== null) {
-            $this->killerNotifier->notify(YourTargetEliminatedNotification::to($killersKiller));
+        if ($killersKiller === null) {
+            throw new PlayerHasNoKillerOrTargetException('KILLER_NOT_FOUND');
         }
+
+        $this->killerNotifier->notify(YourTargetEliminatedNotification::to($killersKiller));
 
         $this->logger?->info(
             'Player {guesser} correctly guessed their killer {killer}',

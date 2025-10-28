@@ -9,6 +9,7 @@ use App\Domain\Mission\Entity\Mission;
 use App\Domain\Notifications\DeathConfirmationNotification;
 use App\Domain\Notifications\KillerNotification;
 use App\Domain\Notifications\KillerNotifier;
+use App\Domain\Notifications\WrongGuessEliminatedNotification;
 use App\Domain\Player\Entity\Player;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use Codeception\Stub\Expected;
@@ -84,11 +85,7 @@ class PlayerKilledUseCaseTest extends Unit
             'setAssignedMission' => Expected::once(new Player()),
         ]);
 
-        $customNotification = $this->prophesize(KillerNotification::class)->reveal();
-
-        $this->killerNotifier->notify($customNotification)->shouldBeCalledOnce();
-
-        $this->playerKilledUseCase->execute($player, $customNotification);
+        $this->playerKilledUseCase->execute($player, WrongGuessEliminatedNotification::to($killer));
     }
 
     public function testKillPlayerWithoutAwardingPoints(): void

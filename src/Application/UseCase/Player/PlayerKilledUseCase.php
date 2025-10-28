@@ -27,7 +27,7 @@ class PlayerKilledUseCase implements PlayerUseCase, LoggerAwareInterface
      * Execute the player killed use case.
      *
      * @param Player $player The player who was killed
-     * @param KillerNotification|null $killerNotification Optional notification to send to the killer (default: DeathConfirmationNotification)
+     * @param KillerNotification|null $killerNotification Optional notification to send to the killer
      * @param bool $awardPoints Whether to award points to the killer (default: true)
      */
     public function execute(
@@ -52,11 +52,11 @@ class PlayerKilledUseCase implements PlayerUseCase, LoggerAwareInterface
         $killer->setAssignedMission($assignedMission);
         $killer->setMissionSwitchUsed(false);
 
+        var_dump($player->getKiller()?->getId() ? 'oui' : 'non');die;
         if ($awardPoints) {
             $killer->addPoints(10);
         }
 
-        // Notify the killer (default to DeathConfirmationNotification)
         $notificationToSend = $killerNotification ?? DeathConfirmationNotification::to($killer);
         $this->killerNotifier->notify($notificationToSend);
     }
