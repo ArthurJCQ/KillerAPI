@@ -41,11 +41,13 @@ class Mission
     #[Groups(['get-mission', 'get-player'])]
     private ?Room $room;
 
-    #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    private bool $isAssigned = false;
+    #[ORM\ManyToOne(targetEntity: Room::class, cascade: ['persist'], inversedBy: 'secondaryMissions')]
+    #[ORM\JoinColumn(name: 'room_secondary_missions')]
+    #[Groups(['get-mission', 'get-player'])]
+    private ?Room $secondaryRoom = null;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    private bool $isSecondaryMission = false;
+    private bool $isAssigned = false;
 
     public function getId(): int
     {
@@ -95,6 +97,18 @@ class Mission
         return $this;
     }
 
+    public function getSecondaryRoom(): ?Room
+    {
+        return $this->secondaryRoom;
+    }
+
+    public function setSecondaryRoom(?Room $secondaryRoom): self
+    {
+        $this->secondaryRoom = $secondaryRoom;
+
+        return $this;
+    }
+
     public function isAssigned(): bool
     {
         return $this->isAssigned;
@@ -103,18 +117,6 @@ class Mission
     public function setIsAssigned(bool $isAssigned): self
     {
         $this->isAssigned = $isAssigned;
-
-        return $this;
-    }
-
-    public function isSecondaryMission(): bool
-    {
-        return $this->isSecondaryMission;
-    }
-
-    public function setIsSecondaryMission(bool $isSecondaryMission): self
-    {
-        $this->isSecondaryMission = $isSecondaryMission;
 
         return $this;
     }

@@ -60,6 +60,11 @@ class Room
     #[Groups(['get-room', 'publish-mercure'])]
     private Collection $missions;
 
+    /** @var Collection<int, Mission> */
+    #[ORM\OneToMany(mappedBy: 'secondaryRoom', targetEntity: Mission::class, cascade: ['remove'])]
+    #[Groups(['get-room', 'publish-mercure'])]
+    private Collection $secondaryMissions;
+
     #[ORM\ManyToOne(targetEntity: Player::class)]
     #[Groups(['get-room', 'publish-mercure'])]
     private ?Player $winner = null;
@@ -74,6 +79,7 @@ class Room
         $this->createdAt = new \DateTimeImmutable();
         $this->dateEnd = new \DateTime('+30days');
         $this->missions = new ArrayCollection();
+        $this->secondaryMissions = new ArrayCollection();
     }
 
     public function getId(): string
@@ -252,18 +258,14 @@ class Room
     /** @return Collection<int, Mission> */
     public function getSecondaryMissions(): Collection
     {
-        return $this->missions->filter(
-            static fn (Mission $mission) => $mission->isSecondaryMission(),
-        );
+        return $this->secondaryMissions;
     }
 
     public function addSecondaryMission(Mission $mission): self
     {
-        $mission->setIsSecondaryMission(true);
-        $mission->setRoom($this);
-
-        if (!$this->missions->contains($mission)) {
-            $this->missions[] = $mission;
+        if (!$this->secondaryMissions->contains($mission)) {
+            $this->secondaryMissions[] = $mission;
+            $mission->setSecondaryRoom($this);
         }
 
         return $this;
@@ -271,10 +273,10 @@ class Room
 
     public function removeSecondaryMission(Mission $mission): self
     {
-        if ($this->missions->removeElement($mission)) {
+        if ($this->secondaryMissions->removeElement($mission)) {
             // set the owning side to null (unless already changed)
-            if ($mission->getRoom() === $this) {
-                $mission->setRoom(null);
+            if ($mission->getSecondaryRoom() === $this) {
+                $mission->setSecondaryRoom(null);
             }
         }
 
@@ -283,13 +285,11 @@ class Room
 
     public function popSecondaryMission(): ?Mission
     {
-        $secondaryMissions = $this->getSecondaryMissions();
-
-        if ($secondaryMissions->isEmpty()) {
+        if ($this->secondaryMissions->isEmpty()) {
             return null;
         }
 
-        $mission = $secondaryMissions->first();
+        $mission = $this->secondaryMissions->first();
         $this->removeSecondaryMission($mission);
 
         return $mission;
