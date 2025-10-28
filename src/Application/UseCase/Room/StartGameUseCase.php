@@ -48,8 +48,6 @@ final class StartGameUseCase implements RoomUseCase, LoggerAwareInterface
 
         foreach ($generatedMissions as $missionContent) {
             $mission = $this->createMissionUseCase->execute($missionContent);
-            $mission->setRoom($room);
-            $mission->setIsSecondaryMission(true);
 
             $room->addSecondaryMission($mission);
             $this->missionRepository->store($mission);

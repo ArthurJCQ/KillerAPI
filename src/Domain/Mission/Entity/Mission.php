@@ -44,9 +44,6 @@ class Mission
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $isAssigned = false;
 
-    #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    private bool $isSecondaryMission = false;
-
     public function getId(): int
     {
         return $this->id;
@@ -103,18 +100,6 @@ class Mission
     public function setIsAssigned(bool $isAssigned): self
     {
         $this->isAssigned = $isAssigned;
-
-        return $this;
-    }
-
-    public function isSecondaryMission(): bool
-    {
-        return $this->isSecondaryMission;
-    }
-
-    public function setIsSecondaryMission(bool $isSecondaryMission): self
-    {
-        $this->isSecondaryMission = $isSecondaryMission;
 
         return $this;
     }

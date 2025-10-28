@@ -48,10 +48,8 @@ class SecondaryMissionsAndSwitchingCest
         $I->seeResponseCodeIs(200);
 
         // Verify secondary missions were created in database
-        $secondaryMissions = $I->grabEntitiesFromRepository(Mission::class, [
-            'room' => $room,
-            'isSecondaryMission' => true,
-        ]);
+        $room = $I->grabEntityFromRepository(Room::class, ['id' => $room->getId()]);
+        $secondaryMissions = $room->getSecondaryMissions();
 
         $I->assertCount(8, $secondaryMissions, 'Expected 8 secondary missions (4 players * 2)');
 
@@ -59,7 +57,6 @@ class SecondaryMissionsAndSwitchingCest
         foreach ($secondaryMissions as $mission) {
             $I->assertNotEmpty($mission->getContent());
             $I->assertNull($mission->getAuthor(), 'Secondary missions should not have an author');
-            $I->assertTrue($mission->isSecondaryMission());
         }
     }
 
@@ -92,11 +89,8 @@ class SecondaryMissionsAndSwitchingCest
         $I->sendPatchAsJson(sprintf('/room/%s', $room->getId()), ['status' => 'IN_GAME']);
 
         // Count secondary missions before switch
-        $secondaryMissionsBeforeSwitch = $I->grabEntitiesFromRepository(Mission::class, [
-            'room' => $room,
-            'isSecondaryMission' => true,
-        ]);
-        $countBefore = count($secondaryMissionsBeforeSwitch);
+        $room = $I->grabEntityFromRepository(Room::class, ['id' => $room->getId()]);
+        $countBefore = $room->getSecondaryMissions()->count();
 
         // Get player's current mission
         $I->setJwtHeader($I, self::PLAYER_1);
@@ -116,11 +110,8 @@ class SecondaryMissionsAndSwitchingCest
         $I->assertNotEquals($originalMissionId, $newMissionId, 'Mission should have changed');
 
         // Verify a secondary mission was consumed from the pool
-        $secondaryMissionsAfterSwitch = $I->grabEntitiesFromRepository(Mission::class, [
-            'room' => $room,
-            'isSecondaryMission' => true,
-        ]);
-        $countAfter = count($secondaryMissionsAfterSwitch);
+        $room = $I->grabEntityFromRepository(Room::class, ['id' => $room->getId()]);
+        $countAfter = $room->getSecondaryMissions()->count();
 
         $I->assertEquals($countBefore - 1, $countAfter, 'One secondary mission should have been removed from pool');
 
@@ -182,15 +173,13 @@ class SecondaryMissionsAndSwitchingCest
         $I->sendPatchAsJson(sprintf('/room/%s', $room->getId()), ['status' => 'IN_GAME']);
 
         // Verify 4 secondary missions exist
-        $secondaryMissions = $I->grabEntitiesFromRepository(Mission::class, [
-            'room' => $room,
-            'isSecondaryMission' => true,
-        ]);
+        $room = $I->grabEntityFromRepository(Room::class, ['id' => $room->getId()]);
+        $secondaryMissions = $room->getSecondaryMissions();
         $I->assertCount(4, $secondaryMissions);
 
-        // Manually deplete the pool by marking all missions as assigned
-        foreach ($secondaryMissions as $mission) {
-            $mission->setIsAssigned(true);
+        // Manually deplete the pool by removing all secondary missions
+        foreach ($secondaryMissions->toArray() as $mission) {
+            $room->removeSecondaryMission($mission);
         }
         $I->flushToDatabase();
 
@@ -208,15 +197,16 @@ class SecondaryMissionsAndSwitchingCest
         $responseAfter = json_decode($I->grabResponse(), true);
         $I->assertNotNull($responseAfter['assignedMission']);
 
-        // The new mission should NOT be a secondary mission
+        // The new mission should be assigned to the room but not as a secondary mission
+        $room = $I->grabEntityFromRepository(Room::class, ['id' => $room->getId()]);
         $allMissions = $I->grabEntitiesFromRepository(Mission::class, ['room' => $room]);
-        $nonSecondaryCount = 0;
+        $generatedMissionCount = 0;
         foreach ($allMissions as $mission) {
-            if (!$mission->isSecondaryMission() && $mission->getAuthor() === null) {
-                $nonSecondaryCount++;
+            if (!$room->getSecondaryMissions()->contains($mission) && $mission->getAuthor() === null) {
+                $generatedMissionCount++;
             }
         }
-        $I->assertGreaterThan(0, $nonSecondaryCount, 'At least one non-secondary generated mission should exist');
+        $I->assertGreaterThan(0, $generatedMissionCount, 'At least one generated mission should exist');
     }
 
     public function testSecondaryMissionsCountScalesWithPlayerCount(ApiTester $I): void
@@ -250,10 +240,8 @@ class SecondaryMissionsAndSwitchingCest
             $I->sendPatchAsJson(sprintf('/room/%s', $room->getId()), ['status' => 'IN_GAME']);
 
             // Verify correct number of secondary missions
-            $secondaryMissions = $I->grabEntitiesFromRepository(Mission::class, [
-                'room' => $room,
-                'isSecondaryMission' => true,
-            ]);
+            $room = $I->grabEntityFromRepository(Room::class, ['id' => $room->getId()]);
+            $secondaryMissions = $room->getSecondaryMissions();
 
             $I->assertCount(
                 $testCase['expectedSecondaryMissions'],

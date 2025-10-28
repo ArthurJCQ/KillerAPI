@@ -85,28 +85,11 @@ class StartGameUseCaseTest extends Unit
 
         // Should create 6 missions via CreateMissionUseCase
         $mission1 = $this->prophesize(Mission::class);
-        $mission1->setRoom($room->reveal())->shouldBeCalledOnce()->willReturn($mission1->reveal());
-        $mission1->setIsSecondaryMission(true)->shouldBeCalledOnce()->willReturn($mission1->reveal());
-
         $mission2 = $this->prophesize(Mission::class);
-        $mission2->setRoom($room->reveal())->shouldBeCalledOnce()->willReturn($mission2->reveal());
-        $mission2->setIsSecondaryMission(true)->shouldBeCalledOnce()->willReturn($mission2->reveal());
-
         $mission3 = $this->prophesize(Mission::class);
-        $mission3->setRoom($room->reveal())->shouldBeCalledOnce()->willReturn($mission3->reveal());
-        $mission3->setIsSecondaryMission(true)->shouldBeCalledOnce()->willReturn($mission3->reveal());
-
         $mission4 = $this->prophesize(Mission::class);
-        $mission4->setRoom($room->reveal())->shouldBeCalledOnce()->willReturn($mission4->reveal());
-        $mission4->setIsSecondaryMission(true)->shouldBeCalledOnce()->willReturn($mission4->reveal());
-
         $mission5 = $this->prophesize(Mission::class);
-        $mission5->setRoom($room->reveal())->shouldBeCalledOnce()->willReturn($mission5->reveal());
-        $mission5->setIsSecondaryMission(true)->shouldBeCalledOnce()->willReturn($mission5->reveal());
-
         $mission6 = $this->prophesize(Mission::class);
-        $mission6->setRoom($room->reveal())->shouldBeCalledOnce()->willReturn($mission6->reveal());
-        $mission6->setIsSecondaryMission(true)->shouldBeCalledOnce()->willReturn($mission6->reveal());
 
         $this->createMissionUseCase->execute('Mission 1')->shouldBeCalledOnce()->willReturn($mission1->reveal());
         $this->createMissionUseCase->execute('Mission 2')->shouldBeCalledOnce()->willReturn($mission2->reveal());
@@ -145,8 +128,6 @@ class StartGameUseCaseTest extends Unit
             ->willReturn(array_fill(0, 10, 'Test mission'));
 
         $mission = $this->prophesize(Mission::class);
-        $mission->setRoom($room->reveal())->willReturn($mission->reveal());
-        $mission->setIsSecondaryMission(true)->willReturn($mission->reveal());
 
         $this->createMissionUseCase->execute('Test mission')->willReturn($mission->reveal());
         $this->missionRepository->store(Argument::type(Mission::class))->shouldBeCalledTimes(10);
