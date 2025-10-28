@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\UseCase\Player;
 
-use App\Domain\Mission\Entity\Mission;
+use App\Application\UseCase\Mission\CreateMissionUseCase;
 use App\Domain\Mission\MissionGeneratorInterface;
 use App\Domain\Mission\MissionRepository;
 use App\Domain\Player\Entity\Player;
@@ -15,14 +15,21 @@ use App\Domain\Player\Exception\PlayerKilledException;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\Exception\RoomNotInGameException;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\NullLogger;
 
-readonly class SwitchMissionUseCase
+class SwitchMissionUseCase implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     public function __construct(
-        private PersistenceAdapterInterface $persistenceAdapter,
-        private MissionGeneratorInterface $missionGenerator,
-        private MissionRepository $missionRepository,
+        private readonly PersistenceAdapterInterface $persistenceAdapter,
+        private readonly MissionGeneratorInterface $missionGenerator,
+        private readonly CreateMissionUseCase $createMissionUseCase,
+        private readonly MissionRepository $missionRepository,
     ) {
+        $this->logger = new NullLogger();
     }
 
     public function execute(Player $player): void
@@ -34,7 +41,7 @@ readonly class SwitchMissionUseCase
             throw new PlayerKilledException('PLAYER_IS_KILLED');
         }
 
-        if ($room?->getStatus() !== Room::IN_GAME) {
+        if (!$room || $room->getStatus() !== Room::IN_GAME) {
             throw new RoomNotInGameException('ROOM_NOT_IN_GAME');
         }
 
@@ -46,15 +53,30 @@ readonly class SwitchMissionUseCase
             throw new MissionSwitchAlreadyUsedException('MISSION_SWITCH_ALREADY_USED');
         }
 
-        // Generate new mission content
-        $missions = $this->missionGenerator->generateMissions(1);
-        $newMissionContent = $missions[0];
+        // Try to get a mission from the secondary missions pool
+        $newMission = $room->popSecondaryMission();
 
-        // Create new mission entity
-        $newMission = new Mission();
-        $newMission->setContent($newMissionContent);
-        $newMission->setRoom($room);
-        $newMission->setAuthor(null); // Generated missions have no author
+        if ($newMission !== null) {
+            $this->logger->info('Using mission from secondary pool for player {player_id} in room {room_id}', [
+                'player_id' => $player->getId(),
+                'room_id' => $room->getId(),
+            ]);
+        }
+
+        if ($newMission === null) {
+            // Fallback: generate new mission if pool is empty
+            $this->logger->warning('Secondary missions pool is empty for room {room_id}, generating new mission', [
+                'room_id' => $room->getId(),
+            ]);
+
+            $missions = $this->missionGenerator->generateMissions(1);
+            $newMissionContent = $missions[0];
+
+            $newMission = $this->createMissionUseCase->execute($newMissionContent);
+            $newMission->setRoom($room);
+
+            $this->missionRepository->store($newMission);
+        }
 
         // Replace the old mission with the new one
         $player->setAssignedMission($newMission);
@@ -66,7 +88,6 @@ readonly class SwitchMissionUseCase
         $player->removePoints(5);
 
         // Persist changes
-        $this->missionRepository->store($newMission);
         $this->persistenceAdapter->flush();
     }
 }

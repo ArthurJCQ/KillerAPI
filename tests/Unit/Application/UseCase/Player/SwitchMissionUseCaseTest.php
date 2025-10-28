@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Application\UseCase\Player;
 
+use App\Application\UseCase\Mission\CreateMissionUseCase;
 use App\Application\UseCase\Player\SwitchMissionUseCase;
 use App\Domain\Mission\Entity\Mission;
 use App\Domain\Mission\MissionGeneratorInterface;
@@ -29,6 +30,7 @@ class SwitchMissionUseCaseTest extends Unit
     private ObjectProphecy $persistenceAdapter;
     private ObjectProphecy $missionGenerator;
     private ObjectProphecy $missionRepository;
+    private ObjectProphecy $createMissionUseCase;
     private SwitchMissionUseCase $switchMissionUseCase;
 
     protected function setUp(): void
@@ -36,38 +38,78 @@ class SwitchMissionUseCaseTest extends Unit
         $this->persistenceAdapter = $this->prophesize(PersistenceAdapterInterface::class);
         $this->missionGenerator = $this->prophesize(MissionGeneratorInterface::class);
         $this->missionRepository = $this->prophesize(MissionRepository::class);
+        $this->createMissionUseCase = $this->prophesize(CreateMissionUseCase::class);
 
         $this->switchMissionUseCase = new SwitchMissionUseCase(
             $this->persistenceAdapter->reveal(),
             $this->missionGenerator->reveal(),
+            $this->createMissionUseCase->reveal(),
             $this->missionRepository->reveal(),
         );
-
-        parent::setUp();
     }
 
-    public function testExecuteSuccessfully(): void
+    public function testExecuteSuccessfullyWithMissionFromPool(): void
     {
+        $newMission = $this->make(Mission::class);
+
         $room = $this->make(Room::class, [
+            'getId' => Expected::atLeastOnce('XXXXX'),
             'getStatus' => Expected::once(Room::IN_GAME),
+            'popSecondaryMission' => Expected::once($newMission),
+        ]);
+
+        $currentMission = $this->make(Mission::class);
+
+        $player = $this->make(Player::class, [
+            'getId' => Expected::atLeastOnce(1),
+            'getStatus' => Expected::once(PlayerStatus::ALIVE),
+            'getRoom' => Expected::atLeastOnce($room),
+            'getAssignedMission' => Expected::once($currentMission),
+            'hasMissionSwitchUsed' => Expected::once(false),
+            'setAssignedMission' => Expected::once(new Player()),
+            'setMissionSwitchUsed' => Expected::once(new Player()),
+            'removePoints' => Expected::once(new Player()),
+        ]);
+
+        $this->missionGenerator->generateMissions(Argument::any(), Argument::any())->shouldNotBeCalled();
+        $this->createMissionUseCase->execute(Argument::any(), Argument::any())->shouldNotBeCalled();
+        $this->missionRepository->store(Argument::any())->shouldNotBeCalled();
+        $this->persistenceAdapter->flush()->shouldBeCalledOnce();
+
+        $this->switchMissionUseCase->execute($player);
+    }
+
+    public function testExecuteSuccessfullyWithGeneratedMissionWhenPoolIsEmpty(): void
+    {
+        $generatedMission = $this->make(Mission::class);
+
+        $room = $this->make(Room::class, [
+            'getId' => Expected::atLeastOnce('XXXXX'),
+            'getStatus' => Expected::once(Room::IN_GAME),
+            'popSecondaryMission' => Expected::once(null),
         ]);
 
         $currentMission = $this->make(Mission::class);
 
         $player = $this->make(Player::class, [
             'getStatus' => Expected::once(PlayerStatus::ALIVE),
-            'getRoom' => Expected::once($room),
+            'getRoom' => Expected::atLeastOnce($room),
             'getAssignedMission' => Expected::once($currentMission),
             'hasMissionSwitchUsed' => Expected::once(false),
+            'setAssignedMission' => Expected::once(new Player()),
             'setMissionSwitchUsed' => Expected::once(new Player()),
             'removePoints' => Expected::once(new Player()),
         ]);
 
-        $this->missionGenerator->generateMissions(1, null)
+        $this->missionGenerator->generateMissions(1)
             ->shouldBeCalledOnce()
             ->willReturn(['Complete the mission while wearing sunglasses']);
 
-        $this->missionRepository->store(Argument::type(Mission::class))->shouldBeCalledOnce();
+        $this->createMissionUseCase->execute('Complete the mission while wearing sunglasses')
+            ->shouldBeCalledOnce()
+            ->willReturn($generatedMission);
+
+        $this->missionRepository->store($generatedMission)->shouldBeCalledOnce();
         $this->persistenceAdapter->flush()->shouldBeCalledOnce();
 
         $this->switchMissionUseCase->execute($player);
@@ -80,6 +122,7 @@ class SwitchMissionUseCaseTest extends Unit
         ]);
 
         $this->missionGenerator->generateMissions(Argument::any(), Argument::any())->shouldNotBeCalled();
+        $this->createMissionUseCase->execute(Argument::any(), Argument::any())->shouldNotBeCalled();
         $this->missionRepository->store(Argument::any())->shouldNotBeCalled();
         $this->persistenceAdapter->flush()->shouldNotBeCalled();
 
@@ -101,6 +144,7 @@ class SwitchMissionUseCaseTest extends Unit
         ]);
 
         $this->missionGenerator->generateMissions(Argument::any(), Argument::any())->shouldNotBeCalled();
+        $this->createMissionUseCase->execute(Argument::any(), Argument::any())->shouldNotBeCalled();
         $this->missionRepository->store(Argument::any())->shouldNotBeCalled();
         $this->persistenceAdapter->flush()->shouldNotBeCalled();
 
@@ -123,6 +167,7 @@ class SwitchMissionUseCaseTest extends Unit
         ]);
 
         $this->missionGenerator->generateMissions(Argument::any(), Argument::any())->shouldNotBeCalled();
+        $this->createMissionUseCase->execute(Argument::any(), Argument::any())->shouldNotBeCalled();
         $this->missionRepository->store(Argument::any())->shouldNotBeCalled();
         $this->persistenceAdapter->flush()->shouldNotBeCalled();
 
@@ -148,6 +193,7 @@ class SwitchMissionUseCaseTest extends Unit
         ]);
 
         $this->missionGenerator->generateMissions(Argument::any(), Argument::any())->shouldNotBeCalled();
+        $this->createMissionUseCase->execute(Argument::any(), Argument::any())->shouldNotBeCalled();
         $this->missionRepository->store(Argument::any())->shouldNotBeCalled();
         $this->persistenceAdapter->flush()->shouldNotBeCalled();
 

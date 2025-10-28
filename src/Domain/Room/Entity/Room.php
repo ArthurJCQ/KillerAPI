@@ -60,6 +60,14 @@ class Room
     #[Groups(['get-room', 'publish-mercure'])]
     private Collection $missions;
 
+    /** @var Collection<int, Mission> */
+    #[ORM\ManyToMany(targetEntity: Mission::class, cascade: ['remove'])]
+    #[ORM\JoinTable(name: 'room_secondary_missions')]
+    #[ORM\JoinColumn(name: 'room_id', referencedColumnName: 'id')]
+    #[ORM\InverseJoinColumn(name: 'mission_id', referencedColumnName: 'id', unique: true)]
+    #[Groups(['get-room', 'publish-mercure'])]
+    private Collection $secondaryMissions;
+
     #[ORM\ManyToOne(targetEntity: Player::class)]
     #[Groups(['get-room', 'publish-mercure'])]
     private ?Player $winner = null;
@@ -74,6 +82,7 @@ class Room
         $this->createdAt = new \DateTimeImmutable();
         $this->dateEnd = new \DateTime('+30days');
         $this->missions = new ArrayCollection();
+        $this->secondaryMissions = new ArrayCollection();
     }
 
     public function getId(): string
@@ -247,6 +256,41 @@ class Room
         $this->isGameMastered = $isGameMastered;
 
         return $this;
+    }
+
+    /** @return Collection<int, Mission> */
+    public function getSecondaryMissions(): Collection
+    {
+        return $this->secondaryMissions;
+    }
+
+    public function addSecondaryMission(Mission $mission): self
+    {
+        if (!$this->secondaryMissions->contains($mission)) {
+            $this->secondaryMissions[] = $mission;
+        }
+
+        return $this;
+    }
+
+    public function removeSecondaryMission(Mission $mission): self
+    {
+        $this->secondaryMissions->removeElement($mission);
+
+        return $this;
+    }
+
+    public function popSecondaryMission(): ?Mission
+    {
+        if ($this->secondaryMissions->isEmpty()) {
+            return null;
+        }
+
+        /** @var Mission $mission */
+        $mission = $this->secondaryMissions->first();
+        $this->removeSecondaryMission($mission);
+
+        return $mission;
     }
 
     public function __toString(): string
