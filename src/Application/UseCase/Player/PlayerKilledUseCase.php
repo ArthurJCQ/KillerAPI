@@ -50,7 +50,6 @@ class PlayerKilledUseCase implements PlayerUseCase, LoggerAwareInterface
         $killer->setAssignedMission($assignedMission);
         $killer->setMissionSwitchUsed(false);
 
-        var_dump($player->getKiller()?->getId() ? 'oui' : 'non');die;
         if ($awardPoints) {
             $killer->addPoints(10);
         }
