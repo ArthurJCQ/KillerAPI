@@ -46,8 +46,6 @@ class PlayerKilledUseCase implements PlayerUseCase, LoggerAwareInterface
         $player->setTarget(null);
         $player->setAssignedMission(null);
 
-        $this->persistenceAdapter->flush();
-
         $killer->setTarget($target);
         $killer->setAssignedMission($assignedMission);
         $killer->setMissionSwitchUsed(false);
