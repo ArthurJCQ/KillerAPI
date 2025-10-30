@@ -60,14 +60,11 @@ class Player implements UserInterface, RecipientInterface
     #[MaxDepth(1)]
     private ?Room $room = null;
 
-    #[ORM\OneToOne(mappedBy: 'killer', targetEntity: self::class, cascade: ['persist'])]
+    #[ORM\OneToOne(targetEntity: self::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(name: 'player_target')]
     #[Groups(['me', 'get-player-master', 'get-room-master'])]
     #[MaxDepth(1)]
     private ?Player $target = null;
-
-    #[ORM\OneToOne(inversedBy: 'target', targetEntity: self::class, cascade: ['persist'])]
-    #[ORM\JoinColumn(name: 'player_killer')]
-    private ?Player $killer = null;
 
     /** @var Collection<int, Mission> */
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: Mission::class)]
@@ -194,24 +191,7 @@ class Player implements UserInterface, RecipientInterface
 
     public function setTarget(?Player $target): self
     {
-        $this->target?->setKiller(null);
-
-        // New target for the player
-        $target?->setKiller($this);
-
         $this->target = $target;
-
-        return $this;
-    }
-
-    public function getKiller(): ?Player
-    {
-        return $this->killer;
-    }
-
-    public function setKiller(?Player $killer): self
-    {
-        $this->killer = $killer;
 
         return $this;
     }

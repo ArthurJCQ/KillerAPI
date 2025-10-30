@@ -22,7 +22,11 @@ readonly class PlayerSubscriber implements EventSubscriberInterface
 
     public function onPlayerKilled(PlayerKilledEvent $playerKilledEvent): void
     {
-        $this->playerKilledUseCase->execute($playerKilledEvent->getPlayer());
+        $this->playerKilledUseCase->execute(
+            player: $playerKilledEvent->getPlayer(),
+            killerNotification: $playerKilledEvent->getKillerNotification(),
+            awardPoints: $playerKilledEvent->shouldAwardPoints(),
+        );
     }
 
     public function onPlayerLeftRoom(PlayerChangedRoomEvent $playerLeftRoomEvent): void

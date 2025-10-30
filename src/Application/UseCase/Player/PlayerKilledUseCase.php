@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Application\UseCase\Player;
 
 use App\Domain\Notifications\DeathConfirmationNotification;
+use App\Domain\Notifications\KillerNotification;
 use App\Domain\Notifications\KillerNotifier;
 use App\Domain\Player\Entity\Player;
+use App\Domain\Player\PlayerRepository;
 use App\Domain\Player\PlayerUseCase;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -19,12 +21,16 @@ class PlayerKilledUseCase implements PlayerUseCase, LoggerAwareInterface
     public function __construct(
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly KillerNotifier $killerNotifier,
+        private readonly PlayerRepository $playerRepository,
     ) {
     }
 
-    public function execute(Player $player): void
-    {
-        $killer = $player->getKiller();
+    public function execute(
+        Player $player,
+        ?KillerNotification $killerNotification = null,
+        bool $awardPoints = true,
+    ): void {
+        $killer = $this->playerRepository->findKiller($player);
         $target = $player->getTarget();
         $assignedMission = $player->getAssignedMission();
 
@@ -32,16 +38,22 @@ class PlayerKilledUseCase implements PlayerUseCase, LoggerAwareInterface
             return;
         }
 
+        // Clear all relationships on the killed player first
         $player->setTarget(null);
         $player->setAssignedMission(null);
 
         $this->persistenceAdapter->flush();
 
+        // Now reassign the killer's target to the killed player's target
         $killer->setTarget($target);
         $killer->setAssignedMission($assignedMission);
         $killer->setMissionSwitchUsed(false);
-        $killer->addPoints(10);
 
-        $this->killerNotifier->notify(DeathConfirmationNotification::to($killer));
+        if ($awardPoints) {
+            $killer->addPoints(10);
+        }
+
+        $notificationToSend = $killerNotification ?? DeathConfirmationNotification::to($killer);
+        $this->killerNotifier->notify($notificationToSend);
     }
 }
