@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Application\UseCase\Player;
 
 use App\Application\UseCase\Player\GuessKillerUseCase;
-use App\Domain\Notifications\KillerEliminatedByGuessNotification;
 use App\Domain\Notifications\KillerNotifier;
-use App\Domain\Notifications\WrongGuessEliminatedNotification;
 use App\Domain\Notifications\YourTargetEliminatedNotification;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;

@@ -25,13 +25,6 @@ class PlayerKilledUseCase implements PlayerUseCase, LoggerAwareInterface
     ) {
     }
 
-    /**
-     * Execute the player killed use case.
-     *
-     * @param Player $player The player who was killed
-     * @param KillerNotification|null $killerNotification Optional notification to send to the killer
-     * @param bool $awardPoints Whether to award points to the killer (default: true)
-     */
     public function execute(
         Player $player,
         ?KillerNotification $killerNotification = null,

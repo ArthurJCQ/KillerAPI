@@ -85,7 +85,7 @@ class GuessKillerUseCase implements LoggerAwareInterface
                 room: null,
                 killerNotification: KillerEliminatedByGuessNotification::to($killer),
                 awardPoints: false,
-            )
+            ),
         );
 
         if ($killersKiller === null) {
@@ -96,7 +96,7 @@ class GuessKillerUseCase implements LoggerAwareInterface
 
         $this->logger?->info(
             'Player {guesser} correctly guessed their killer {killer}',
-            ['guesser' => $guesser->getId(), 'killer' => $killer->getId()]
+            ['guesser' => $guesser->getId(), 'killer' => $killer->getId()],
         );
     }
 
@@ -113,12 +113,12 @@ class GuessKillerUseCase implements LoggerAwareInterface
                 room: null,
                 killerNotification: WrongGuessEliminatedNotification::to($actualKiller),
                 awardPoints: false,
-            )
+            ),
         );
 
         $this->logger?->info(
             'Player {guesser} incorrectly guessed their killer and was eliminated',
-            ['guesser' => $guesser->getId(), 'actualKiller' => $actualKiller->getId()]
+            ['guesser' => $guesser->getId(), 'actualKiller' => $actualKiller->getId()],
         );
     }
 }
