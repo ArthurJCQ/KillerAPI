@@ -89,8 +89,8 @@ class GuessKillerCest
             'assignedMission' => null,
         ]);
 
-        $newKillerId = $johnTargetId === $data['adminId'] ? 'Doe' : 'Admin';
-        $killerEntity = $I->grabEntityFromRepository(Player::class, ['id' => $newKillerId]);
+        $newKillerName = $johnTargetId === $data['adminId'] ? 'Doe' : 'Admin';
+        $killerEntity = $I->grabEntityFromRepository(Player::class, ['name' => $newKillerName]);
         $playerRepository = $I->grabService(PlayerRepository::class);
         $killersKiller = $playerRepository->findKiller($killerEntity);
 
@@ -155,7 +155,7 @@ class GuessKillerCest
 
         // The killer should have John's target now
         $response = json_decode($I->grabResponse(), true);
-        $I->assertNotNull($response['target'], 'Killer should have received John\'s target');
+        assertNotNull($response['target'], 'Killer should have received John\'s target');
     }
 
     public function testGuessKillerWhenPlayerIsDead(ApiTester $I): void
@@ -263,7 +263,7 @@ class GuessKillerCest
         $killersKiller = $playerRepository->findKiller($killerEntity);
         if ($killersKiller !== null) {
             assertEquals(PlayerStatus::ALIVE, $killersKiller->getStatus());
-            $I->assertNotNull($killersKiller->getTarget(), 'Killer\'s killer should have received new target');
+            assertNotNull($killersKiller->getTarget(), 'Killer\'s killer should have received new target');
         }
     }
 
