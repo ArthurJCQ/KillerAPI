@@ -211,6 +211,24 @@ class Player implements UserInterface, RecipientInterface
 
     public function setKiller(?Player $killer): self
     {
+        // If we're removing the killer, clear the inverse side
+        if ($killer === null && $this->killer !== null) {
+            // Only clear if we're still the target
+            if ($this->killer->getTarget() === $this) {
+                $this->killer->target = null;
+            }
+        }
+
+        // If we're setting a new killer, update the inverse side
+        if ($killer !== null && $killer !== $this->killer) {
+            // Clear the old killer's target if we're still their target
+            if ($this->killer !== null && $this->killer->getTarget() === $this) {
+                $this->killer->target = null;
+            }
+            // Set the new killer's target to this player
+            $killer->target = $this;
+        }
+
         $this->killer = $killer;
 
         return $this;

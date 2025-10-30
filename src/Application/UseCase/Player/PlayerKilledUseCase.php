@@ -43,9 +43,13 @@ class PlayerKilledUseCase implements PlayerUseCase, LoggerAwareInterface
             return;
         }
 
+        // Clear all relationships on the killed player first
+        // This ensures Doctrine doesn't get confused about bidirectional relationships
         $player->setTarget(null);
+        $player->setKiller(null);
         $player->setAssignedMission(null);
 
+        // Now reassign the killer's target to the killed player's target
         $killer->setTarget($target);
         $killer->setAssignedMission($assignedMission);
         $killer->setMissionSwitchUsed(false);
