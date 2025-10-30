@@ -278,8 +278,9 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
         $this->persistenceAdapter->flush();
 
-        // Publish update for the player's room
+        $this->eventDispatcher->dispatch(new PlayerUpdatedEvent($player));
         $room = $player->getRoom();
+
         if ($room !== null) {
             $this->hub->publish(
                 sprintf('room/%s', $room->getId()),
