@@ -14,6 +14,7 @@ use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Player\Event\PlayerKilledEvent;
 use App\Domain\Player\Exception\PlayerHasNoKillerOrTargetException;
 use App\Domain\Player\Exception\PlayerKilledException;
+use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\Exception\RoomNotInGameException;
 use Codeception\Stub\Expected;
@@ -29,16 +30,19 @@ class GuessKillerUseCaseTest extends Unit
 
     private ObjectProphecy $eventDispatcher;
     private ObjectProphecy $killerNotifier;
+    private ObjectProphecy $playerRepository;
     private GuessKillerUseCase $guessKillerUseCase;
 
     protected function setUp(): void
     {
         $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
         $this->killerNotifier = $this->prophesize(KillerNotifier::class);
+        $this->playerRepository = $this->prophesize(PlayerRepository::class);
 
         $this->guessKillerUseCase = new GuessKillerUseCase(
             $this->eventDispatcher->reveal(),
             $this->killerNotifier->reveal(),
+            $this->playerRepository->reveal(),
         );
 
         parent::setUp();
@@ -55,16 +59,18 @@ class GuessKillerUseCaseTest extends Unit
         $killer = $this->make(Player::class, [
             'getId' => Expected::atLeastOnce(1),
             'setStatus' => Expected::once(new Player()->setStatus(PlayerStatus::KILLED)),
-            'getKiller' => Expected::once($killersKiller),
         ]);
 
         $guesser = $this->make(Player::class, [
             'getStatus' => Expected::once(PlayerStatus::ALIVE),
             'getRoom' => Expected::once($room),
-            'getKiller' => Expected::once($killer),
             'addPoints' => Expected::once(new Player()->addPoints(5)),
             'getId' => Expected::atLeastOnce(2),
         ]);
+
+        // Mock repository findKiller calls
+        $this->playerRepository->findKiller($guesser)->shouldBeCalledOnce()->willReturn($killer);
+        $this->playerRepository->findKiller($killer)->shouldBeCalledOnce()->willReturn($killersKiller);
 
         $this->eventDispatcher->dispatch(Argument::type(PlayerKilledEvent::class))->shouldBeCalledOnce();
         $this->killerNotifier->notify(Argument::type(YourTargetEliminatedNotification::class))->shouldBeCalledOnce();
@@ -85,10 +91,12 @@ class GuessKillerUseCaseTest extends Unit
         $guesser = $this->make(Player::class, [
             'getStatus' => Expected::once(PlayerStatus::ALIVE),
             'getRoom' => Expected::once($room),
-            'getKiller' => Expected::once($killer),
             'setStatus' => Expected::once(new Player()->setStatus(PlayerStatus::KILLED)),
             'getId' => Expected::atLeastOnce(2),
         ]);
+
+        // Mock repository findKiller call
+        $this->playerRepository->findKiller($guesser)->shouldBeCalledOnce()->willReturn($killer);
 
         $this->eventDispatcher->dispatch(Argument::type(PlayerKilledEvent::class))->shouldBeCalledOnce();
         $this->killerNotifier->notify(Argument::any())->shouldNotBeCalled();
@@ -140,8 +148,10 @@ class GuessKillerUseCaseTest extends Unit
         $guesser = $this->make(Player::class, [
             'getStatus' => Expected::once(PlayerStatus::ALIVE),
             'getRoom' => Expected::once($room),
-            'getKiller' => Expected::once(null),
         ]);
+
+        // Mock repository returning null (no killer found)
+        $this->playerRepository->findKiller($guesser)->shouldBeCalledOnce()->willReturn(null);
 
         $this->eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
         $this->killerNotifier->notify(Argument::any())->shouldNotBeCalled();
