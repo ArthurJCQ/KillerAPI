@@ -60,14 +60,11 @@ class Player implements UserInterface, RecipientInterface
     #[MaxDepth(1)]
     private ?Room $room = null;
 
-    #[ORM\OneToOne(mappedBy: 'killer', targetEntity: self::class, cascade: ['persist'])]
+    #[ORM\OneToOne(targetEntity: self::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(name: 'player_target')]
     #[Groups(['me', 'get-player-master', 'get-room-master'])]
     #[MaxDepth(1)]
     private ?Player $target = null;
-
-    #[ORM\OneToOne(inversedBy: 'target', targetEntity: self::class, cascade: ['persist'])]
-    #[ORM\JoinColumn(name: 'player_killer')]
-    private ?Player $killer = null;
 
     /** @var Collection<int, Mission> */
     #[ORM\OneToMany(mappedBy: 'author', targetEntity: Mission::class)]
@@ -194,42 +191,7 @@ class Player implements UserInterface, RecipientInterface
 
     public function setTarget(?Player $target): self
     {
-        $this->target?->setKiller(null);
-
-        // New target for the player
-        $target?->setKiller($this);
-
         $this->target = $target;
-
-        return $this;
-    }
-
-    public function getKiller(): ?Player
-    {
-        return $this->killer;
-    }
-
-    public function setKiller(?Player $killer): self
-    {
-        // If we're removing the killer, clear the inverse side
-        if ($killer === null && $this->killer !== null) {
-            // Only clear if we're still the target
-            if ($this->killer->getTarget() === $this) {
-                $this->killer->target = null;
-            }
-        }
-
-        // If we're setting a new killer, update the inverse side
-        if ($killer !== null && $killer !== $this->killer) {
-            // Clear the old killer's target if we're still their target
-            if ($this->killer !== null && $this->killer->getTarget() === $this) {
-                $this->killer->target = null;
-            }
-            // Set the new killer's target to this player
-            $killer->target = $this;
-        }
-
-        $this->killer = $killer;
 
         return $this;
     }

@@ -8,6 +8,7 @@ use App\Domain\Notifications\DeathConfirmationNotification;
 use App\Domain\Notifications\KillerNotification;
 use App\Domain\Notifications\KillerNotifier;
 use App\Domain\Player\Entity\Player;
+use App\Domain\Player\PlayerRepository;
 use App\Domain\Player\PlayerUseCase;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -20,6 +21,7 @@ class PlayerKilledUseCase implements PlayerUseCase, LoggerAwareInterface
     public function __construct(
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly KillerNotifier $killerNotifier,
+        private readonly PlayerRepository $playerRepository,
     ) {
     }
 
@@ -35,7 +37,7 @@ class PlayerKilledUseCase implements PlayerUseCase, LoggerAwareInterface
         ?KillerNotification $killerNotification = null,
         bool $awardPoints = true,
     ): void {
-        $killer = $player->getKiller();
+        $killer = $this->playerRepository->findKiller($player);
         $target = $player->getTarget();
         $assignedMission = $player->getAssignedMission();
 
@@ -44,9 +46,7 @@ class PlayerKilledUseCase implements PlayerUseCase, LoggerAwareInterface
         }
 
         // Clear all relationships on the killed player first
-        // This ensures Doctrine doesn't get confused about bidirectional relationships
         $player->setTarget(null);
-        $player->setKiller(null);
         $player->setAssignedMission(null);
 
         // Now reassign the killer's target to the killed player's target

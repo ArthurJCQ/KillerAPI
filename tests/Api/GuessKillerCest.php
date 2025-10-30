@@ -6,6 +6,7 @@ namespace App\Tests\Api;
 
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;
+use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
 use App\Tests\ApiTester;
 
@@ -90,7 +91,8 @@ class GuessKillerCest
 
         $newKillerId = $johnTargetId === $data['adminId'] ? 'Doe' : 'Admin';
         $killerEntity = $I->grabEntityFromRepository(Player::class, ['id' => $newKillerId]);
-        $killersKiller = $killerEntity->getKiller();
+        $playerRepository = $I->grabService(PlayerRepository::class);
+        $killersKiller = $playerRepository->findKiller($killerEntity);
 
         if ($killersKiller !== null) {
             $killersKillerName = $killersKiller->getName();
@@ -107,11 +109,11 @@ class GuessKillerCest
     {
         $data = $this->setupGameWithThreePlayers($I);
 
-        // Get John's killer ID and find a wrong ID
-        $I->setJwtHeader($I, 'John');
-        $I->sendGetAsJson('/player/me');
-        $response = json_decode($I->grabResponse(), true);
-        $johnKillerId = $response['killer']['id'];
+        // Get John's killer ID using the repository
+        $johnEntity = $I->grabEntityFromRepository(Player::class, ['id' => $data['johnId']]);
+        $playerRepository = $I->grabService(PlayerRepository::class);
+        $johnKiller = $playerRepository->findKiller($johnEntity);
+        $johnKillerId = $johnKiller->getId();
 
         // Find a player ID that is NOT John's killer
         $wrongPlayerId = null;
@@ -123,6 +125,8 @@ class GuessKillerCest
         }
 
         // Verify John starts with 0 points
+        $I->setJwtHeader($I, 'John');
+        $I->sendGetAsJson('/player/me');
         $I->seeResponseContainsJson(['points' => 0]);
 
         // John guesses wrong
@@ -237,9 +241,10 @@ class GuessKillerCest
 
         // Player1 guesses their killer correctly
         $I->setJwtHeader($I, 'Player1');
-        $I->sendGetAsJson('/player/me');
-        $response = json_decode($I->grabResponse(), true);
-        $player1KillerId = $response['killer']['id'];
+        $player1Entity = $I->grabEntityFromRepository(Player::class, ['id' => $player1Id]);
+        $playerRepository = $I->grabService(PlayerRepository::class);
+        $player1Killer = $playerRepository->findKiller($player1Entity);
+        $player1KillerId = $player1Killer->getId();
 
         $I->sendPatchAsJson(sprintf('/player/%s/guess-killer', $player1Id), [
             'guessedPlayerId' => $player1KillerId,
@@ -255,7 +260,7 @@ class GuessKillerCest
         assertEquals(PlayerStatus::KILLED, $killerEntity->getStatus());
 
         // The killer's killer should have a new target
-        $killersKiller = $killerEntity->getKiller();
+        $killersKiller = $playerRepository->findKiller($killerEntity);
         if ($killersKiller !== null) {
             assertEquals(PlayerStatus::ALIVE, $killersKiller->getStatus());
             $I->assertNotNull($killersKiller->getTarget(), 'Killer\'s killer should have received new target');

@@ -21,7 +21,6 @@ readonly class EndGameUseCase implements RoomUseCase
         $room->setWinner($winner);
 
         $winner?->setTarget(null);
-        $winner?->setKiller(null);
         $winner?->setAssignedMission(null);
 
         $this->persistenceAdapter->flush();

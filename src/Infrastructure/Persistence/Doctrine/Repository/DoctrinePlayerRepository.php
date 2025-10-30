@@ -28,4 +28,12 @@ final class DoctrinePlayerRepository extends DoctrineBaseRepository implements P
     {
         return $this->findBy(['room' => $room, 'name' => $name]);
     }
+
+    /**
+     * Find the killer of a player (the player who has this player as their target).
+     */
+    public function findKiller(Player $player): ?Player
+    {
+        return $this->findOneBy(['target' => $player]);
+    }
 }

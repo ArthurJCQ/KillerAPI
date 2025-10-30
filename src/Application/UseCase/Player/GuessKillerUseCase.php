@@ -13,6 +13,7 @@ use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Player\Event\PlayerKilledEvent;
 use App\Domain\Player\Exception\PlayerHasNoKillerOrTargetException;
 use App\Domain\Player\Exception\PlayerKilledException;
+use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\Exception\RoomNotInGameException;
 use Psr\Log\LoggerAwareInterface;
@@ -27,6 +28,7 @@ class GuessKillerUseCase implements LoggerAwareInterface
     public function __construct(
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly KillerNotifier $killerNotifier,
+        private readonly PlayerRepository $playerRepository,
     ) {
         $this->logger = new NullLogger();
     }
@@ -46,7 +48,7 @@ class GuessKillerUseCase implements LoggerAwareInterface
         }
 
         // Validation: Player must have a killer
-        $actualKiller = $guesser->getKiller();
+        $actualKiller = $this->playerRepository->findKiller($guesser);
 
         if ($actualKiller === null) {
             throw new PlayerHasNoKillerOrTargetException('KILLER_NOT_FOUND');
@@ -73,7 +75,7 @@ class GuessKillerUseCase implements LoggerAwareInterface
         $killer->setStatus(PlayerStatus::KILLED);
 
         // Get the killer's killer to notify them
-        $killersKiller = $killer->getKiller();
+        $killersKiller = $this->playerRepository->findKiller($killer);
 
         // Dispatch PlayerKilledEvent to handle the elimination logic
         // Pass custom notification and don't award points (killer was guessed, not killed by their hunter)

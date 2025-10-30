@@ -16,4 +16,9 @@ interface PlayerRepository extends BaseRepository
 
     /** @return Player[] */
     public function findPlayersByRoomAndName(Room $room, string $name): array;
+
+    /**
+     * Find the killer of a player (the player who has this player as their target).
+     */
+    public function findKiller(Player $player): ?Player;
 }
