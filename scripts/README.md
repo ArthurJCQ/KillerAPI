@@ -5,7 +5,7 @@ This directory contains scripts for backing up and restoring the PostgreSQL data
 ## Prerequisites
 
 - Docker and Docker Compose installed
-- The database service must be running (see `prod.compose.yaml`)
+- The database service must be running (see `compose.prod.yaml`)
 - Proper environment variables configured (in `.env` or `.env.local`)
 
 ## Backup Script
@@ -102,7 +102,7 @@ If you get an error about the database service not running:
 
 ```bash
 # Start the database service
-docker compose -f prod.compose.yaml up -d database
+docker compose -f compose.prod.yaml up -d database
 ```
 
 ### Permission denied
@@ -181,7 +181,7 @@ grep -i error /var/log/db-backup.log
 
 ## Docker Volume Persistence
 
-The production compose file (`prod.compose.yaml`) uses named volumes for database persistence:
+The production compose file (`compose.prod.yaml`) uses named volumes for database persistence:
 
 - **Volume**: `database_data` → `/var/lib/postgresql/data`
 - **Backup mount**: `./backups/db` → `/backups` (inside container)

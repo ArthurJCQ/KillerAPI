@@ -36,7 +36,7 @@ NC='\033[0m' # No Color
 RETENTION_DAYS=7
 COMPRESS=true
 BACKUP_DIR="./backups/db"
-COMPOSE_FILE="prod.compose.yaml"
+COMPOSE_FILE="compose.prod.yaml"
 SERVICE_NAME="database"
 
 # Get script directory

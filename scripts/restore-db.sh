@@ -32,7 +32,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Default configuration
-COMPOSE_FILE="prod.compose.yaml"
+COMPOSE_FILE="compose.prod.yaml"
 SERVICE_NAME="database"
 
 # Get script directory
