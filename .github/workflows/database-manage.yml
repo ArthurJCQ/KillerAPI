@@ -1,0 +1,160 @@
+name: Manage Database Service
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Database action to perform'
+        required: true
+        default: 'restart'
+        type: choice
+        options:
+          - start
+          - restart
+          - stop
+          - status
+
+jobs:
+  manage-database:
+    name: Manage Database on Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: ${{ github.event.inputs.action }} database service
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          ACTION: ${{ github.event.inputs.action }}
+        run: |
+          # Create environment variables file
+          cat > /tmp/db_env_vars << EOF
+          export POSTGRES_DB="${{ secrets.POSTGRES_DB }}"
+          export POSTGRES_USER="${{ secrets.POSTGRES_USER }}"
+          export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
+          export POSTGRES_VERSION="${{ secrets.POSTGRES_VERSION || '16' }}"
+          export ACTION="${{ github.event.inputs.action }}"
+          EOF
+
+          scp -i ~/.ssh/deploy_key -P $SSH_PORT /tmp/db_env_vars $SSH_USER@$SSH_HOST:/tmp/db_env_vars
+
+          # Clean up locally
+          rm /tmp/db_env_vars
+
+          ssh -i ~/.ssh/deploy_key -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST << 'ENDSSH'
+            set -e
+            source /tmp/db_env_vars
+            rm /tmp/db_env_vars
+
+            # Variables
+            APP_DIR="/home/deploy/KillerAPI"
+            COMPOSE_FILE="compose.prod.yaml"
+
+            echo "🗄️ Managing database service: $ACTION"
+
+            # Navigate to application directory
+            cd $APP_DIR
+
+            # Perform the requested action
+            case $ACTION in
+              start)
+                echo "▶️ Starting database service..."
+                POSTGRES_DB=$POSTGRES_DB \
+                POSTGRES_USER=$POSTGRES_USER \
+                POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+                POSTGRES_VERSION=$POSTGRES_VERSION \
+                docker compose -f $COMPOSE_FILE up -d database
+
+                echo "⏳ Waiting for database to be healthy..."
+                sleep 10
+
+                # Check health
+                if docker compose -f $COMPOSE_FILE ps database | grep -q "healthy"; then
+                  echo "✅ Database service started successfully and is healthy!"
+                else
+                  echo "⚠️ Database service started but health check is pending..."
+                  docker compose -f $COMPOSE_FILE ps database
+                fi
+                ;;
+
+              restart)
+                echo "🔄 Restarting database service..."
+                POSTGRES_DB=$POSTGRES_DB \
+                POSTGRES_USER=$POSTGRES_USER \
+                POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+                POSTGRES_VERSION=$POSTGRES_VERSION \
+                docker compose -f $COMPOSE_FILE restart database
+
+                echo "⏳ Waiting for database to be healthy..."
+                sleep 10
+
+                # Check health
+                if docker compose -f $COMPOSE_FILE ps database | grep -q "healthy"; then
+                  echo "✅ Database service restarted successfully and is healthy!"
+                else
+                  echo "⚠️ Database service restarted but health check is pending..."
+                  docker compose -f $COMPOSE_FILE ps database
+                fi
+                ;;
+
+              stop)
+                echo "🛑 Stopping database service..."
+                docker compose -f $COMPOSE_FILE stop database
+                echo "✅ Database service stopped successfully!"
+                ;;
+
+              status)
+                echo "📊 Checking database service status..."
+                docker compose -f $COMPOSE_FILE ps database
+
+                # Check if service is running
+                if docker compose -f $COMPOSE_FILE ps database | grep -q "Up"; then
+                  echo "✅ Database service is running"
+
+                  # Check health status
+                  if docker compose -f $COMPOSE_FILE ps database | grep -q "healthy"; then
+                    echo "✅ Database service is healthy"
+                  else
+                    echo "⚠️ Database service is not healthy yet"
+                  fi
+
+                  # Show logs (last 20 lines)
+                  echo ""
+                  echo "📋 Recent database logs:"
+                  docker compose -f $COMPOSE_FILE logs --tail=20 database
+                else
+                  echo "❌ Database service is not running"
+                fi
+                ;;
+
+              *)
+                echo "❌ Unknown action: $ACTION"
+                exit 1
+                ;;
+            esac
+
+            # Always show final status
+            echo ""
+            echo "📊 Final database service status:"
+            docker compose -f $COMPOSE_FILE ps database
+          ENDSSH
+
+      - name: Notify action status
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ Database ${{ github.event.inputs.action }} action completed successfully!"
+          else
+            echo "❌ Database ${{ github.event.inputs.action }} action failed!"
+            exit 1
+          fi
