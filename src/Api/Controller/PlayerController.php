@@ -6,6 +6,7 @@ namespace App\Api\Controller;
 
 use App\Api\Exception\KillerBadRequestHttpException;
 use App\Application\UseCase\Player\ChangeRoomUseCase;
+use App\Application\UseCase\Player\ContestKillUseCase;
 use App\Application\UseCase\Player\GuessKillerUseCase;
 use App\Application\UseCase\Player\KillRequestOnTargetUseCase;
 use App\Application\UseCase\Player\SwitchMissionUseCase;
@@ -65,6 +66,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly KillRequestOnTargetUseCase $killRequestOnTargetUseCase,
         private readonly SwitchMissionUseCase $switchMissionUseCase,
         private readonly GuessKillerUseCase $guessKillerUseCase,
+        private readonly ContestKillUseCase $contestKillUseCase,
     ) {
     }
 
@@ -291,5 +293,30 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         $this->logger->info('Guess killer request processed for player {user_id}', ['user_id' => $player->getId()]);
 
         return $this->json(null, Response::HTTP_OK);
+    }
+
+    #[Route('/{id}/kill-contest', name: 'kill_contest', methods: [Request::METHOD_PATCH])]
+    #[IsGranted(PlayerVoter::EDIT_PLAYER, subject: 'player', message: 'KILLER_KILL_CONTEST_UNAUTHORIZED')]
+    public function killContest(Player $player): JsonResponse
+    {
+        try {
+            $this->contestKillUseCase->execute($player);
+        } catch (KillerExceptionInterface $e) {
+            throw new KillerBadRequestHttpException($e->getMessage());
+        }
+
+        $this->eventDispatcher->dispatch(new PlayerUpdatedEvent($player));
+        $room = $player->getRoom();
+
+        if ($room !== null) {
+            $this->hub->publish(
+                sprintf('room/%s', $room->getId()),
+                $this->serializer->serialize($room, [AbstractNormalizer::GROUPS => 'publish-mercure']),
+            );
+        }
+
+        $this->logger->info('Kill contest processed for player {user_id}', ['user_id' => $player->getId()]);
+
+        return $this->json($player, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'me']);
     }
 }
