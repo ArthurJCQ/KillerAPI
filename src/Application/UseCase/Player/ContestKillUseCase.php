@@ -7,7 +7,6 @@ namespace App\Application\UseCase\Player;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Player\Exception\PlayerKilledException;
-use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\Exception\RoomNotInGameException;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
@@ -19,10 +18,8 @@ class ContestKillUseCase implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    public function __construct(
-        private readonly PersistenceAdapterInterface $persistenceAdapter,
-        private readonly PlayerRepository $playerRepository,
-    ) {
+    public function __construct(private readonly PersistenceAdapterInterface $persistenceAdapter)
+    {
         $this->logger = new NullLogger();
     }
 

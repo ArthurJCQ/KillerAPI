@@ -14,27 +14,31 @@ class KillContestCest
 {
     public function testContestKillSuccessfully(ApiTester $I): void
     {
-        $data = $this->setupGameWithThreePlayers($I);
-
-        // Get John's ID
-        $johnId = $data['johnId'];
+        $this->setupGameWithThreePlayers($I);
 
         // Admin tries to kill John - this sets John to DYING
         $I->setAdminJwtHeader($I);
         /** @var int $adminId */
         $adminId = $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin']);
+
+        $I->sendGetAsJson('/player/me');
+        /** @var array $response */
+        $response = json_decode($I->grabResponse(), true);
+        $adminTargetId = $response['target']['id'];
+        $adminTargetName = $response['target']['name'];
+
         $I->sendPatchAsJson(sprintf('/player/%s/kill-target-request', $adminId));
         $I->seeResponseCodeIs(200);
 
         // Verify John is now DYING
-        $I->setJwtHeader($I, 'John');
+        $I->setJwtHeader($I, $adminTargetName);
         $I->sendGetAsJson('/player/me');
         $I->seeResponseContainsJson([
             'status' => PlayerStatus::DYING->value,
         ]);
 
         // John contests the kill
-        $I->sendPatchAsJson(sprintf('/player/%s/kill-contest', $johnId));
+        $I->sendPatchAsJson(sprintf('/player/%s/kill-contest', $adminTargetId));
         $I->seeResponseCodeIs(200);
 
         // Verify John is now ALIVE again
@@ -98,28 +102,32 @@ class KillContestCest
 
     public function testContestKillUnauthorized(ApiTester $I): void
     {
-        $data = $this->setupGameWithThreePlayers($I);
-
-        // Get John's ID
-        $johnId = $data['johnId'];
+        $this->setupGameWithThreePlayers($I);
 
         // Admin tries to kill John - this sets John to DYING
         $I->setAdminJwtHeader($I);
         /** @var int $adminId */
         $adminId = $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin']);
+
+        $I->sendGetAsJson('/player/me');
+        /** @var array $response */
+        $response = json_decode($I->grabResponse(), true);
+        $adminTargetId = $response['target']['id'];
+        $adminTargetName = $response['target']['name'];
+
         $I->sendPatchAsJson(sprintf('/player/%s/kill-target-request', $adminId));
         $I->seeResponseCodeIs(200);
 
-        // Verify John is now DYING
-        $I->setJwtHeader($I, 'John');
+        // Verify target is now DYING
+        $I->setJwtHeader($I, $adminTargetName);
         $I->sendGetAsJson('/player/me');
         $I->seeResponseContainsJson([
             'status' => PlayerStatus::DYING->value,
         ]);
 
         // Try to make John contest using Doe's authentication
-        $I->setJwtHeader($I, 'Doe');
-        $I->sendPatchAsJson(sprintf('/player/%s/kill-contest', $johnId));
+        $I->setJwtHeader($I, $adminTargetName === 'Doe' ? 'John' : 'Doe');
+        $I->sendPatchAsJson(sprintf('/player/%s/kill-contest', $adminTargetId));
         $I->seeResponseCodeIs(403);
     }
 
@@ -169,7 +177,7 @@ class KillContestCest
 
         // Player1's killer tries to kill Player1
         $I->setJwtHeader($I, $player1KillerName);
-        $player1KillerId = $player1Killer->getId();
+        $player1KillerId = $player1Killer?->getId();
         $I->sendPatchAsJson(sprintf('/player/%s/kill-target-request', $player1KillerId));
         $I->seeResponseCodeIs(200);
 
@@ -199,7 +207,7 @@ class KillContestCest
 
         // Player2's killer tries to kill Player2
         $I->setJwtHeader($I, $player2KillerName);
-        $player2KillerId = $player2Killer->getId();
+        $player2KillerId = $player2Killer?->getId();
         $I->sendPatchAsJson(sprintf('/player/%s/kill-target-request', $player2KillerId));
         $I->seeResponseCodeIs(200);
 

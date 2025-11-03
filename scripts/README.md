@@ -158,7 +158,7 @@ For production environments, consider the following backup strategy:
 
 ```bash
 # Daily backup at 2 AM with 30 days retention
-0 2 * * * cd /path/to/KillerAPI && ./scripts/backup-db.sh --retention 30 >> /var/log/db-backup.log 2>&1
+0 2 * * * cd /path/to/KillerAPI && ./scripts/backup-db.sh --retention 10 >> /var/log/db-backup.log 2>&1
 
 # Weekly backup on Sunday at 3 AM (copy to long-term storage)
 0 3 * * 0 cd /path/to/KillerAPI && ./scripts/backup-db.sh && cp backups/db/backup_*.sql.gz /mnt/long-term-storage/weekly/ >> /var/log/db-backup.log 2>&1

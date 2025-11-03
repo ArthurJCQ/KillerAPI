@@ -8,7 +8,6 @@ use App\Application\UseCase\Player\ContestKillUseCase;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Player\Exception\PlayerKilledException;
-use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\Exception\RoomNotInGameException;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
@@ -22,18 +21,13 @@ class ContestKillUseCaseTest extends Unit
     use ProphecyTrait;
 
     private ObjectProphecy $persistenceAdapter;
-    private ObjectProphecy $playerRepository;
     private ContestKillUseCase $contestKillUseCase;
 
     protected function setUp(): void
     {
         $this->persistenceAdapter = $this->prophesize(PersistenceAdapterInterface::class);
-        $this->playerRepository = $this->prophesize(PlayerRepository::class);
 
-        $this->contestKillUseCase = new ContestKillUseCase(
-            $this->persistenceAdapter->reveal(),
-            $this->playerRepository->reveal(),
-        );
+        $this->contestKillUseCase = new ContestKillUseCase($this->persistenceAdapter->reveal());
 
         parent::setUp();
     }
