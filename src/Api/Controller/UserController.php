@@ -6,6 +6,7 @@ namespace App\Api\Controller;
 
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
+use App\Domain\Player\Entity\Player;
 use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\RoomRepository;
 use App\Domain\User\Entity\User;
@@ -109,6 +110,19 @@ class UserController extends AbstractController
                 }
 
                 $user->setRoom($newRoom);
+
+                // Create a new player for this user in the room if one doesn't exist
+                $existingPlayer = $this->playerRepository->getCurrentUserPlayer($user);
+
+                if ($existingPlayer === null) {
+                    $newPlayer = new Player();
+                    $newPlayer->setName($user->getName());
+                    $newPlayer->setAvatar($user->getAvatar());
+                    $newPlayer->setUser($user);
+                    $newPlayer->setRoom($newRoom);
+
+                    $this->playerRepository->store($newPlayer);
+                }
             }
 
             if ($newRoomId === null) {
