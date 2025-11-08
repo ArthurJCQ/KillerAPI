@@ -115,9 +115,16 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
             throw new NotFoundHttpException('KILLER_USER_NOT_FOUND');
         }
 
-        // Return user information with all their players
+        // Get the current player based on the user's room context
+        $currentPlayer = $this->playerRepository->getCurrentUserPlayer($user);
+
+        if ($currentPlayer === null) {
+            throw new NotFoundHttpException('PLAYER_NOT_FOUND_IN_CURRENT_ROOM');
+        }
+
+        // Return current player information
         $response = $this->json(
-            $user,
+            $currentPlayer,
             Response::HTTP_OK,
             [],
             [
