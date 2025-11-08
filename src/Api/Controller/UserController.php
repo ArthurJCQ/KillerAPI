@@ -7,7 +7,6 @@ namespace App\Api\Controller;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Player\PlayerRepository;
-use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
 use App\Domain\User\Entity\User;
 use App\Domain\User\UserRepository;
@@ -34,7 +33,7 @@ class UserController extends AbstractController
     ) {
     }
 
-    #[Route('/me', name: 'patch_user', methods: [Request::METHOD_PATCH])]
+    #[Route(name: 'patch_user', methods: [Request::METHOD_PATCH])]
     public function patchUser(Request $request): JsonResponse
     {
         /** @var User|null $user */
@@ -58,7 +57,9 @@ class UserController extends AbstractController
                 }
 
                 $user->setRoom($newRoom);
-            } else {
+            }
+
+            if ($newRoomId === null) {
                 $user->setRoom(null);
             }
 
@@ -66,18 +67,15 @@ class UserController extends AbstractController
             unset($data['room']);
         }
 
-        // Deserialize other properties (defaultName, avatar)
-        if (!empty($data)) {
-            $this->serializer->deserialize(
-                json_encode($data),
-                User::class,
-                [
-                    AbstractNormalizer::GROUPS => 'patch-user',
-                    AbstractNormalizer::OBJECT_TO_POPULATE => $user,
-                    AbstractObjectNormalizer::DEEP_OBJECT_TO_POPULATE => true,
-                ],
-            );
-        }
+        $this->serializer->deserialize(
+            (string) $request->getContent(),
+            User::class,
+            [
+                AbstractNormalizer::GROUPS => 'patch-user',
+                AbstractNormalizer::OBJECT_TO_POPULATE => $user,
+                AbstractObjectNormalizer::DEEP_OBJECT_TO_POPULATE => true,
+            ],
+        );
 
         $this->validator->validate($user);
         $this->persistenceAdapter->flush();

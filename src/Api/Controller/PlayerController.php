@@ -193,16 +193,13 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
         $this->eventDispatcher->dispatch(new PlayerUpdatedEvent($player));
 
-        // Publish update to the room if player is in a room
-        if ($player->getRoom()) {
-            $this->hub->publish(
-                sprintf('room/%s', $player->getRoom()->getId()),
-                $this->serializer->serialize(
-                    (object) $player->getRoom(),
-                    [AbstractNormalizer::GROUPS => 'publish-mercure'],
-                ),
-            );
-        }
+        $this->hub->publish(
+            sprintf('room/%s', $player->getRoom()?->getId()),
+            $this->serializer->serialize(
+                (object) $player->getRoom(),
+                [AbstractNormalizer::GROUPS => 'publish-mercure'],
+            ),
+        );
 
         $this->logger->info('Event mercure sent: post-PATCH for player {user_id}', ['user_id' => $player->getId()]);
 
