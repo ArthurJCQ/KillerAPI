@@ -46,6 +46,10 @@ final class Version20251108113552 extends AbstractMigration
         $this->addSql('ALTER TABLE player ADD CONSTRAINT FK_98197A65A76ED395 FOREIGN KEY (user_id) REFERENCES users (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('CREATE INDEX IDX_98197A65A76ED395 ON player (user_id)');
 
+        // Add isAdmin and isMaster columns to player table
+        $this->addSql('ALTER TABLE player ADD is_admin BOOLEAN NOT NULL DEFAULT FALSE');
+        $this->addSql('ALTER TABLE player ADD is_master BOOLEAN NOT NULL DEFAULT FALSE');
+
         // Remove roles column from player table (moved to user)
         $this->addSql('ALTER TABLE player DROP COLUMN roles');
     }
@@ -55,6 +59,10 @@ final class Version20251108113552 extends AbstractMigration
         // Add roles column back to player table
         $this->addSql('ALTER TABLE player ADD roles JSON NOT NULL DEFAULT \'["ROLE_USER"]\'');
         $this->addSql('COMMENT ON COLUMN player.roles IS \'(DC2Type:json)\'');
+
+        // Remove isAdmin and isMaster columns from player table
+        $this->addSql('ALTER TABLE player DROP COLUMN is_admin');
+        $this->addSql('ALTER TABLE player DROP COLUMN is_master');
 
         // Remove user_id column from player table
         $this->addSql('ALTER TABLE player DROP CONSTRAINT FK_98197A65A76ED395');

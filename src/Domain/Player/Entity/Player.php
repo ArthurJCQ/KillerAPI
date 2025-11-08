@@ -93,6 +93,14 @@ class Player implements RecipientInterface
     #[Groups(['me'])]
     private bool $missionSwitchUsed = false;
 
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    #[Groups(['me', 'get-player', 'get-room'])]
+    private bool $isAdmin = false;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    #[Groups(['me', 'get-player', 'get-room'])]
+    private bool $isMaster = false;
+
     private string $token = '';
 
     private string $refreshToken = '';
@@ -355,6 +363,30 @@ class Player implements RecipientInterface
     public function setMissionSwitchUsed(bool $missionSwitchUsed): self
     {
         $this->missionSwitchUsed = $missionSwitchUsed;
+
+        return $this;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->isAdmin;
+    }
+
+    public function setIsAdmin(bool $isAdmin): self
+    {
+        $this->isAdmin = $isAdmin;
+
+        return $this;
+    }
+
+    public function isMaster(): bool
+    {
+        return $this->isMaster;
+    }
+
+    public function setIsMaster(bool $isMaster): self
+    {
+        $this->isMaster = $isMaster;
 
         return $this;
     }

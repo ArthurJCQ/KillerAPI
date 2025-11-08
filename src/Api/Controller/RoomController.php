@@ -66,14 +66,14 @@ class RoomController extends AbstractController
         $room = (new Room())->setName(sprintf("%s's room", $player->getName()));
 
         $this->changeRoomUseCase->execute($player, $room);
-        $player->setRoles(['ROLE_ADMIN']);
+        $player->setIsAdmin(true);
 
         if ($request->getContent() !== '') {
             $data = $request->toArray();
 
             if (isset($data[self::IS_GAME_MASTERED_ROOM]) && $data[self::IS_GAME_MASTERED_ROOM]) {
                 $room->setIsGameMastered(true);
-                $player->setRoles(['ROLE_MASTER']);
+                $player->setIsMaster(true);
                 $player->setStatus(PlayerStatus::SPECTATING);
             }
         }
