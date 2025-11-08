@@ -115,34 +115,16 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
             throw new NotFoundHttpException('KILLER_USER_NOT_FOUND');
         }
 
-        // For backward compatibility, return the user's data along with their players
-        // If the user has only one player, return that player's data
-        $players = $user->getPlayers()->toArray();
-
-        // If there's exactly one player, return it with 'me' serialization for backward compatibility
-        if (count($players) === 1) {
-            $player = $players[0];
-            $response = $this->json(
-                $player,
-                Response::HTTP_OK,
-                [],
-                [
-                    AbstractNormalizer::GROUPS => 'me',
-                    AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
-                ],
-            );
-        } else {
-            // Return user information with all their players
-            $response = $this->json(
-                $user,
-                Response::HTTP_OK,
-                [],
-                [
-                    AbstractNormalizer::GROUPS => 'me',
-                    AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
-                ],
-            );
-        }
+        // Return user information with all their players
+        $response = $this->json(
+            $user,
+            Response::HTTP_OK,
+            [],
+            [
+                AbstractNormalizer::GROUPS => 'me',
+                AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
+            ],
+        );
 
         $response->headers->setCookie(CookieProvider::getJwtCookie(
             ['mercure', ['subscribe' => ['*']]],
