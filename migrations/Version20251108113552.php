@@ -28,7 +28,7 @@ final class Version20251108113552 extends AbstractMigration
             roles JSON NOT NULL,
             google_id VARCHAR(255) DEFAULT NULL,
             apple_id VARCHAR(255) DEFAULT NULL,
-            room_id INTEGER DEFAULT NULL,
+            room_id VARCHAR(5) DEFAULT NULL,
             avatar VARCHAR(255) NOT NULL DEFAULT \'captain\',
             PRIMARY KEY(id)
         )');
