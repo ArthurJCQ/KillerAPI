@@ -51,13 +51,13 @@ class MissionController extends AbstractController
         $user = $this->getUser();
 
         if ($user === null) {
-            throw new NotFoundHttpException('KILLER_USER_NOT_FOUND');
+            throw $this->createNotFoundException('KILLER_USER_NOT_FOUND');
         }
 
         $player = $this->playerRepository->getCurrentUserPlayer($user);
 
         if ($player === null) {
-            throw new NotFoundHttpException('PLAYER_NOT_FOUND_IN_CURRENT_ROOM');
+            throw $this->createNotFoundException('PLAYER_NOT_FOUND_IN_CURRENT_ROOM');
         }
 
         $room = $player->getRoom();

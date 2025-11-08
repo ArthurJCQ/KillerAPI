@@ -63,7 +63,7 @@ class RoomController extends AbstractController
             throw new NotFoundHttpException('PLAYER_NOT_FOUND_IN_CURRENT_ROOM');
         }
 
-        $room = (new Room())->setName(sprintf("%s's room", $player->getName()));
+        $room = new Room()->setName(sprintf("%s's room", $player->getName()));
 
         $this->changeRoomUseCase->execute($player, $room);
         $player->setIsAdmin(true);
