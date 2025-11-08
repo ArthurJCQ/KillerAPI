@@ -4,7 +4,7 @@ security:
         # used to reload user from session & other features (e.g. switch_user)
         app_user_provider:
             entity:
-                class: App\Domain\Player\Entity\Player
+                class: App\Domain\User\Entity\User
                 property: id
         # used to reload user from session & other features (e.g. switch_user)
     firewalls:
@@ -42,6 +42,7 @@ security:
     access_control:
          - { path: ^/health, roles: PUBLIC_ACCESS }
          - { path: ^/_mcp, roles: PUBLIC_ACCESS }
+         - { path: ^/oauth, roles: PUBLIC_ACCESS }
          - { path: ^/player, roles: PUBLIC_ACCESS, method: [POST] }
          - { path: ^/refresh-token, roles: PUBLIC_ACCESS }
          - { path: ^/player, roles: ROLE_USER }

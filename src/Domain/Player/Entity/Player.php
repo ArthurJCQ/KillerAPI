@@ -8,12 +8,12 @@ use App\Domain\Mission\Entity\Mission;
 use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Player\Validator\PlayerCanRename;
 use App\Domain\Room\Entity\Room;
+use App\Domain\User\Entity\User;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Component\Notifier\Recipient\RecipientInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Serializer\Annotation\SerializedName;
@@ -21,7 +21,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[PlayerCanRename]
-class Player implements UserInterface, RecipientInterface
+class Player implements RecipientInterface
 {
     public const string DEFAULT_AVATAR = 'captain';
 
@@ -41,9 +41,11 @@ class Player implements UserInterface, RecipientInterface
     )]
     private string $name;
 
-    /** @var string[] */
-    #[ORM\Column(type: 'json')]
-    private array $roles = ['ROLE_USER'];
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'], inversedBy: 'players')]
+    #[ORM\JoinColumn(name: 'user_id', nullable: true)]
+    #[Groups(['get-player', 'me'])]
+    #[MaxDepth(1)]
+    private ?User $user = null;
 
     #[ORM\Column(
         type: 'string',
@@ -124,29 +126,14 @@ class Player implements UserInterface, RecipientInterface
         return $this;
     }
 
-    /** @see UserInterface */
-    public function getUserIdentifier(): string
+    public function getUser(): ?User
     {
-        return (string) $this->id;
+        return $this->user;
     }
 
-    /**
-     * @see UserInterface
-     * @return string[]
-     */
-    public function getRoles(): array
+    public function setUser(?User $user): self
     {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
-    }
-
-    /** @param string[] $roles */
-    public function setRoles(array $roles): self
-    {
-        $this->roles = $roles;
+        $this->user = $user;
 
         return $this;
     }
@@ -194,13 +181,6 @@ class Player implements UserInterface, RecipientInterface
         $this->target = $target;
 
         return $this;
-    }
-
-    /** @see UserInterface */
-    #[\Deprecated]
-    public function eraseCredentials(): void
-    {
-        // If you store any temporary, sensitive data on the user, clear it here
     }
 
     /** @return Collection<int, Mission> */

@@ -21,6 +21,8 @@ use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
 use App\Domain\Room\RoomWorkflowTransitionInterface;
+use App\Domain\User\Entity\User;
+use App\Domain\User\UserRepository;
 use App\Infrastructure\Http\Cookie\CookieProvider;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Infrastructure\Security\Voters\PlayerVoter;
@@ -51,6 +53,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
     public function __construct(
         private readonly PlayerRepository $playerRepository,
+        private readonly UserRepository $userRepository,
         private readonly RoomRepository $roomRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly SseInterface $hub,
@@ -74,22 +77,30 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
     public function createPlayer(
         #[MapRequestPayload(serializationContext: [AbstractNormalizer::GROUPS => 'post-player'])] Player $player,
     ): JsonResponse {
+        // Create a User for this Player (for backward compatibility with non-OAuth flows)
+        $user = new User();
+        $user->setDefaultName($player->getName());
+        $this->userRepository->store($user);
+
+        // Link the Player to the User
+        $player->setUser($user);
         $this->playerRepository->store($player);
         $this->persistenceAdapter->flush();
 
-        $jwtToken = $this->tokenManager->create($player);
-        $refreshToken = $this->refreshTokenGenerator->createForUserWithTtl($player, 15552000);
+        // Generate JWT tokens for the User (not the Player)
+        $jwtToken = $this->tokenManager->create($user);
+        $refreshToken = $this->refreshTokenGenerator->createForUserWithTtl($user, 15552000);
         $this->refreshTokenManager->save($refreshToken);
 
         $player->setToken($jwtToken);
         $player->setRefreshToken($refreshToken->getRefreshToken() ?? '');
 
-        $this->logger->info('Token and refresh token created for player {user_id}', ['user_id' => $player->getId()]);
+        $this->logger->info('Token and refresh token created for user {user_id}', ['user_id' => $user->getId()]);
 
         return $this->json(
             $player,
             Response::HTTP_CREATED,
-            ['Location' => sprintf('/player/%s', $player->getUserIdentifier())],
+            ['Location' => sprintf('/player/%s', $player->getId())],
             [AbstractNormalizer::GROUPS => 'create-player'],
         );
     }
@@ -97,21 +108,41 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
     #[Route('/me', name: 'me', methods: [Request::METHOD_GET])]
     public function me(): JsonResponse
     {
-        $player = $this->getUser();
+        /** @var User|null $user */
+        $user = $this->getUser();
 
-        if ($player === null) {
-            throw new NotFoundHttpException('KILLER_PLAYER_NOT_FOUND');
+        if ($user === null) {
+            throw new NotFoundHttpException('KILLER_USER_NOT_FOUND');
         }
 
-        $response = $this->json(
-            $player,
-            Response::HTTP_OK,
-            [],
-            [
-                AbstractNormalizer::GROUPS => 'me',
-                AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
-            ],
-        );
+        // For backward compatibility, return the user's data along with their players
+        // If the user has only one player, return that player's data
+        $players = $user->getPlayers()->toArray();
+
+        // If there's exactly one player, return it with 'me' serialization for backward compatibility
+        if (count($players) === 1) {
+            $player = $players[0];
+            $response = $this->json(
+                $player,
+                Response::HTTP_OK,
+                [],
+                [
+                    AbstractNormalizer::GROUPS => 'me',
+                    AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
+                ],
+            );
+        } else {
+            // Return user information with all their players
+            $response = $this->json(
+                $user,
+                Response::HTTP_OK,
+                [],
+                [
+                    AbstractNormalizer::GROUPS => 'me',
+                    AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
+                ],
+            );
+        }
 
         $response->headers->setCookie(CookieProvider::getJwtCookie(
             ['mercure', ['subscribe' => ['*']]],
