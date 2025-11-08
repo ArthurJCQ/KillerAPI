@@ -10,6 +10,7 @@ use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\RoomRepository;
 use App\Domain\User\Entity\User;
 use App\Domain\User\UserRepository;
+use App\Infrastructure\Http\Cookie\CookieProvider;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,6 +32,57 @@ class UserController extends AbstractController
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
     ) {
+    }
+
+    #[Route('/me', name: 'get_user_me', methods: [Request::METHOD_GET])]
+    public function me(): JsonResponse
+    {
+        /** @var User|null $user */
+        $user = $this->getUser();
+
+        if ($user === null) {
+            throw new NotFoundHttpException('KILLER_USER_NOT_FOUND');
+        }
+
+        // Serialize user with all info and players list
+        $userJson = $this->serializer->serialize(
+            $user,
+            [
+                AbstractNormalizer::GROUPS => 'me',
+                AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
+            ],
+        );
+
+        $userData = json_decode($userJson, true);
+
+        // Get the current player based on the user's room context
+        $currentPlayer = $this->playerRepository->getCurrentUserPlayer($user);
+
+        // Add currentPlayer property if found
+        if ($currentPlayer !== null) {
+            $currentPlayerJson = $this->serializer->serialize(
+                $currentPlayer,
+                [
+                    AbstractNormalizer::GROUPS => 'me',
+                    AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
+                ],
+            );
+            $userData['currentPlayer'] = json_decode($currentPlayerJson, true);
+        }
+
+        $response = new JsonResponse($userData, Response::HTTP_OK);
+
+        $response->headers->setCookie(CookieProvider::getJwtCookie(
+            ['mercure', ['subscribe' => ['*']]],
+            is_string($this->getParameter('mercure.jwt_secret')) ? $this->getParameter('mercure.jwt_secret') : '',
+            'mercureAuthorization',
+            null,
+            'Lax',
+            is_string($this->getParameter('mercure.path')) ? $this->getParameter('mercure.path') : '',
+            is_string($this->getParameter('mercure.domain')) ? $this->getParameter('mercure.domain') : '',
+        ));
+
+        return $response;
     }
 
     #[Route(name: 'patch_user', methods: [Request::METHOD_PATCH])]

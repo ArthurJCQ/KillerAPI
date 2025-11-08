@@ -105,47 +105,6 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         );
     }
 
-    #[Route('/me', name: 'me', methods: [Request::METHOD_GET])]
-    public function me(): JsonResponse
-    {
-        /** @var User|null $user */
-        $user = $this->getUser();
-
-        if ($user === null) {
-            throw new NotFoundHttpException('KILLER_USER_NOT_FOUND');
-        }
-
-        // Get the current player based on the user's room context
-        $currentPlayer = $this->playerRepository->getCurrentUserPlayer($user);
-
-        if ($currentPlayer === null) {
-            throw new NotFoundHttpException('PLAYER_NOT_FOUND_IN_CURRENT_ROOM');
-        }
-
-        // Return current player information
-        $response = $this->json(
-            $currentPlayer,
-            Response::HTTP_OK,
-            [],
-            [
-                AbstractNormalizer::GROUPS => 'me',
-                AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
-            ],
-        );
-
-        $response->headers->setCookie(CookieProvider::getJwtCookie(
-            ['mercure', ['subscribe' => ['*']]],
-            is_string($this->getParameter('mercure.jwt_secret')) ? $this->getParameter('mercure.jwt_secret') : '',
-            'mercureAuthorization',
-            null,
-            'Lax',
-            is_string($this->getParameter('mercure.path')) ? $this->getParameter('mercure.path') : '',
-            is_string($this->getParameter('mercure.domain')) ? $this->getParameter('mercure.domain') : '',
-        ));
-
-        return $response;
-    }
-
     #[Route('/{id}', name: 'get_player', methods: [Request::METHOD_GET])]
     public function getPlayerById(Player $player): JsonResponse
     {

@@ -46,6 +46,7 @@ class User implements UserInterface
 
     /** @var Collection<int, Player> */
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Player::class)]
+    #[Groups(['me'])]
     private Collection $players;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
