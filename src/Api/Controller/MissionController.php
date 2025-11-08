@@ -12,7 +12,9 @@ use App\Domain\KillerValidatorInterface;
 use App\Domain\Mission\Entity\Mission;
 use App\Domain\Mission\MissionRepository;
 use App\Domain\Player\Entity\Player;
+use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
+use App\Domain\User\Entity\User;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Infrastructure\Security\Voters\MissionVoter;
 use App\Infrastructure\SSE\SseInterface;
@@ -21,6 +23,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -30,6 +33,7 @@ class MissionController extends AbstractController
 {
     public function __construct(
         private readonly MissionRepository $missionRepository,
+        private readonly PlayerRepository $playerRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly SseInterface $hub,
         private readonly KillerSerializerInterface $serializer,
@@ -43,8 +47,19 @@ class MissionController extends AbstractController
     public function createMission(
         #[MapRequestPayload] MissionRequest $request,
     ): JsonResponse {
-        /** @var Player $player */
-        $player = $this->getUser();
+        /** @var User|null $user */
+        $user = $this->getUser();
+
+        if ($user === null) {
+            throw new NotFoundHttpException('KILLER_USER_NOT_FOUND');
+        }
+
+        $player = $this->playerRepository->getCurrentUserPlayer($user);
+
+        if ($player === null) {
+            throw new NotFoundHttpException('PLAYER_NOT_FOUND_IN_CURRENT_ROOM');
+        }
+
         $room = $player->getRoom();
 
         if (!$room || $room->getStatus() !== Room::PENDING) {
@@ -58,7 +73,7 @@ class MissionController extends AbstractController
         $this->persistenceAdapter->flush();
 
         $this->hub->publish(
-            sprintf('room/%s', $room),
+            sprintf('room/%s', $room->getId()),
             $this->serializer->serialize($room, [AbstractNormalizer::GROUPS => 'publish-mercure']),
         );
 
@@ -108,16 +123,22 @@ class MissionController extends AbstractController
 
         $this->persistenceAdapter->flush();
 
-        /** @var Player $player */
-        $player = $this->getUser();
+        /** @var User|null $user */
+        $user = $this->getUser();
 
-        $this->hub->publish(
-            sprintf('room/%s', $player->getRoom()),
-            $this->serializer->serialize(
-                (object) $player->getRoom(),
-                [AbstractNormalizer::GROUPS => 'publish-mercure'],
-            ),
-        );
+        if ($user !== null) {
+            $player = $this->playerRepository->getCurrentUserPlayer($user);
+
+            if ($player !== null && $player->getRoom() !== null) {
+                $this->hub->publish(
+                    sprintf('room/%s', $player->getRoom()->getId()),
+                    $this->serializer->serialize(
+                        (object) $player->getRoom(),
+                        [AbstractNormalizer::GROUPS => 'publish-mercure'],
+                    ),
+                );
+            }
+        }
 
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }

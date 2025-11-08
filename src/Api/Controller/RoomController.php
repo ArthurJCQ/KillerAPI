@@ -10,9 +10,11 @@ use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;
+use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
 use App\Domain\Room\RoomWorkflowTransitionInterface;
+use App\Domain\User\Entity\User;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Infrastructure\Security\Voters\RoomVoter;
 use App\Infrastructure\SSE\SseInterface;
@@ -21,6 +23,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -33,6 +36,7 @@ class RoomController extends AbstractController
 
     public function __construct(
         private readonly RoomRepository $roomRepository,
+        private readonly PlayerRepository $playerRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly RoomWorkflowTransitionInterface $roomStatusTransitionUseCase,
         private readonly SseInterface $hub,
@@ -46,8 +50,19 @@ class RoomController extends AbstractController
     #[IsGranted(RoomVoter::CREATE_ROOM, message: 'KILLER_CREATE_ROOM_UNAUTHORIZED')]
     public function createRoom(Request $request): JsonResponse
     {
-        /** @var Player $player */
-        $player = $this->getUser();
+        /** @var User|null $user */
+        $user = $this->getUser();
+
+        if ($user === null) {
+            throw new NotFoundHttpException('KILLER_USER_NOT_FOUND');
+        }
+
+        $player = $this->playerRepository->getCurrentUserPlayer($user);
+
+        if ($player === null) {
+            throw new NotFoundHttpException('PLAYER_NOT_FOUND_IN_CURRENT_ROOM');
+        }
+
         $room = (new Room())->setName(sprintf("%s's room", $player->getName()));
 
         $this->changeRoomUseCase->execute($player, $room);

@@ -77,10 +77,16 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
     public function createPlayer(
         #[MapRequestPayload(serializationContext: [AbstractNormalizer::GROUPS => 'post-player'])] Player $player,
     ): JsonResponse {
-        // Create a User for this Player (for backward compatibility with non-OAuth flows)
-        $user = new User();
-        $user->setName($player->getName());
-        $this->userRepository->store($user);
+        // Check if user already exists (OAuth or existing session)
+        /** @var User|null $user */
+        $user = $this->getUser();
+
+        if ($user === null) {
+            // Create a new User for this Player (for backward compatibility with non-OAuth flows)
+            $user = new User();
+            $user->setName($player->getName());
+            $this->userRepository->store($user);
+        }
 
         // Link the Player to the User
         $player->setUser($user);
