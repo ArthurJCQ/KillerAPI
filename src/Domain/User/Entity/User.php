@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\User\Entity;
 
 use App\Domain\Player\Entity\Player;
+use App\Domain\Room\Entity\Room;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -50,6 +51,10 @@ class User implements UserInterface
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $appleId = null;
+
+    #[ORM\ManyToOne(targetEntity: Room::class)]
+    #[ORM\JoinColumn(name: 'room_id', nullable: true, onDelete: 'SET NULL')]
+    private ?Room $room = null;
 
     public function __construct()
     {
@@ -174,6 +179,18 @@ class User implements UserInterface
     public function setAppleId(?string $appleId): self
     {
         $this->appleId = $appleId;
+
+        return $this;
+    }
+
+    public function getRoom(): ?Room
+    {
+        return $this->room;
+    }
+
+    public function setRoom(?Room $room): self
+    {
+        $this->room = $room;
 
         return $this;
     }
