@@ -17,6 +17,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'users')]
 class User implements UserInterface
 {
+    public const string DEFAULT_AVATAR = 'captain';
+
     #[ORM\Id]
     #[ORM\Column(type: 'integer', unique: true)]
     #[ORM\GeneratedValue(strategy: 'SEQUENCE')]
@@ -29,7 +31,7 @@ class User implements UserInterface
     private ?string $email = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['get-user', 'me'])]
+    #[Groups(['get-user', 'me', 'patch-user'])]
     #[Assert\Length(
         min: 2,
         max: 30,
@@ -55,6 +57,10 @@ class User implements UserInterface
     #[ORM\ManyToOne(targetEntity: Room::class)]
     #[ORM\JoinColumn(name: 'room_id', nullable: true, onDelete: 'SET NULL')]
     private ?Room $room = null;
+
+    #[ORM\Column(type: 'string', options: ['default' => self::DEFAULT_AVATAR])]
+    #[Groups(['get-user', 'me', 'patch-user'])]
+    private string $avatar = self::DEFAULT_AVATAR;
 
     public function __construct()
     {
@@ -191,6 +197,18 @@ class User implements UserInterface
     public function setRoom(?Room $room): self
     {
         $this->room = $room;
+
+        return $this;
+    }
+
+    public function getAvatar(): string
+    {
+        return $this->avatar;
+    }
+
+    public function setAvatar(string $avatar): self
+    {
+        $this->avatar = $avatar;
 
         return $this;
     }

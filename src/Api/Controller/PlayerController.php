@@ -166,17 +166,9 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
             throw new UnauthorizedHttpException('KILLER_CAN_NOT_UPDATE_PLAYER_ROLE');
         }
 
-        // If room is about to be updated, keep the reference of the previous one
-        $previousRoom = $player->getRoom();
-
+        // Players cannot change their room - use UserController to change user's room context
         if (array_key_exists('room', $data)) {
-            $newRoom = $this->roomRepository->find($data['room']);
-
-            if (!$newRoom && $data['room'] !== null) {
-                throw $this->createNotFoundException('ROOM_NOT_FOUND');
-            }
-
-            $this->changeRoomUseCase->execute($player, $newRoom);
+            throw new KillerBadRequestHttpException('PLAYER_CANNOT_CHANGE_ROOM');
         }
 
         if (isset($data['status']) && $data['status'] === PlayerStatus::KILLED->value) {
@@ -201,18 +193,14 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
         $this->eventDispatcher->dispatch(new PlayerUpdatedEvent($player));
 
-        $this->hub->publish(
-            sprintf('room/%s', $player->getRoom()),
-            $this->serializer->serialize(
-                (object) $player->getRoom(),
-                [AbstractNormalizer::GROUPS => 'publish-mercure'],
-            ),
-        );
-
-        if ($previousRoom !== $player->getRoom()) {
+        // Publish update to the room if player is in a room
+        if ($player->getRoom()) {
             $this->hub->publish(
-                sprintf('room/%s', $previousRoom),
-                $this->serializer->serialize((object) $previousRoom, [AbstractNormalizer::GROUPS => 'publish-mercure']),
+                sprintf('room/%s', $player->getRoom()->getId()),
+                $this->serializer->serialize(
+                    (object) $player->getRoom(),
+                    [AbstractNormalizer::GROUPS => 'publish-mercure'],
+                ),
             );
         }
 
