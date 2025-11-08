@@ -35,10 +35,10 @@ class User implements UserInterface
     #[Assert\Length(
         min: 2,
         max: 30,
-        minMessage: 'DEFAULT_NAME_TOO_SHORT',
-        maxMessage: 'DEFAULT_NAME_TOO_LONG',
+        minMessage: 'NAME_TOO_SHORT',
+        maxMessage: 'NAME_TOO_LONG',
     )]
-    private string $defaultName;
+    private string $name;
 
     /** @var string[] */
     #[ORM\Column(type: 'json')]
@@ -92,14 +92,14 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getDefaultName(): string
+    public function getName(): string
     {
-        return $this->defaultName;
+        return $this->name;
     }
 
-    public function setDefaultName(string $defaultName): self
+    public function setName(string $name): self
     {
-        $this->defaultName = $defaultName;
+        $this->name = $name;
 
         return $this;
     }

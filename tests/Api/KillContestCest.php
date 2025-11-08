@@ -21,7 +21,7 @@ class KillContestCest
         /** @var int $adminId */
         $adminId = $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin']);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
         $adminTargetId = $response['target']['id'];
@@ -32,9 +32,11 @@ class KillContestCest
 
         // Verify John is now DYING
         $I->setJwtHeader($I, $adminTargetName);
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'status' => PlayerStatus::DYING->value,
+            'currentPlayer' => [
+                'status' => PlayerStatus::DYING->value,
+            ],
         ]);
 
         // John contests the kill
@@ -42,9 +44,11 @@ class KillContestCest
         $I->seeResponseCodeIs(200);
 
         // Verify John is now ALIVE again
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'status' => PlayerStatus::ALIVE->value,
+            'currentPlayer' => [
+                'status' => PlayerStatus::ALIVE->value,
+            ],
         ]);
     }
 
@@ -109,7 +113,7 @@ class KillContestCest
         /** @var int $adminId */
         $adminId = $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin']);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
         $adminTargetId = $response['target']['id'];
@@ -120,9 +124,11 @@ class KillContestCest
 
         // Verify target is now DYING
         $I->setJwtHeader($I, $adminTargetName);
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'status' => PlayerStatus::DYING->value,
+            'currentPlayer' => [
+                'status' => PlayerStatus::DYING->value,
+            ],
         ]);
 
         // Try to make John contest using Doe's authentication
@@ -183,17 +189,19 @@ class KillContestCest
 
         // Verify Player1 is DYING
         $I->setJwtHeader($I, 'Player1');
-        $I->sendGetAsJson('/player/me');
-        $I->seeResponseContainsJson(['status' => PlayerStatus::DYING->value]);
+        $I->sendGetAsJson('/user/me');
+        $I->seeResponseContainsJson(['currentPlayer' => ['status' => PlayerStatus::DYING->value]]);
 
         // Player1 contests the kill
         $I->sendPatchAsJson(sprintf('/player/%s/kill-contest', $player1Id));
         $I->seeResponseCodeIs(200);
 
         // Verify Player1 is ALIVE
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'status' => PlayerStatus::ALIVE->value,
+            'currentPlayer' => [
+                'status' => PlayerStatus::ALIVE->value,
+            ],
         ]);
 
         // Now try the same with another player (Player2)
@@ -213,17 +221,19 @@ class KillContestCest
 
         // Verify Player2 is DYING
         $I->setJwtHeader($I, 'Player2');
-        $I->sendGetAsJson('/player/me');
-        $I->seeResponseContainsJson(['status' => PlayerStatus::DYING->value]);
+        $I->sendGetAsJson('/user/me');
+        $I->seeResponseContainsJson(['currentPlayer' => ['status' => PlayerStatus::DYING->value]]);
 
         // Player2 contests the kill
         $I->sendPatchAsJson(sprintf('/player/%s/kill-contest', $player2Id));
         $I->seeResponseCodeIs(200);
 
         // Verify Player2 is ALIVE
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'status' => PlayerStatus::ALIVE->value,
+            'currentPlayer' => [
+                'status' => PlayerStatus::ALIVE->value,
+            ],
         ]);
     }
 

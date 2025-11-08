@@ -171,14 +171,16 @@ class RoomControllerCest
         $I->seeResponseCodeIs(200);
 
         // I can still get my player
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
 
         $I->seeResponseContainsJson(
             [
-                'name' => 'Admin',
-                'room' => ['id' => $room->getId()],
-                'status' => PlayerStatus::ALIVE->value,
-                'target' => ['avatar' => Player::DEFAULT_AVATAR],
+                'currentPlayer' => [
+                    'name' => 'Admin',
+                    'room' => ['id' => $room->getId()],
+                    'status' => PlayerStatus::ALIVE->value,
+                    'target' => ['avatar' => Player::DEFAULT_AVATAR],
+                ],
             ],
         );
     }
@@ -280,11 +282,13 @@ class RoomControllerCest
 
         $I->sendPatchAsJson(sprintf('/player/%s', $player1Id), ['status' => PlayerStatus::KILLED->value]);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'status' => PlayerStatus::KILLED->value,
-            'assignedMission' => null,
-            'target' => null,
+            'currentPlayer' => [
+                'status' => PlayerStatus::KILLED->value,
+                'assignedMission' => null,
+                'target' => null,
+            ],
         ]);
     }
 
@@ -336,29 +340,35 @@ class RoomControllerCest
 
         $I->sendPatchAsJson(sprintf('/room/%s', $room->getId()), ['status' => 'IN_GAME']);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'status' => PlayerStatus::ALIVE->value,
-            'assignedMission' => ['content' => 'mission'],
+            'currentPlayer' => [
+                'status' => PlayerStatus::ALIVE->value,
+                'assignedMission' => ['content' => 'mission'],
+            ],
         ]);
 
         $I->seeResponseCodeIs(200);
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'status' => PlayerStatus::ALIVE->value,
-            'assignedMission' => ['content' => 'mission'],
+            'currentPlayer' => [
+                'status' => PlayerStatus::ALIVE->value,
+                'assignedMission' => ['content' => 'mission'],
+            ],
         ]);
 
         $I->sendPatchAsJson(sprintf('/player/%s', $player1Id), ['status' => PlayerStatus::KILLED->value]);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'status' => PlayerStatus::KILLED->value,
-            'assignedMission' => null,
-            'target' => null,
+            'currentPlayer' => [
+                'status' => PlayerStatus::KILLED->value,
+                'assignedMission' => null,
+                'target' => null,
+            ],
         ]);
 
         $I->setAdminJwtHeader($I);
@@ -369,24 +379,28 @@ class RoomControllerCest
 
         $I->setJwtHeader($I, 'Doe');
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'name' => 'Doe',
-            'status' => PlayerStatus::DYING->value,
-            'assignedMission' => ['content' => 'mission'],
-            'target' => ['avatar' => Player::DEFAULT_AVATAR],
+            'currentPlayer' => [
+                'name' => 'Doe',
+                'status' => PlayerStatus::DYING->value,
+                'assignedMission' => ['content' => 'mission'],
+                'target' => ['avatar' => Player::DEFAULT_AVATAR],
+            ],
         ]);
 
         $I->sendPatchAsJson(sprintf('/player/%s', $player2Id), ['status' => PlayerStatus::KILLED->value]);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'room' => [
-                'status' => Room::ENDED,
+            'currentPlayer' => [
+                'room' => [
+                    'status' => Room::ENDED,
+                ],
+                'status' => PlayerStatus::KILLED->value,
+                'assignedMission' => null,
+                'target' => null,
             ],
-            'status' => PlayerStatus::KILLED->value,
-            'assignedMission' => null,
-            'target' => null,
         ]);
 
         $I->setAdminJwtHeader($I);
@@ -399,14 +413,16 @@ class RoomControllerCest
             ],
         ]);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'room' => [
-                'status' => Room::ENDED,
+            'currentPlayer' => [
+                'room' => [
+                    'status' => Room::ENDED,
+                ],
+                'status' => PlayerStatus::ALIVE->value,
+                'assignedMission' => null,
+                'target' => null,
             ],
-            'status' => PlayerStatus::ALIVE->value,
-            'assignedMission' => null,
-            'target' => null,
         ]);
     }
 
@@ -458,50 +474,60 @@ class RoomControllerCest
 
         $I->sendPatchAsJson(sprintf('/room/%s', $room->getId()), ['status' => 'IN_GAME']);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'status' => PlayerStatus::ALIVE->value,
-            'assignedMission' => ['content' => 'mission'],
+            'currentPlayer' => [
+                'status' => PlayerStatus::ALIVE->value,
+                'assignedMission' => ['content' => 'mission'],
+            ],
         ]);
 
         $I->seeResponseCodeIs(200);
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'status' => PlayerStatus::ALIVE->value,
-            'assignedMission' => ['content' => 'mission'],
+            'currentPlayer' => [
+                'status' => PlayerStatus::ALIVE->value,
+                'assignedMission' => ['content' => 'mission'],
+            ],
         ]);
 
         $I->sendPatchAsJson(sprintf('/player/%s', $player1Id), ['status' => PlayerStatus::KILLED->value]);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'status' => PlayerStatus::KILLED->value,
-            'assignedMission' => null,
-            'target' => null,
+            'currentPlayer' => [
+                'status' => PlayerStatus::KILLED->value,
+                'assignedMission' => null,
+                'target' => null,
+            ],
         ]);
 
         $I->setJwtHeader($I, 'Doe');
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'name' => 'Doe',
-            'status' => PlayerStatus::ALIVE->value,
-            'assignedMission' => ['content' => 'mission'],
+            'currentPlayer' => [
+                'name' => 'Doe',
+                'status' => PlayerStatus::ALIVE->value,
+                'assignedMission' => ['content' => 'mission'],
+            ],
         ]);
 
         $I->sendPatchAsJson(sprintf('/player/%s', $player2Id), ['status' => PlayerStatus::KILLED->value]);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'room' => [
-                'status' => Room::ENDED,
+            'currentPlayer' => [
+                'room' => [
+                    'status' => Room::ENDED,
+                ],
+                'status' => PlayerStatus::KILLED->value,
+                'assignedMission' => null,
+                'target' => null,
             ],
-            'status' => PlayerStatus::KILLED->value,
-            'assignedMission' => null,
-            'target' => null,
         ]);
 
         $I->setAdminJwtHeader($I);
@@ -514,14 +540,16 @@ class RoomControllerCest
             ],
         ]);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'room' => [
-                'status' => Room::ENDED,
+            'currentPlayer' => [
+                'room' => [
+                    'status' => Room::ENDED,
+                ],
+                'status' => PlayerStatus::ALIVE->value,
+                'assignedMission' => null,
+                'target' => null,
             ],
-            'status' => PlayerStatus::ALIVE->value,
-            'assignedMission' => null,
-            'target' => null,
         ]);
 
         /** @var string $adminId */
@@ -556,51 +584,61 @@ class RoomControllerCest
 
         $I->sendPatchAsJson(sprintf('/room/%s', $room2->getId()), ['status' => 'IN_GAME']);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'status' => PlayerStatus::ALIVE->value,
-            'assignedMission' => ['content' => 'mission'],
+            'currentPlayer' => [
+                'status' => PlayerStatus::ALIVE->value,
+                'assignedMission' => ['content' => 'mission'],
+            ],
         ]);
 
         $I->seeResponseCodeIs(200);
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'status' => PlayerStatus::ALIVE->value,
-            'assignedMission' => ['content' => 'mission'],
+            'currentPlayer' => [
+                'status' => PlayerStatus::ALIVE->value,
+                'assignedMission' => ['content' => 'mission'],
+            ],
         ]);
 
         $I->sendPatchAsJson(sprintf('/player/%s', $player1Id), ['status' => PlayerStatus::KILLED->value]);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'status' => PlayerStatus::KILLED->value,
-            'assignedMission' => null,
-            'target' => null,
+            'currentPlayer' => [
+                'status' => PlayerStatus::KILLED->value,
+                'assignedMission' => null,
+                'target' => null,
+            ],
         ]);
 
         $I->setJwtHeader($I, 'Doe');
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'name' => 'Doe',
-            'status' => PlayerStatus::ALIVE->value,
-            'assignedMission' => ['content' => 'mission'],
+            'currentPlayer' => [
+                'name' => 'Doe',
+                'status' => PlayerStatus::ALIVE->value,
+                'assignedMission' => ['content' => 'mission'],
+            ],
         ]);
 
         $I->sendPatchAsJson(sprintf('/player/%s', $player2Id), ['status' => PlayerStatus::KILLED->value]);
         $I->seeResponseCodeIsSuccessful();
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'room' => [
-                'status' => Room::ENDED,
+            'currentPlayer' => [
+                'room' => [
+                    'status' => Room::ENDED,
+                ],
+                'status' => PlayerStatus::KILLED->value,
+                'assignedMission' => null,
+                'target' => null,
             ],
-            'status' => PlayerStatus::KILLED->value,
-            'assignedMission' => null,
-            'target' => null,
         ]);
 
         $I->setAdminJwtHeader($I);
@@ -613,14 +651,16 @@ class RoomControllerCest
             ],
         ]);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'room' => [
-                'status' => Room::ENDED,
+            'currentPlayer' => [
+                'room' => [
+                    'status' => Room::ENDED,
+                ],
+                'status' => PlayerStatus::ALIVE->value,
+                'assignedMission' => null,
+                'target' => null,
             ],
-            'status' => PlayerStatus::ALIVE->value,
-            'assignedMission' => null,
-            'target' => null,
         ]);
     }
 
@@ -701,29 +741,33 @@ class RoomControllerCest
         $I->seeResponseCodeIs(200);
 
         // I can still get my player
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
 
         $I->seeResponseContainsJson(
             [
-                'name' => 'Admin',
-                'room' => ['id' => $room->getId()],
-                'status' => PlayerStatus::SPECTATING->value,
-                'target' => null,
-                'assignedMission' => null,
+                'currentPlayer' => [
+                    'name' => 'Admin',
+                    'room' => ['id' => $room->getId()],
+                    'status' => PlayerStatus::SPECTATING->value,
+                    'target' => null,
+                    'assignedMission' => null,
+                ],
             ],
         );
 
         $I->setJwtHeader($I, 'Jane');
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
 
         $I->seeResponseContainsJson(
             [
-                'name' => 'Jane',
-                'room' => ['id' => $room->getId()],
-                'status' => PlayerStatus::ALIVE->value,
-                'target' => ['avatar' => Player::DEFAULT_AVATAR],
-                'assignedMission' => ['content' => 'mission'],
+                'currentPlayer' => [
+                    'name' => 'Jane',
+                    'room' => ['id' => $room->getId()],
+                    'status' => PlayerStatus::ALIVE->value,
+                    'target' => ['avatar' => Player::DEFAULT_AVATAR],
+                    'assignedMission' => ['content' => 'mission'],
+                ],
             ],
         );
     }
@@ -762,16 +806,16 @@ class RoomControllerCest
         $I->seeResponseCodeIs(200);
 
         // Verify all players start with 0 points
-        $I->sendGetAsJson('/player/me');
-        $I->seeResponseContainsJson(['points' => 0]);
+        $I->sendGetAsJson('/user/me');
+        $I->seeResponseContainsJson(['currentPlayer' => ['points' => 0]]);
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
-        $I->sendGetAsJson('/player/me');
-        $I->seeResponseContainsJson(['points' => 0]);
+        $I->sendGetAsJson('/user/me');
+        $I->seeResponseContainsJson(['currentPlayer' => ['points' => 0]]);
 
         $I->setJwtHeader($I, 'Doe');
-        $I->sendGetAsJson('/player/me');
-        $I->seeResponseContainsJson(['points' => 0]);
+        $I->sendGetAsJson('/user/me');
+        $I->seeResponseContainsJson(['currentPlayer' => ['points' => 0]]);
 
         // Player John switches mission (costs 5 points)
         $I->setJwtHeader($I, self::PLAYER_NAME);
@@ -779,8 +823,8 @@ class RoomControllerCest
         $I->seeResponseCodeIs(200);
 
         // Verify John now has -5 points and a different mission
-        $I->sendGetAsJson('/player/me');
-        $I->seeResponseContainsJson(['points' => -5]);
+        $I->sendGetAsJson('/user/me');
+        $I->seeResponseContainsJson(['currentPlayer' => ['points' => -5]]);
         $I->dontSeeResponseContainsJson(['assignedMission' => ['content' => 'John mission']]);
 
         // Try to switch mission again - should fail
@@ -793,7 +837,7 @@ class RoomControllerCest
         $adminId = $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin']);
 
         // Get Admin's target to find who they need to kill
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
         $adminTargetId = $response['target']['id'];
@@ -811,24 +855,24 @@ class RoomControllerCest
         $I->seeResponseCodeIs(200);
 
         // Verify the killed player's points didn't change
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         if ($victimName === self::PLAYER_NAME) {
-            $I->seeResponseContainsJson(['points' => -5, 'status' => PlayerStatus::KILLED->value]);
+            $I->seeResponseContainsJson(['currentPlayer' => ['points' => -5, 'status' => PlayerStatus::KILLED->value]]);
         } else {
-            $I->seeResponseContainsJson(['points' => 0, 'status' => PlayerStatus::KILLED->value]);
+            $I->seeResponseContainsJson(['currentPlayer' => ['points' => 0, 'status' => PlayerStatus::KILLED->value]]);
         }
 
         // Verify Admin now has 10 points
         $I->setAdminJwtHeader($I);
-        $I->sendGetAsJson('/player/me');
-        $I->seeResponseContainsJson(['points' => 10]);
+        $I->sendGetAsJson('/user/me');
+        $I->seeResponseContainsJson(['currentPlayer' => ['points' => 10]]);
 
         // Admin kills the second player
         $I->sendPatch(sprintf('/player/%s/kill-target-request', $adminId));
         $I->seeResponseCodeIs(200);
 
         // Get the remaining alive player
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
         $secondTargetId = $response['target']['id'];
@@ -840,10 +884,12 @@ class RoomControllerCest
         $I->seeResponseCodeIs(200);
 
         // Verify game has ended
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'room' => ['status' => Room::ENDED],
-            'status' => PlayerStatus::KILLED->value,
+            'currentPlayer' => [
+                'room' => ['status' => Room::ENDED],
+                'status' => PlayerStatus::KILLED->value,
+            ],
         ]);
 
         // Verify Admin is the winner with 20 points (2 kills * 10 points)
@@ -854,10 +900,12 @@ class RoomControllerCest
             'winner' => ['name' => 'Admin'],
         ]);
 
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'points' => 20,
-            'status' => PlayerStatus::ALIVE->value,
+            'currentPlayer' => [
+                'points' => 20,
+                'status' => PlayerStatus::ALIVE->value,
+            ],
         ]);
 
         // Verify final points for all players

@@ -79,7 +79,7 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
     ): JsonResponse {
         // Create a User for this Player (for backward compatibility with non-OAuth flows)
         $user = new User();
-        $user->setDefaultName($player->getName());
+        $user->setName($player->getName());
         $this->userRepository->store($user);
 
         // Link the Player to the User

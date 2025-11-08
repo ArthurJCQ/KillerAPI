@@ -65,7 +65,7 @@ class OAuthController extends AbstractController
 
                 if (!$user) {
                     $user = new User();
-                    $user->setDefaultName($name ?? 'User');
+                    $user->setName($name ?? 'User');
                     $user->setEmail($email);
                 }
 
@@ -85,7 +85,7 @@ class OAuthController extends AbstractController
                 'user' => [
                     'id' => $user->getId(),
                     'email' => $user->getEmail(),
-                    'defaultName' => $user->getDefaultName(),
+                    'name' => $user->getName(),
                 ],
             ]);
         } catch (\Exception $e) {
@@ -127,7 +127,7 @@ class OAuthController extends AbstractController
 
                 if (!$user) {
                     $user = new User();
-                    $user->setDefaultName($name);
+                    $user->setName($name);
                     $user->setEmail($email);
                 }
 
@@ -147,7 +147,7 @@ class OAuthController extends AbstractController
                 'user' => [
                     'id' => $user->getId(),
                     'email' => $user->getEmail(),
-                    'defaultName' => $user->getDefaultName(),
+                    'name' => $user->getName(),
                 ],
             ]);
         } catch (\Exception $e) {

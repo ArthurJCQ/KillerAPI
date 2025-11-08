@@ -8,39 +8,45 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
 /**
- * Migration: Add User entity and link Player to User and Room
+ * Migration: Add User entity with OAuth, room context, and getCurrentUserPlayer support
  */
 final class Version20251108113552 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Create users table and add user_id to player table, remove roles from player';
+        return 'Create users table with OAuth, room context, and avatar support; link player to user; update authorization model';
     }
 
     public function up(Schema $schema): void
     {
-        // Create users table
+        // Create users table with all properties including room context and avatar
         $this->addSql('CREATE SEQUENCE users_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
         $this->addSql('CREATE TABLE users (
             id INT NOT NULL,
             email VARCHAR(255) DEFAULT NULL,
-            default_name VARCHAR(255) NOT NULL,
+            name VARCHAR(255) NOT NULL,
             roles JSON NOT NULL,
             google_id VARCHAR(255) DEFAULT NULL,
             apple_id VARCHAR(255) DEFAULT NULL,
+            room_id INTEGER DEFAULT NULL,
+            avatar VARCHAR(255) NOT NULL DEFAULT \'captain\',
             PRIMARY KEY(id)
         )');
         $this->addSql('CREATE INDEX IDX_1483A5E9E7927C74 ON users (email)');
         $this->addSql('CREATE INDEX IDX_1483A5E9772E836A ON users (google_id)');
         $this->addSql('CREATE INDEX IDX_1483A5E96B01BC5B ON users (apple_id)');
+        $this->addSql('CREATE INDEX IDX_1483A5E954177093 ON users (room_id)');
         $this->addSql('COMMENT ON COLUMN users.roles IS \'(DC2Type:json)\'');
+
+        // Add foreign key for room_id
+        $this->addSql('ALTER TABLE users ADD CONSTRAINT FK_1483A5E954177093 FOREIGN KEY (room_id) REFERENCES room (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE');
 
         // Add user_id column to player table
         $this->addSql('ALTER TABLE player ADD user_id INT DEFAULT NULL');
         $this->addSql('ALTER TABLE player ADD CONSTRAINT FK_98197A65A76ED395 FOREIGN KEY (user_id) REFERENCES users (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('CREATE INDEX IDX_98197A65A76ED395 ON player (user_id)');
 
-        // Remove roles column from player table
+        // Remove roles column from player table (moved to user)
         $this->addSql('ALTER TABLE player DROP COLUMN roles');
     }
 
@@ -55,7 +61,9 @@ final class Version20251108113552 extends AbstractMigration
         $this->addSql('DROP INDEX IDX_98197A65A76ED395');
         $this->addSql('ALTER TABLE player DROP COLUMN user_id');
 
-        // Drop users table
+        // Drop users table (including room_id foreign key and avatar)
+        $this->addSql('ALTER TABLE users DROP CONSTRAINT FK_1483A5E954177093');
+        $this->addSql('DROP INDEX IDX_1483A5E954177093');
         $this->addSql('DROP TABLE users');
         $this->addSql('DROP SEQUENCE users_id_seq CASCADE');
     }

@@ -37,13 +37,15 @@ class PlayerControllerCest
         );
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
-        $I->sendGetAsJson('player/me');
+        $I->sendGetAsJson('/user/me');
 
         $I->seeResponseContainsJson(
             [
-                'name' => self::PLAYER_NAME,
-                'room' => null,
-                'status' => PlayerStatus::ALIVE->value,
+                'currentPlayer' => [
+                    'name' => self::PLAYER_NAME,
+                    'room' => null,
+                    'status' => PlayerStatus::ALIVE->value,
+                ],
             ],
         );
     }
