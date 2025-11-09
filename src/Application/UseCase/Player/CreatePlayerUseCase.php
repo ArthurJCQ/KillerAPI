@@ -21,6 +21,8 @@ readonly class CreatePlayerUseCase
     /**
      * Create a new player for a user in a room.
      *
+     * Note: This use case does NOT flush changes. The caller is responsible for flushing.
+     *
      * @param User $user The user who will own this player
      * @param Room|null $room The room the player will join (null for creating a player without a room)
      * @param string|null $name The player's name (defaults to user's name if not provided)
@@ -43,7 +45,6 @@ readonly class CreatePlayerUseCase
         }
 
         $this->playerRepository->store($player);
-        $this->persistenceAdapter->flush();
 
         return $player;
     }

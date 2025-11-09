@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Api\Controller;
 
 use App\Api\Exception\KillerBadRequestHttpException;
+use App\Application\UseCase\Player\CreatePlayerUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Player\Entity\Player;
@@ -38,6 +39,7 @@ class RoomController extends AbstractController
         private readonly SseInterface $hub,
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
+        private readonly CreatePlayerUseCase $createPlayerUseCase,
     ) {
     }
 
@@ -52,13 +54,13 @@ class RoomController extends AbstractController
             throw $this->createNotFoundException('KILLER_USER_NOT_FOUND');
         }
 
-        $player = new Player()
-            ->setName($user->getName())
-            ->setAvatar($user->getAvatar())
-            ->setUser($user)
-            ->setIsAdmin(true);
+        // Create the room first
+        $room = new Room()->setName(sprintf("%s's room", $user->getName()));
 
-        $room = new Room()->setName(sprintf("%s's room", $player->getName()));
+        // Use CreatePlayerUseCase to create the player
+        $player = $this->createPlayerUseCase->execute($user, $room);
+        $player->setIsAdmin(true);
+
         $room->addPlayer($player);
         $user->setRoom($room);
 
@@ -73,7 +75,6 @@ class RoomController extends AbstractController
         }
 
         $this->roomRepository->store($room);
-        $this->roomRepository->store($player);
         $this->persistenceAdapter->flush();
 
         return $this->json($room, Response::HTTP_CREATED, [], [AbstractNormalizer::GROUPS => 'get-room']);
