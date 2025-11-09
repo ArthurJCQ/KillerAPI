@@ -7,7 +7,7 @@ namespace App\Api\Controller;
 use App\Application\UseCase\Player\CreatePlayerUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
-use App\Domain\Player\Entity\Player;
+use App\Domain\Player\Event\PlayerChangedRoomEvent;
 use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\RoomRepository;
 use App\Domain\User\Entity\User;
@@ -28,6 +28,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 #[Route('/user', format: 'json')]
 class UserController extends AbstractController implements LoggerAwareInterface
@@ -45,6 +46,7 @@ class UserController extends AbstractController implements LoggerAwareInterface
         private readonly JWTTokenManagerInterface $tokenManager,
         private readonly RefreshTokenGeneratorInterface $refreshTokenGenerator,
         private readonly RefreshTokenManagerInterface $refreshTokenManager,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -136,6 +138,7 @@ class UserController extends AbstractController implements LoggerAwareInterface
         }
 
         $data = $request->toArray();
+        $existingPlayer = $this->playerRepository->getCurrentUserPlayer($user);
 
         // Handle room change
         if (array_key_exists('room', $data)) {
@@ -151,14 +154,17 @@ class UserController extends AbstractController implements LoggerAwareInterface
                 $user->setRoom($newRoom);
 
                 // Create a new player for this user in the room if one doesn't exist
-                $existingPlayer = $this->playerRepository->getCurrentUserPlayer($user);
-
                 if ($existingPlayer === null) {
                     $this->createPlayerUseCase->execute($user, $newRoom);
                 }
             }
 
             if ($newRoomId === null) {
+                $this->eventDispatcher->dispatch(new PlayerChangedRoomEvent(
+                    $existingPlayer,
+                    $existingPlayer->getRoom(),
+                ));
+
                 $user->setRoom(null);
             }
 

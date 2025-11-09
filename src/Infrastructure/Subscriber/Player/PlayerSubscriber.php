@@ -6,6 +6,7 @@ namespace App\Infrastructure\Subscriber\Player;
 
 use App\Application\UseCase\Player\PlayerKilledUseCase;
 use App\Application\UseCase\Player\ResetPlayerUseCase;
+use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Player\Event\PlayerChangedRoomEvent;
 use App\Domain\Player\Event\PlayerKilledEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -32,6 +33,7 @@ readonly class PlayerSubscriber implements EventSubscriberInterface
     public function onPlayerLeftRoom(PlayerChangedRoomEvent $playerLeftRoomEvent): void
     {
         $player = $playerLeftRoomEvent->getPlayer();
+        $player->setStatus(PlayerStatus::KILLED);
         $previousRoom = $playerLeftRoomEvent->getPreviousRoom();
 
         // Player leaving is considered as killed.

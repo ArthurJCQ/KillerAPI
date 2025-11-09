@@ -46,12 +46,13 @@ readonly class RoomSubscriber implements EventSubscriberInterface
     public function updateAdminIfHeLeft(PlayerChangedRoomEvent $playerLeftRoomEvent): void
     {
         $previousRoom = $playerLeftRoomEvent->getPreviousRoom();
+        $player = $playerLeftRoomEvent->getPlayer();
 
         if (!$previousRoom) {
             return;
         }
 
-        if ($previousRoom->getAdmin()) {
+        if (!$player->isAdmin()) {
             return;
         }
 

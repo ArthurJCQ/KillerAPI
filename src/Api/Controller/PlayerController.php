@@ -19,8 +19,6 @@ use App\Domain\Player\Event\PlayerUpdatedEvent;
 use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomWorkflowTransitionInterface;
-use App\Domain\User\Entity\User;
-use App\Domain\User\UserRepository;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Infrastructure\Security\Voters\PlayerVoter;
 use App\Infrastructure\SSE\SseInterface;
@@ -45,7 +43,6 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
     public function __construct(
         private readonly PlayerRepository $playerRepository,
-        private readonly UserRepository $userRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly SseInterface $hub,
         private readonly KillerSerializerInterface $serializer,
@@ -137,7 +134,6 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         );
         $this->logger->info('Event mercure sent: post-DELETE for player {user_id}', ['user_id' => $player->getId()]);
 
-        $this->security->logout(validateCsrfToken: false);
         $this->playerRepository->remove($player);
         $this->persistenceAdapter->flush();
 
