@@ -89,11 +89,11 @@ class KillContestCest
 
         // Join room with player1
         $I->createPlayerAndUpdateHeaders($I, 'John');
-        /** @var int $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'John']);
-        $I->sendPatchAsJson(sprintf('/player/%d', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
 
         // Manually set player to DYING (bypassing game logic for test purposes)
+        /** @var int $player1Id */
+        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'John', 'room' => $room->getId()]);
         $player = $I->grabEntityFromRepository(Player::class, ['id' => $player1Id]);
         $player->setStatus(PlayerStatus::DYING);
         $I->flushToDatabase();
@@ -148,21 +148,15 @@ class KillContestCest
 
         // Create 3 more players
         $I->createPlayerAndUpdateHeaders($I, 'Player1');
-        /** @var int $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Player1']);
-        $I->sendPatchAsJson(sprintf('/player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Mission 2']);
 
         $I->createPlayerAndUpdateHeaders($I, 'Player2');
-        /** @var int $player2Id */
-        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Player2']);
-        $I->sendPatchAsJson(sprintf('/player/%s', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Mission 3']);
 
         $I->createPlayerAndUpdateHeaders($I, 'Player3');
-        /** @var int $player3Id */
-        $player3Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Player3']);
-        $I->sendPatchAsJson(sprintf('/player/%s', $player3Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Mission 4']);
 
         // Start the game
@@ -171,6 +165,8 @@ class KillContestCest
         $I->seeResponseCodeIs(200);
 
         // Get Player1's killer using repository
+        /** @var int $player1Id */
+        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Player1', 'room' => $room->getId()]);
         $player1Entity = $I->grabEntityFromRepository(Player::class, ['id' => $player1Id]);
         /** @var PlayerRepository $playerRepository */
         $playerRepository = $I->grabService(PlayerRepository::class);
@@ -248,16 +244,12 @@ class KillContestCest
 
         // Join room with player1 (John)
         $I->createPlayerAndUpdateHeaders($I, 'John');
-        /** @var int $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'John']);
-        $I->sendPatchAsJson(sprintf('/player/%d', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Mission 2']);
 
         // Join room with player2 (Doe)
         $I->createPlayerAndUpdateHeaders($I, 'Doe');
-        /** @var int $player2Id */
-        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
-        $I->sendPatchAsJson(sprintf('/player/%d', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Mission 3']);
 
         // Start the game with admin
@@ -267,9 +259,9 @@ class KillContestCest
 
         return [
             'room' => $room,
-            'adminId' => $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin']),
-            'johnId' => $player1Id,
-            'doeId' => $player2Id,
+            'adminId' => $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin', 'room' => $room->getId()]),
+            'johnId' => $I->grabFromRepository(Player::class, 'id', ['name' => 'John', 'room' => $room->getId()]),
+            'doeId' => $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe', 'room' => $room->getId()]),
         ];
     }
 }

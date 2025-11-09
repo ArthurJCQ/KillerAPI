@@ -35,23 +35,17 @@ class SecondaryMissionsAndSwitchingCest
 
         // Player 1 joins
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_1);
-        /** @var int $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_1]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Player1 mission']);
 
         // Player 2 joins
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_2);
-        /** @var int $player2Id */
-        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_2]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Player2 mission']);
 
         // Player 3 joins
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_3);
-        /** @var int $player3Id */
-        $player3Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_3]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player3Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Player3 mission']);
 
         // Start the game (4 players total including admin, should generate 8 secondary missions)
@@ -82,21 +76,15 @@ class SecondaryMissionsAndSwitchingCest
         $room = $I->grabEntityFromRepository(Room::class, ['name' => 'Admin\'s room']);
 
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_1);
-        /** @var int $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_1]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Player1 mission']);
 
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_2);
-        /** @var int $player2Id */
-        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_2]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Player2 mission']);
 
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_3);
-        /** @var int $player3Id */
-        $player3Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_3]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player3Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Player3 mission']);
 
         // Start the game
@@ -147,15 +135,11 @@ class SecondaryMissionsAndSwitchingCest
         $room = $I->grabEntityFromRepository(Room::class, ['name' => 'Admin\'s room']);
 
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_1);
-        /** @var int $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_1]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Player1 mission']);
 
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_2);
-        /** @var int $player2Id */
-        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_2]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Player2 mission']);
 
         // Start game
@@ -164,6 +148,8 @@ class SecondaryMissionsAndSwitchingCest
 
         // First switch - should work
         $I->setJwtHeader($I, self::PLAYER_1);
+        /** @var int $player1Id */
+        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_1, 'room' => $room->getId()]);
         $I->sendPatchAsJson(sprintf('/player/%s/switch-mission', $player1Id));
         $I->seeResponseCodeIs(200);
 
@@ -183,15 +169,11 @@ class SecondaryMissionsAndSwitchingCest
         $room = $I->grabEntityFromRepository(Room::class, ['name' => 'Admin\'s room']);
 
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_1);
-        /** @var int $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_1]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Player1 mission']);
 
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_2);
-        /** @var int $player2Id */
-        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_2]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Player2 mission']);
 
         // Start game (3 players = 6 secondary missions)
