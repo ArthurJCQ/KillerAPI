@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Api\Controller;
 
+use App\Application\UseCase\Player\CreatePlayerUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Player\Entity\Player;
@@ -30,6 +31,7 @@ class UserController extends AbstractController
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
+        private readonly CreatePlayerUseCase $createPlayerUseCase,
     ) {
     }
 
@@ -113,13 +115,7 @@ class UserController extends AbstractController
                 $existingPlayer = $this->playerRepository->getCurrentUserPlayer($user);
 
                 if ($existingPlayer === null) {
-                    $newPlayer = new Player();
-                    $newPlayer->setName($user->getName());
-                    $newPlayer->setAvatar($user->getAvatar());
-                    $newPlayer->setUser($user);
-                    $newPlayer->setRoom($newRoom);
-
-                    $this->playerRepository->store($newPlayer);
+                    $this->createPlayerUseCase->execute($user, $newRoom);
                 }
             }
 

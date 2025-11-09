@@ -119,16 +119,10 @@ class RoomControllerCest
         $room = $I->grabEntityFromRepository(Room::class, ['name' => 'Admin\'s room']);
 
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
-
-        /** @var string $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
 
         $I->createPlayerAndUpdateHeaders($I, 'Doe');
-
-        /** @var string $player2Id */
-        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
-        $I->sendPatchAsJson(sprintf('player/%s', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
 
         $I->setAdminJwtHeader($I);
 
@@ -149,18 +143,12 @@ class RoomControllerCest
 
         // Join room with player1
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
-
-        /** @var string $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
 
         // Join room with player 2
         $I->createPlayerAndUpdateHeaders($I, 'Doe');
-
-        /** @var string $player2Id */
-        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
-        $I->sendPatchAsJson(sprintf('player/%s', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
 
         // Start the game with admin
@@ -197,18 +185,12 @@ class RoomControllerCest
 
         // Join room with player1
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
-
-        /** @var string $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
 
         // Join room with player 2
         $I->createPlayerAndUpdateHeaders($I, 'Doe');
-
-        /** @var string $player2Id */
-        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
-        $I->sendPatchAsJson(sprintf('player/%s', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
 
         // Start the game with admin
@@ -220,7 +202,7 @@ class RoomControllerCest
 
         // I create a new room with a player
         $I->setJwtHeader($I, self::PLAYER_NAME);
-        $I->sendPatchAsJson(sprintf('/player/%s', $player1Id), ['room' => null]);
+        $I->sendPatchAsJson('/user', ['room' => null]);
         $I->sendPostAsJson('/room');
 
         $I->seeResponseCodeIsSuccessful();
@@ -235,14 +217,7 @@ class RoomControllerCest
 
         // I join the new room with the admin of the previous room
         $I->setAdminJwtHeader($I);
-
-        /** @var string $adminId */
-        $adminId = $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin']);
-
-        $I->sendPatchAsJson(sprintf('/player/%s', $adminId), ['room' => $newRoomCode]);
-        $I->seeResponseContainsJson([
-            'room' => ['id' => $newRoomCode],
-        ]);
+        $I->sendPatchAsJson('/user', ['room' => $newRoomCode]);
     }
 
     public function testKillAPlayer(ApiTester $I): void
@@ -257,18 +232,12 @@ class RoomControllerCest
 
         // Join room with player1
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
-
-        /** @var string $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
-        $I->sendPatchAsJson(sprintf('/player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
 
         // Join room with player 2
         $I->createPlayerAndUpdateHeaders($I, 'Doe');
-
-        /** @var string $player2Id */
-        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
-        $I->sendPatchAsJson(sprintf('/player/%s', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
 
         // Start the game with admin
@@ -280,6 +249,8 @@ class RoomControllerCest
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
 
+        /** @var string $player1Id */
+        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME, 'room' => $room->getId()]);
         $I->sendPatchAsJson(sprintf('/player/%s', $player1Id), ['status' => PlayerStatus::KILLED->value]);
 
         $I->sendGetAsJson('/user/me');
@@ -304,20 +275,14 @@ class RoomControllerCest
 
         // Join room with player1
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
-
-        /** @var string $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
 
 
         // Join room with player 2
         $I->createPlayerAndUpdateHeaders($I, 'Doe');
-
-        /** @var string $player2Id */
-        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
-        $I->sendPatchAsJson(sprintf('player/%s', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
 
         $I->sendGetAsJson(sprintf('/room/%s', $room->getId()));
         $I->seeResponseContainsJson([
@@ -438,20 +403,14 @@ class RoomControllerCest
 
         // Join room with player1
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
-
-        /** @var string $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
 
 
         // Join room with player 2
         $I->createPlayerAndUpdateHeaders($I, 'Doe');
-
-        /** @var string $player2Id */
-        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
-        $I->sendPatchAsJson(sprintf('player/%s', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
 
         $I->sendGetAsJson(sprintf('/room/%s', $room->getId()));
         $I->seeResponseContainsJson([
@@ -556,7 +515,7 @@ class RoomControllerCest
         $adminId = $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin']);
 
         $I->setJwtHeader($I, 'Doe');
-        $I->sendPatchAsJson(sprintf('/player/%d', $player2Id), ['room' => null]);
+        $I->sendPatchAsJson('/user', ['room' => null]);
         $I->seeResponseCodeIsSuccessful();
         $I->sendPostAsJson('/room');
         $I->seeResponseCodeIsSuccessful();
@@ -567,16 +526,14 @@ class RoomControllerCest
 
         // Join room with player1
         $I->setJwtHeader($I, self::PLAYER_NAME);
-
-        $I->sendPatchAsJson(sprintf('player/%s', $player1Id), ['room' => $room2->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room2->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
 
 
         // Join room with player 2
         $I->setAdminJwtHeader($I);
-
-        $I->sendPatchAsJson(sprintf('player/%s', $adminId), ['room' => $room2->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room2->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
 
         // Start the game with admin
@@ -676,17 +633,12 @@ class RoomControllerCest
 
         // Join room with player1
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
-
-        /** @var string $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
 
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
 
         $I->setAdminJwtHeader($I);
-        /** @var string $adminId */
-        $adminId = $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin']);
-        $I->sendPatchAsJson(sprintf('player/%s', $adminId), ['room' => null]);
+        $I->sendPatchAsJson('/user', ['room' => null]);
 
         $I->setJwtHeader($I, self::PLAYER_NAME);
         $I->sendGetAsJson(sprintf('/room/%s', $room->getId()));
@@ -712,26 +664,17 @@ class RoomControllerCest
 
         // Join room with player1
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
-
-        /** @var string $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'mission']);
         $I->seeResponseCodeIs(403);
 
         // Join room with player 2
         $I->createPlayerAndUpdateHeaders($I, 'Doe');
-
-        /** @var string $player2Id */
-        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
-        $I->sendPatchAsJson(sprintf('player/%s', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
 
         // Join room with player 3
         $I->createPlayerAndUpdateHeaders($I, 'Jane');
-
-        /** @var string $player3Id */
-        $player3Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Jane']);
-        $I->sendPatchAsJson(sprintf('player/%s', $player3Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
 
         // Start the game with admin
         $I->setAdminJwtHeader($I);
@@ -785,18 +728,12 @@ class RoomControllerCest
 
         // Join room with player1 (John)
         $I->createPlayerAndUpdateHeaders($I, self::PLAYER_NAME);
-
-        /** @var string $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
-        $I->sendPatchAsJson(sprintf('player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'John mission']);
 
         // Join room with player 2 (Doe)
         $I->createPlayerAndUpdateHeaders($I, 'Doe');
-
-        /** @var string $player2Id */
-        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
-        $I->sendPatchAsJson(sprintf('player/%s', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Doe mission']);
 
         // Start the game with admin
