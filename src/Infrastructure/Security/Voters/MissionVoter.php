@@ -14,9 +14,9 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class MissionVoter extends Voter
 {
-    public const EDIT_MISSION = 'edit_mission';
-    public const VIEW_MISSION = 'view_mission';
-    public const CREATE_MISSION = 'create_mission';
+    public const string EDIT_MISSION = 'edit_mission';
+    public const string VIEW_MISSION = 'view_mission';
+    public const string CREATE_MISSION = 'create_mission';
 
     public function __construct(
         private readonly Security $security,

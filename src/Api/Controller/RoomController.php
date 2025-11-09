@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Api\Controller;
 
 use App\Api\Exception\KillerBadRequestHttpException;
-use App\Application\UseCase\Player\ChangeRoomUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;
-use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
 use App\Domain\Room\RoomWorkflowTransitionInterface;
@@ -23,7 +21,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -32,17 +29,15 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 #[Route('/room', format: 'json')]
 class RoomController extends AbstractController
 {
-    public const IS_GAME_MASTERED_ROOM = 'isGameMastered';
+    public const string IS_GAME_MASTERED_ROOM = 'isGameMastered';
 
     public function __construct(
         private readonly RoomRepository $roomRepository,
-        private readonly PlayerRepository $playerRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly RoomWorkflowTransitionInterface $roomStatusTransitionUseCase,
         private readonly SseInterface $hub,
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
-        private readonly ChangeRoomUseCase $changeRoomUseCase,
     ) {
     }
 
@@ -54,19 +49,18 @@ class RoomController extends AbstractController
         $user = $this->getUser();
 
         if ($user === null) {
-            throw new NotFoundHttpException('KILLER_USER_NOT_FOUND');
+            throw $this->createNotFoundException('KILLER_USER_NOT_FOUND');
         }
 
-        $player = $this->playerRepository->getCurrentUserPlayer($user);
-
-        if ($player === null) {
-            throw new NotFoundHttpException('PLAYER_NOT_FOUND_IN_CURRENT_ROOM');
-        }
+        $player = new Player()
+            ->setName($user->getName())
+            ->setAvatar($user->getAvatar())
+            ->setUser($user)
+            ->setIsAdmin(true);
 
         $room = new Room()->setName(sprintf("%s's room", $player->getName()));
-
-        $this->changeRoomUseCase->execute($player, $room);
-        $player->setIsAdmin(true);
+        $room->addPlayer($player);
+        $user->setRoom($room);
 
         if ($request->getContent() !== '') {
             $data = $request->toArray();
@@ -79,6 +73,7 @@ class RoomController extends AbstractController
         }
 
         $this->roomRepository->store($room);
+        $this->roomRepository->store($player);
         $this->persistenceAdapter->flush();
 
         return $this->json($room, Response::HTTP_CREATED, [], [AbstractNormalizer::GROUPS => 'get-room']);

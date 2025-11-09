@@ -10,7 +10,6 @@ use App\Domain\Player\Entity\Player;
 use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\RoomRepository;
 use App\Domain\User\Entity\User;
-use App\Domain\User\UserRepository;
 use App\Infrastructure\Http\Cookie\CookieProvider;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,7 +25,6 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 class UserController extends AbstractController
 {
     public function __construct(
-        private readonly UserRepository $userRepository,
         private readonly PlayerRepository $playerRepository,
         private readonly RoomRepository $roomRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,

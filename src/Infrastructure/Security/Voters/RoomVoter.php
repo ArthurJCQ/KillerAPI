@@ -13,9 +13,9 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class RoomVoter extends Voter
 {
-    public const EDIT_ROOM = 'edit_room';
-    public const VIEW_ROOM = 'view_room';
-    public const CREATE_ROOM = 'create_room';
+    public const string EDIT_ROOM = 'edit_room';
+    public const string VIEW_ROOM = 'view_room';
+    public const string CREATE_ROOM = 'create_room';
 
     public function __construct(
         private readonly PlayerRepository $playerRepository,
@@ -45,14 +45,10 @@ class RoomVoter extends Voter
 
         $currentPlayer = $this->playerRepository->getCurrentUserPlayer($user);
 
-        if ($currentPlayer === null) {
-            return false;
-        }
-
         return match ($attribute) {
-            self::VIEW_ROOM => $this->canView($subject, $currentPlayer),
-            self::EDIT_ROOM => $this->canEdit($subject, $currentPlayer),
-            self::CREATE_ROOM => $this->canCreate($currentPlayer),
+            self::VIEW_ROOM => $currentPlayer && $this->canView($subject, $currentPlayer),
+            self::EDIT_ROOM => $currentPlayer && $this->canEdit($subject, $currentPlayer),
+            self::CREATE_ROOM => !$currentPlayer && $this->canCreate($currentPlayer),
             default => throw new \LogicException('This code should not be reached'),
         };
     }
@@ -68,8 +64,8 @@ class RoomVoter extends Voter
         return $room instanceof Room && $room->getAdmin() === $player;
     }
 
-    private function canCreate(Player $player): bool
+    private function canCreate(?Player $player = null): bool
     {
-        return !$player->getRoom();
+        return !$player?->getRoom();
     }
 }

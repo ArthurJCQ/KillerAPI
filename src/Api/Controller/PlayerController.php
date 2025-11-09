@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Api\Controller;
 
 use App\Api\Exception\KillerBadRequestHttpException;
-use App\Application\UseCase\Player\ChangeRoomUseCase;
 use App\Application\UseCase\Player\ContestKillUseCase;
 use App\Application\UseCase\Player\GuessKillerUseCase;
 use App\Application\UseCase\Player\KillRequestOnTargetUseCase;
@@ -19,11 +18,9 @@ use App\Domain\Player\Event\PlayerKilledEvent;
 use App\Domain\Player\Event\PlayerUpdatedEvent;
 use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
-use App\Domain\Room\RoomRepository;
 use App\Domain\Room\RoomWorkflowTransitionInterface;
 use App\Domain\User\Entity\User;
 use App\Domain\User\UserRepository;
-use App\Infrastructure\Http\Cookie\CookieProvider;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Infrastructure\Security\Voters\PlayerVoter;
 use App\Infrastructure\SSE\SseInterface;
@@ -38,7 +35,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -54,7 +50,6 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
     public function __construct(
         private readonly PlayerRepository $playerRepository,
         private readonly UserRepository $userRepository,
-        private readonly RoomRepository $roomRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly SseInterface $hub,
         private readonly KillerSerializerInterface $serializer,
@@ -65,7 +60,6 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly RoomWorkflowTransitionInterface $roomStatusTransitionUseCase,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly Security $security,
-        private readonly ChangeRoomUseCase $changeRoomUseCase,
         private readonly KillRequestOnTargetUseCase $killRequestOnTargetUseCase,
         private readonly SwitchMissionUseCase $switchMissionUseCase,
         private readonly GuessKillerUseCase $guessKillerUseCase,
