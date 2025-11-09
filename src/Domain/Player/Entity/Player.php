@@ -43,7 +43,7 @@ class Player implements RecipientInterface
 
     #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'], inversedBy: 'players')]
     #[ORM\JoinColumn(name: 'user_id', nullable: true)]
-    #[Groups(['get-player', 'me'])]
+    #[Groups(['get-player'])]
     #[MaxDepth(1)]
     private ?User $user = null;
 
