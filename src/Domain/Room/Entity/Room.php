@@ -41,7 +41,7 @@ class Room
     private string $status = self::PENDING;
 
     /** @var Collection<int, Player> */
-    #[ORM\OneToMany(mappedBy: 'room', targetEntity: Player::class, fetch: 'EAGER')]
+    #[ORM\OneToMany(mappedBy: 'room', targetEntity: Player::class, fetch: 'EAGER', cascade: ['remove'])]
     #[Assert\Unique]
     #[Groups(['get-room', 'publish-mercure'])]
     private Collection $players;
