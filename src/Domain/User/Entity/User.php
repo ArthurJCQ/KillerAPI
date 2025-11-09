@@ -22,7 +22,7 @@ class User implements UserInterface
     #[ORM\Id]
     #[ORM\Column(type: 'integer', unique: true)]
     #[ORM\GeneratedValue(strategy: 'SEQUENCE')]
-    #[Groups(['get-user', 'me'])]
+    #[Groups(['get-user', 'me', 'create-user'])]
     private int $id;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
@@ -31,7 +31,7 @@ class User implements UserInterface
     private ?string $email = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['get-user', 'me', 'patch-user'])]
+    #[Groups(['get-user', 'me', 'patch-user', 'post-user', 'create-user'])]
     #[Assert\Length(
         min: 2,
         max: 30,
@@ -60,8 +60,14 @@ class User implements UserInterface
     private ?Room $room = null;
 
     #[ORM\Column(type: 'string', options: ['default' => self::DEFAULT_AVATAR])]
-    #[Groups(['get-user', 'me', 'patch-user'])]
+    #[Groups(['get-user', 'me', 'patch-user', 'post-user'])]
     private string $avatar = self::DEFAULT_AVATAR;
+
+    #[Groups(['create-user'])]
+    private string $token = '';
+
+    #[Groups(['create-user'])]
+    private string $refreshToken = '';
 
     public function __construct()
     {
@@ -210,6 +216,30 @@ class User implements UserInterface
     public function setAvatar(string $avatar): self
     {
         $this->avatar = $avatar;
+
+        return $this;
+    }
+
+    public function getToken(): string
+    {
+        return $this->token;
+    }
+
+    public function setToken(string $token): self
+    {
+        $this->token = $token;
+
+        return $this;
+    }
+
+    public function getRefreshToken(): string
+    {
+        return $this->refreshToken;
+    }
+
+    public function setRefreshToken(string $refreshToken): self
+    {
+        $this->refreshToken = $refreshToken;
 
         return $this;
     }

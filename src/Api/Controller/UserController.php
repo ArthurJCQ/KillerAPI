@@ -11,28 +11,67 @@ use App\Domain\Player\Entity\Player;
 use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\RoomRepository;
 use App\Domain\User\Entity\User;
+use App\Domain\User\UserRepository;
 use App\Infrastructure\Http\Cookie\CookieProvider;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
+use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
+use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
 #[Route('/user', format: 'json')]
-class UserController extends AbstractController
+class UserController extends AbstractController implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     public function __construct(
         private readonly PlayerRepository $playerRepository,
         private readonly RoomRepository $roomRepository,
+        private readonly UserRepository $userRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
         private readonly CreatePlayerUseCase $createPlayerUseCase,
+        private readonly JWTTokenManagerInterface $tokenManager,
+        private readonly RefreshTokenGeneratorInterface $refreshTokenGenerator,
+        private readonly RefreshTokenManagerInterface $refreshTokenManager,
     ) {
+    }
+
+    #[Route(name: 'create_user', methods: [Request::METHOD_POST])]
+    public function createUser(
+        #[MapRequestPayload(serializationContext: [AbstractNormalizer::GROUPS => 'post-user'])] User $user,
+    ): JsonResponse {
+        // Store the user
+        $this->userRepository->store($user);
+        $this->persistenceAdapter->flush();
+
+        // Generate JWT tokens for the User
+        $jwtToken = $this->tokenManager->create($user);
+        $refreshToken = $this->refreshTokenGenerator->createForUserWithTtl($user, 15552000);
+        $this->refreshTokenManager->save($refreshToken);
+
+        $user->setToken($jwtToken);
+        $user->setRefreshToken($refreshToken->getRefreshToken() ?? '');
+
+        $this->logger->info('Token and refresh token created for user {user_id}', ['user_id' => $user->getId()]);
+
+        return $this->json(
+            $user,
+            Response::HTTP_CREATED,
+            ['Location' => sprintf('/user/%s', $user->getId())],
+            [AbstractNormalizer::GROUPS => 'create-user'],
+        );
     }
 
     #[Route('/me', name: 'get_user_me', methods: [Request::METHOD_GET])]

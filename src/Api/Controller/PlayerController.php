@@ -24,9 +24,6 @@ use App\Domain\User\UserRepository;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Infrastructure\Security\Voters\PlayerVoter;
 use App\Infrastructure\SSE\SseInterface;
-use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
-use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
-use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,7 +31,6 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -54,9 +50,6 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly SseInterface $hub,
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
-        private readonly JWTTokenManagerInterface $tokenManager,
-        private readonly RefreshTokenGeneratorInterface $refreshTokenGenerator,
-        private readonly RefreshTokenManagerInterface $refreshTokenManager,
         private readonly RoomWorkflowTransitionInterface $roomStatusTransitionUseCase,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly Security $security,
@@ -65,44 +58,6 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         private readonly GuessKillerUseCase $guessKillerUseCase,
         private readonly ContestKillUseCase $contestKillUseCase,
     ) {
-    }
-
-    #[Route(name: 'create_player', methods: [Request::METHOD_POST])]
-    public function createPlayer(
-        #[MapRequestPayload(serializationContext: [AbstractNormalizer::GROUPS => 'post-player'])] Player $player,
-    ): JsonResponse {
-        // Check if user already exists (OAuth or existing session)
-        /** @var User|null $user */
-        $user = $this->getUser();
-
-        if ($user === null) {
-            // Create a new User for this Player (for backward compatibility with non-OAuth flows)
-            $user = new User();
-            $user->setName($player->getName());
-            $this->userRepository->store($user);
-        }
-
-        // Link the Player to the User
-        $player->setUser($user);
-        $this->playerRepository->store($player);
-        $this->persistenceAdapter->flush();
-
-        // Generate JWT tokens for the User (not the Player)
-        $jwtToken = $this->tokenManager->create($user);
-        $refreshToken = $this->refreshTokenGenerator->createForUserWithTtl($user, 15552000);
-        $this->refreshTokenManager->save($refreshToken);
-
-        $player->setToken($jwtToken);
-        $player->setRefreshToken($refreshToken->getRefreshToken() ?? '');
-
-        $this->logger->info('Token and refresh token created for user {user_id}', ['user_id' => $user->getId()]);
-
-        return $this->json(
-            $player,
-            Response::HTTP_CREATED,
-            ['Location' => sprintf('/player/%s', $player->getId())],
-            [AbstractNormalizer::GROUPS => 'create-player'],
-        );
     }
 
     #[Route('/{id}', name: 'get_player', methods: [Request::METHOD_GET])]

@@ -101,10 +101,6 @@ class Player implements RecipientInterface
     #[Groups(['me', 'get-player', 'get-room'])]
     private bool $isMaster = false;
 
-    private string $token = '';
-
-    private string $refreshToken = '';
-
     public function __construct()
     {
         $this->authoredMissions = new ArrayCollection();
@@ -275,32 +271,6 @@ class Player implements RecipientInterface
             $mission->setAuthor(null);
             $this->room?->removeMission($mission);
         }
-
-        return $this;
-    }
-
-    #[Groups(['create-player'])]
-    public function getToken(): string
-    {
-        return $this->token;
-    }
-
-    public function setToken(string $token): self
-    {
-        $this->token = $token;
-
-        return $this;
-    }
-
-    #[Groups(['create-player'])]
-    public function getRefreshToken(): string
-    {
-        return $this->refreshToken;
-    }
-
-    public function setRefreshToken(string $refreshToken): self
-    {
-        $this->refreshToken = $refreshToken;
 
         return $this;
     }
