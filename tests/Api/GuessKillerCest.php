@@ -24,8 +24,8 @@ class GuessKillerCest
         $I->sendGetAsJson('/user/me');
         /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
-        $johnTargetId = $response['target']['id'];
-        $johnId = $response['id'];
+        $johnTargetId = $response['currentPlayer']['target']['id'];
+        $johnId = $response['currentPlayer']['id'];
         /** @var string $targetName */
         $targetName = $I->grabFromRepository(Player::class, 'name', ['id' => $johnTargetId]);
 
@@ -78,7 +78,7 @@ class GuessKillerCest
         // The killer's killer should now have the eliminated player's target
         /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
-        assertNotNull($response['target'], 'Killer\'s killer should have a new target');
+        assertNotNull($response['currentPlayer']['target'], 'Killer\'s killer should have a new target');
     }
 
     public function testGuessKillerWrong(ApiTester $I): void
@@ -137,7 +137,7 @@ class GuessKillerCest
         // The killer should have John's target now
         /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
-        assertNotNull($response['target'], 'Killer should have received John\'s target');
+        assertNotNull($response['currentPlayer']['target'], 'Killer should have received John\'s target');
     }
 
     public function testGuessKillerWhenPlayerIsDead(ApiTester $I): void

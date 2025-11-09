@@ -777,7 +777,7 @@ class RoomControllerCest
         $I->sendGetAsJson('/user/me');
         /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
-        $adminTargetId = $response['target']['id'];
+        $adminTargetId = $response['currentPlayer']['target']['id'];
 
         // Request kill on Admin's target
         $I->sendPatch(sprintf('/player/%s/kill-target-request', $adminId));
@@ -812,7 +812,7 @@ class RoomControllerCest
         $I->sendGetAsJson('/user/me');
         /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
-        $secondTargetId = $response['target']['id'];
+        $secondTargetId = $response['currentPlayer']['target']['id'];
         $secondVictimName = $secondTargetId === $player1Id ? self::PLAYER_NAME : 'Doe';
 
         // Confirm the second kill

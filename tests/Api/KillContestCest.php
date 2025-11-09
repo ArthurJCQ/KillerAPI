@@ -24,8 +24,8 @@ class KillContestCest
         $I->sendGetAsJson('/user/me');
         /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
-        $adminTargetId = $response['target']['id'];
-        $adminTargetName = $response['target']['name'];
+        $adminTargetId = $response['currentPlayer']['target']['id'];
+        $adminTargetName = $response['currentPlayer']['target']['name'];
 
         $I->sendPatchAsJson(sprintf('/player/%s/kill-target-request', $adminId));
         $I->seeResponseCodeIs(200);
@@ -116,8 +116,8 @@ class KillContestCest
         $I->sendGetAsJson('/user/me');
         /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
-        $adminTargetId = $response['target']['id'];
-        $adminTargetName = $response['target']['name'];
+        $adminTargetId = $response['currentPlayer']['target']['id'];
+        $adminTargetName = $response['currentPlayer']['target']['name'];
 
         $I->sendPatchAsJson(sprintf('/player/%s/kill-target-request', $adminId));
         $I->seeResponseCodeIs(200);
