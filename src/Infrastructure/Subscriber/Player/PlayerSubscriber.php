@@ -38,9 +38,6 @@ readonly class PlayerSubscriber implements EventSubscriberInterface
 
         // Player leaving is considered as killed.
         $this->eventDispatcher->dispatch(new PlayerKilledEvent($player, $previousRoom));
-
-        // Reset player for next game, as he is leaving this one
-        $this->resetPlayerUseCase->execute($player);
     }
 
     public static function getSubscribedEvents(): array
