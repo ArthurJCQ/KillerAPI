@@ -103,6 +103,7 @@ class SecondaryMissionsAndSwitchingCest
         $originalMissionId = $response['currentPlayer']['assignedMission']['id'];
 
         // Switch mission
+        /** @var string $player1Id */
         $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_1]);
         $I->sendPatchAsJson(sprintf('/player/%s/switch-mission', $player1Id));
         $I->seeResponseCodeIs(200);

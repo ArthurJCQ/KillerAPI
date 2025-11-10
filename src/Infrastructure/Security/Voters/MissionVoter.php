@@ -8,7 +8,6 @@ use App\Domain\Mission\Entity\Mission;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\PlayerRepository;
 use App\Domain\User\Entity\User;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -18,10 +17,8 @@ class MissionVoter extends Voter
     public const string VIEW_MISSION = 'view_mission';
     public const string CREATE_MISSION = 'create_mission';
 
-    public function __construct(
-        private readonly Security $security,
-        private readonly PlayerRepository $playerRepository,
-    ) {
+    public function __construct(private readonly PlayerRepository $playerRepository)
+    {
     }
 
     protected function supports(string $attribute, mixed $subject): bool

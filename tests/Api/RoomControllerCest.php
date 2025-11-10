@@ -250,7 +250,11 @@ class RoomControllerCest
         $I->setJwtHeader($I, self::PLAYER_NAME);
 
         /** @var string $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME, 'room' => $room->getId()]);
+        $player1Id = $I->grabFromRepository(
+            Player::class,
+            'id',
+            ['name' => self::PLAYER_NAME, 'room' => $room->getId()],
+        );
         $I->sendPatchAsJson(sprintf('/player/%s', $player1Id), ['status' => PlayerStatus::KILLED->value]);
 
         $I->sendGetAsJson('/user/me');
@@ -325,6 +329,7 @@ class RoomControllerCest
             ],
         ]);
 
+        /** @var string $player1Id */
         $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
         $I->sendPatchAsJson(sprintf('/player/%s', $player1Id), ['status' => PlayerStatus::KILLED->value]);
 
@@ -355,6 +360,7 @@ class RoomControllerCest
             ],
         ]);
 
+        /** @var string $player2Id */
         $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
         $I->sendPatchAsJson(sprintf('/player/%s', $player2Id), ['status' => PlayerStatus::KILLED->value]);
 
@@ -455,6 +461,7 @@ class RoomControllerCest
             ],
         ]);
 
+        /** @var string $player1Id */
         $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
         $I->sendPatchAsJson(sprintf('/player/%s', $player1Id), ['status' => PlayerStatus::KILLED->value]);
 
@@ -478,6 +485,7 @@ class RoomControllerCest
             ],
         ]);
 
+        /** @var string $player2Id */
         $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
         $I->sendPatchAsJson(sprintf('/player/%s', $player2Id), ['status' => PlayerStatus::KILLED->value]);
 
@@ -514,9 +522,6 @@ class RoomControllerCest
                 'target' => null,
             ],
         ]);
-
-        /** @var string $adminId */
-        $adminId = $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin']);
 
         $I->setJwtHeader($I, 'Doe');
         $I->sendPatchAsJson('/user', ['room' => null]);
@@ -565,6 +570,8 @@ class RoomControllerCest
                 'assignedMission' => ['content' => 'mission'],
             ],
         ]);
+
+        /** @var string $player1Id */
         $player1Id = $I->grabFromRepository(
             Player::class,
             'id',
@@ -593,6 +600,7 @@ class RoomControllerCest
             ],
         ]);
 
+        /** @var string $player2Id */
         $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe', 'room' => $room2->getId()]);
         $I->sendPatchAsJson(sprintf('/player/%s', $player2Id), ['status' => PlayerStatus::KILLED->value]);
         $I->seeResponseCodeIsSuccessful();
@@ -769,6 +777,7 @@ class RoomControllerCest
 
         // Player John switches mission (costs 5 points)
         $I->setJwtHeader($I, self::PLAYER_NAME);
+        /** @var string $player1Id */
         $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME]);
         $I->sendPatch(sprintf('/player/%s/switch-mission', $player1Id));
         $I->seeResponseCodeIs(200);
@@ -791,6 +800,7 @@ class RoomControllerCest
         $I->sendGetAsJson('/user/me');
         /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
+        /** @var string $adminTargetId */
         $adminTargetId = $response['currentPlayer']['target']['id'];
 
         // Request kill on Admin's target

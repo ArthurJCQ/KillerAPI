@@ -8,9 +8,7 @@ use App\Api\Exception\KillerBadRequestHttpException;
 use App\Application\UseCase\Player\CreatePlayerUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
-use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;
-use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
 use App\Domain\Room\RoomWorkflowTransitionInterface;
@@ -134,12 +132,15 @@ class RoomController extends AbstractController
     public function deleteRoom(Room $room): JsonResponse
     {
         $roomCode = $room->getId();
-        $this->roomRepository->remove($room);
 
         foreach ($room->getPlayers() as $player) {
             $player->setRoom(null);
         }
 
+//        TODO: uncomment + orphanRemoval on room->players, when player score is saved in user at the end of the game
+//        $this->persistenceAdapter->flush();
+
+        $this->roomRepository->remove($room);
         $this->persistenceAdapter->flush();
 
         $this->hub->publish(

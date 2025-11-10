@@ -10,9 +10,9 @@ use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
 use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
-use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use League\OAuth2\Client\Provider\AppleResourceOwner;
 use League\OAuth2\Client\Provider\GoogleUser;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -54,7 +54,10 @@ class OAuthController extends AbstractController
             $email = $googleUser->getEmail();
             $name = $googleUser->getName();
 
-            // Find or create user
+            if (!is_string($googleId)) {
+                throw $this->createNotFoundException('Invalid Google ID');
+            }
+
             $user = $this->userRepository->findByGoogleId($googleId);
 
             if (!$user) {
@@ -65,7 +68,7 @@ class OAuthController extends AbstractController
 
                 if (!$user) {
                     $user = new User();
-                    $user->setName($name ?? 'User');
+                    $user->setName($name);
                     $user->setEmail($email);
                 }
 
@@ -88,7 +91,7 @@ class OAuthController extends AbstractController
                     'name' => $user->getName(),
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return $this->json(['error' => 'Authentication failed: ' . $e->getMessage()], Response::HTTP_UNAUTHORIZED);
         }
     }
@@ -116,7 +119,10 @@ class OAuthController extends AbstractController
             $lastName = $appleUser->getLastName();
             $name = trim(($firstName ?? '') . ' ' . ($lastName ?? '')) ?: 'User';
 
-            // Find or create user
+            if (!$appleId) {
+                throw $this->createNotFoundException('Invalid Apple ID');
+            }
+
             $user = $this->userRepository->findByAppleId($appleId);
 
             if (!$user) {
@@ -150,7 +156,7 @@ class OAuthController extends AbstractController
                     'name' => $user->getName(),
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return $this->json(['error' => 'Authentication failed: ' . $e->getMessage()], Response::HTTP_UNAUTHORIZED);
         }
     }

@@ -123,7 +123,11 @@ class PlayerControllerCest
         $I->seeResponseCodeIsSuccessful();
 
         /** @var string $playerId */
-        $playerId = $I->grabFromRepository(Player::class, 'id', ['name' => self::PLAYER_NAME, 'room' => ['id' => $roomCode]]);
+        $playerId = $I->grabFromRepository(
+            Player::class,
+            'id',
+            ['name' => self::PLAYER_NAME, 'room' => ['id' => $roomCode]],
+        );
         $I->sendDeleteAsJson(sprintf('/player/%s', $playerId));
         $I->dontSeeInRepository(Player::class, ['name' => self::PLAYER_NAME]);
 

@@ -11,7 +11,6 @@ use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Mission\Entity\Mission;
 use App\Domain\Mission\MissionRepository;
-use App\Domain\Player\Entity\Player;
 use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
 use App\Domain\User\Entity\User;

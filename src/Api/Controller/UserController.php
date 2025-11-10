@@ -109,7 +109,10 @@ class UserController extends AbstractController implements LoggerAwareInterface
                     AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
                 ],
             );
-            $userData['currentPlayer'] = json_decode($currentPlayerJson, true);
+
+            if (is_array($userData)) {
+                $userData['currentPlayer'] = json_decode($currentPlayerJson, true);
+            }
         }
 
         $response = new JsonResponse($userData, Response::HTTP_OK);
@@ -146,12 +149,12 @@ class UserController extends AbstractController implements LoggerAwareInterface
 
             if ($newRoomId !== null) {
                 $newRoom = $this->roomRepository->findOneBy(['id' => $newRoomId]);
-                $existingPlayer = $this->playerRepository->findPlayerByUserAndRoom($user, $newRoom);
 
                 if ($newRoom === null) {
-                    throw new NotFoundHttpException('ROOM_NOT_FOUND');
+                    throw $this->createNotFoundException('ROOM_NOT_FOUND');
                 }
 
+                $existingPlayer = $this->playerRepository->findPlayerByUserAndRoom($user, $newRoom);
                 $user->setRoom($newRoom);
 
                 // Create a new player for this user in the room if one doesn't exist

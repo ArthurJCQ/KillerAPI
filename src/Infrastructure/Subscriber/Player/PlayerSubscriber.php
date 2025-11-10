@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Infrastructure\Subscriber\Player;
 
 use App\Application\UseCase\Player\PlayerKilledUseCase;
-use App\Application\UseCase\Player\ResetPlayerUseCase;
 use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Player\Event\PlayerChangedRoomEvent;
 use App\Domain\Player\Event\PlayerKilledEvent;
@@ -17,7 +16,6 @@ readonly class PlayerSubscriber implements EventSubscriberInterface
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
         private PlayerKilledUseCase $playerKilledUseCase,
-        private ResetPlayerUseCase $resetPlayerUseCase,
     ) {
     }
 
