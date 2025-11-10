@@ -41,7 +41,7 @@ class Player implements RecipientInterface
     )]
     private string $name;
 
-    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'], inversedBy: 'players')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'players')]
     #[ORM\JoinColumn(name: 'user_id', nullable: true)]
     #[Groups(['get-player'])]
     #[MaxDepth(1)]
@@ -56,7 +56,7 @@ class Player implements RecipientInterface
     #[Groups(['get-player', 'create-player', 'get-room', 'me', 'patch-player', 'publish-mercure'])]
     private PlayerStatus $status = PlayerStatus::ALIVE;
 
-    #[ORM\ManyToOne(targetEntity: Room::class, cascade: ['persist'], inversedBy: 'players')]
+    #[ORM\ManyToOne(targetEntity: Room::class, inversedBy: 'players')]
     #[ORM\JoinColumn(name: 'room_players')]
     #[Groups(['get-player', 'create-player', 'me'])]
     #[MaxDepth(1)]

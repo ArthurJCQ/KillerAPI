@@ -28,4 +28,6 @@ interface PlayerRepository extends BaseRepository
      * Returns the player belonging to the user that is in the user's current room.
      */
     public function getCurrentUserPlayer(User $user): ?Player;
+
+    public function findPlayerByUserAndRoom(User $user, Room $room): ?Player;
 }

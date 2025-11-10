@@ -74,6 +74,6 @@ class MissionVoter extends Voter
             return true;
         }
 
-        return $this->security->isGranted('ROLE_MASTER', $player);
+        return $player->isMaster();
     }
 }

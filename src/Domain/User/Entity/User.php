@@ -56,7 +56,8 @@ class User implements UserInterface
     private ?string $appleId = null;
 
     #[ORM\ManyToOne(targetEntity: Room::class)]
-    #[ORM\JoinColumn(name: 'room_id', nullable: true, onDelete: 'SET NULL')]
+    #[ORM\JoinColumn(name: 'room_id', nullable: true)]
+    #[Groups(['me'])]
     private ?Room $room = null;
 
     #[ORM\Column(type: 'string', options: ['default' => self::DEFAULT_AVATAR])]

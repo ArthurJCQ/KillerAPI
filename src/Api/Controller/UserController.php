@@ -138,7 +138,7 @@ class UserController extends AbstractController implements LoggerAwareInterface
         }
 
         $data = $request->toArray();
-        $existingPlayer = $this->playerRepository->getCurrentUserPlayer($user);
+        $currentPlayer = $this->playerRepository->getCurrentUserPlayer($user);
 
         // Handle room change
         if (array_key_exists('room', $data)) {
@@ -146,6 +146,7 @@ class UserController extends AbstractController implements LoggerAwareInterface
 
             if ($newRoomId !== null) {
                 $newRoom = $this->roomRepository->findOneBy(['id' => $newRoomId]);
+                $existingPlayer = $this->playerRepository->findPlayerByUserAndRoom($user, $newRoom);
 
                 if ($newRoom === null) {
                     throw new NotFoundHttpException('ROOM_NOT_FOUND');
@@ -160,12 +161,14 @@ class UserController extends AbstractController implements LoggerAwareInterface
             }
 
             if ($newRoomId === null) {
-                $this->eventDispatcher->dispatch(new PlayerChangedRoomEvent(
-                    $existingPlayer,
-                    $existingPlayer->getRoom(),
-                ));
-
                 $user->setRoom(null);
+
+                if ($currentPlayer) {
+                    $this->eventDispatcher->dispatch(new PlayerChangedRoomEvent(
+                        $currentPlayer,
+                        $currentPlayer->getRoom(),
+                    ));
+                }
             }
 
             // Remove room from data to avoid serializer issues

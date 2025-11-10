@@ -50,6 +50,11 @@ final class DoctrinePlayerRepository extends DoctrineBaseRepository implements P
             return null;
         }
 
+        return $this->findPlayerByUserAndRoom($user, $room);
+    }
+
+    public function findPlayerByUserAndRoom(User $user, Room $room): ?Player
+    {
         return $this->findOneBy([
             'user' => $user,
             'room' => $room,

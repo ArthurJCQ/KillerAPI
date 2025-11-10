@@ -17,7 +17,7 @@ class MissionControllerCest
     public function testCreateMissionFailWithoutRoom(ApiTester $I): void
     {
         $I->sendPostAsJson('mission', ['content' => 'mission']);
-        $I->seeResponseCodeIs(400);
+        $I->seeResponseCodeIs(403);
     }
 
     public function testCreateMission(ApiTester $I): void

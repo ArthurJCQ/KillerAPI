@@ -10,6 +10,7 @@ use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;
+use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
 use App\Domain\Room\RoomWorkflowTransitionInterface;
@@ -134,6 +135,10 @@ class RoomController extends AbstractController
     {
         $roomCode = $room->getId();
         $this->roomRepository->remove($room);
+
+        foreach ($room->getPlayers() as $player) {
+            $player->setRoom(null);
+        }
 
         $this->persistenceAdapter->flush();
 

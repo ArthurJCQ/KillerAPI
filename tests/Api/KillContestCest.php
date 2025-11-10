@@ -201,6 +201,9 @@ class KillContestCest
         ]);
 
         // Now try the same with another player (Player2)
+        // Get Player1's killer using repository
+        /** @var int $player2Id */
+        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Player2', 'room' => $room->getId()]);
         $player2Entity = $I->grabEntityFromRepository(Player::class, ['id' => $player2Id]);
         $player2Killer = $playerRepository->findKiller($player2Entity);
         $player2KillerName = $player2Killer?->getName();
