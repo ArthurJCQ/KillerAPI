@@ -55,7 +55,7 @@ final class Version20251108113552 extends AbstractMigration
                 id,
                 name,
                 COALESCE(avatar, \'captain\'),
-                room_id,
+                room_players,
                 \'["ROLE_USER"]\'::json
             FROM player
         ');
