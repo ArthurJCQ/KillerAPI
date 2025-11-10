@@ -43,12 +43,41 @@ final class Version20251108113552 extends AbstractMigration
 
         // Add user_id column to player table
         $this->addSql('ALTER TABLE player ADD user_id INT DEFAULT NULL');
-        $this->addSql('ALTER TABLE player ADD CONSTRAINT FK_98197A65A76ED395 FOREIGN KEY (user_id) REFERENCES users (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
-        $this->addSql('CREATE INDEX IDX_98197A65A76ED395 ON player (user_id)');
 
         // Add isAdmin and isMaster columns to player table
         $this->addSql('ALTER TABLE player ADD is_admin BOOLEAN NOT NULL DEFAULT FALSE');
         $this->addSql('ALTER TABLE player ADD is_master BOOLEAN NOT NULL DEFAULT FALSE');
+
+        // Migrate existing player data to users
+        $this->addSql('
+            INSERT INTO users (id, name, avatar, room_id, roles)
+            SELECT
+                id,
+                name,
+                COALESCE(avatar, \'captain\'),
+                room_id,
+                \'["ROLE_USER"]\'::json
+            FROM player
+        ');
+
+        // Update users_id_seq to start after the highest player ID
+        $this->addSql('SELECT setval(\'users_id_seq\', (SELECT MAX(id) FROM users))');
+
+        // Link each player to their corresponding user (same ID)
+        $this->addSql('UPDATE player SET user_id = id');
+
+        // Set is_admin based on old ROLE_ADMIN role
+        $this->addSql('UPDATE player SET is_admin = true WHERE roles::jsonb @> \'["ROLE_ADMIN"]\'::jsonb');
+
+        // Set is_master for players with SPECTATING status
+        $this->addSql('UPDATE player SET is_master = true WHERE status = \'SPECTATING\'');
+
+        // Now add the foreign key constraint
+        $this->addSql('ALTER TABLE player ADD CONSTRAINT FK_98197A65A76ED395 FOREIGN KEY (user_id) REFERENCES users (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('CREATE INDEX IDX_98197A65A76ED395 ON player (user_id)');
+
+        // Make user_id NOT NULL after data migration
+        $this->addSql('ALTER TABLE player ALTER COLUMN user_id SET NOT NULL');
 
         // Remove roles column from player table (moved to user)
         $this->addSql('ALTER TABLE player DROP COLUMN roles');
@@ -59,6 +88,9 @@ final class Version20251108113552 extends AbstractMigration
         // Add roles column back to player table
         $this->addSql('ALTER TABLE player ADD roles JSON NOT NULL DEFAULT \'["ROLE_USER"]\'');
         $this->addSql('COMMENT ON COLUMN player.roles IS \'(DC2Type:json)\'');
+
+        // Migrate roles back from is_admin flag
+        $this->addSql('UPDATE player SET roles = \'["ROLE_ADMIN"]\'::json WHERE is_admin = true');
 
         // Remove isAdmin and isMaster columns from player table
         $this->addSql('ALTER TABLE player DROP COLUMN is_admin');
