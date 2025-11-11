@@ -41,6 +41,9 @@ jobs:
           export EXPO_DSN="${{ secrets.PROD_EXPO_DSN }}"
           export CADDY_MERCURE_JWT_SECRET="${{ secrets.PROD_MERCURE_JWT_SECRET }}"
           export DATABASE_URL="${{ secrets.PROD_DATABASE_URL }}"
+          export APPLE_CLIENT_SECRET="${{ secrets.PROD_APPLE_CLIENT_SECRET }}"
+          export APPLE_KEY_FILE_ID="${{ secrets.PROD_APPLE_KEY_FILE_ID }}"
+          export APPLE_TEAM_ID="${{ secrets.PROD_APPLE_TEAM_ID }}"
           export TAG_NAME="${{ steps.tag.outputs.TAG_NAME }}"
           EOF
 
@@ -80,6 +83,9 @@ jobs:
             EXPO_DSN="$EXPO_DSN" \
             CADDY_MERCURE_JWT_SECRET="$CADDY_MERCURE_JWT_SECRET" \
             DATABASE_URL="$DATABASE_URL" \
+            APPLE_CLIENT_SECRET="$APPLE_CLIENT_SECRET" \
+            APPLE_KEY_FILE_ID="$APPLE_KEY_FILE_ID" \
+            APPLE_TEAM_ID="$APPLE_TEAM_ID" \
             docker compose -f compose.prod.yaml build php
 
             # Arrêter les conteneurs existants
@@ -96,6 +102,9 @@ jobs:
             EXPO_DSN="$EXPO_DSN" \
             CADDY_MERCURE_JWT_SECRET="$CADDY_MERCURE_JWT_SECRET" \
             DATABASE_URL="$DATABASE_URL" \
+            APPLE_CLIENT_SECRET="$APPLE_CLIENT_SECRET" \
+            APPLE_KEY_FILE_ID="$APPLE_KEY_FILE_ID" \
+            APPLE_TEAM_ID="$APPLE_TEAM_ID" \
             docker compose -f compose.prod.yaml up -d --wait --force-recreate --no-deps php
           
             # Attendre que les conteneurs soient prêts

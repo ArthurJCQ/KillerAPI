@@ -41,7 +41,7 @@ class RoomChangeAdminTest extends Unit
             ->shouldBeCalledOnce()
             ->willReturn(new ArrayCollection([$adminPlayer->reveal(), $regularPlayer->reveal()]));
         $room->setAdmin($regularPlayer)->shouldBeCalledOnce();
-        $regularPlayer->setRoles(['ROLE_ADMIN'])->shouldBeCalledOnce();
+        $regularPlayer->setIsAdmin(true)->shouldBeCalledOnce();
 
         $adminPlayer->getId()->shouldBeCalled()->willReturn(1);
         $regularPlayer->getId()->shouldBeCalled()->willReturn(2);

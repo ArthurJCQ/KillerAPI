@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Api\Controller;
 
 use App\Api\Exception\KillerBadRequestHttpException;
-use App\Application\UseCase\Player\ChangeRoomUseCase;
+use App\Application\UseCase\Player\CreatePlayerUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
-use App\Domain\Player\Entity\Player;
 use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
 use App\Domain\Room\RoomWorkflowTransitionInterface;
+use App\Domain\User\Entity\User;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Infrastructure\Security\Voters\RoomVoter;
 use App\Infrastructure\SSE\SseInterface;
@@ -29,7 +29,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 #[Route('/room', format: 'json')]
 class RoomController extends AbstractController
 {
-    public const IS_GAME_MASTERED_ROOM = 'isGameMastered';
+    public const string IS_GAME_MASTERED_ROOM = 'isGameMastered';
 
     public function __construct(
         private readonly RoomRepository $roomRepository,
@@ -38,7 +38,7 @@ class RoomController extends AbstractController
         private readonly SseInterface $hub,
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
-        private readonly ChangeRoomUseCase $changeRoomUseCase,
+        private readonly CreatePlayerUseCase $createPlayerUseCase,
     ) {
     }
 
@@ -46,19 +46,29 @@ class RoomController extends AbstractController
     #[IsGranted(RoomVoter::CREATE_ROOM, message: 'KILLER_CREATE_ROOM_UNAUTHORIZED')]
     public function createRoom(Request $request): JsonResponse
     {
-        /** @var Player $player */
-        $player = $this->getUser();
-        $room = (new Room())->setName(sprintf("%s's room", $player->getName()));
+        /** @var User|null $user */
+        $user = $this->getUser();
 
-        $this->changeRoomUseCase->execute($player, $room);
-        $player->setRoles(['ROLE_ADMIN']);
+        if ($user === null) {
+            throw $this->createNotFoundException('KILLER_USER_NOT_FOUND');
+        }
+
+        // Create the room first
+        $room = new Room()->setName(sprintf("%s's room", $user->getName()));
+
+        // Use CreatePlayerUseCase to create the player
+        $player = $this->createPlayerUseCase->execute($user, $room);
+        $player->setIsAdmin(true);
+
+        $room->addPlayer($player);
+        $user->setRoom($room);
 
         if ($request->getContent() !== '') {
             $data = $request->toArray();
 
             if (isset($data[self::IS_GAME_MASTERED_ROOM]) && $data[self::IS_GAME_MASTERED_ROOM]) {
                 $room->setIsGameMastered(true);
-                $player->setRoles(['ROLE_MASTER']);
+                $player->setIsMaster(true);
                 $player->setStatus(PlayerStatus::SPECTATING);
             }
         }
@@ -122,8 +132,15 @@ class RoomController extends AbstractController
     public function deleteRoom(Room $room): JsonResponse
     {
         $roomCode = $room->getId();
-        $this->roomRepository->remove($room);
 
+        foreach ($room->getPlayers() as $player) {
+            $player->setRoom(null);
+        }
+
+//        TODO: uncomment + orphanRemoval on room->players, when player score is saved in user at the end of the game
+//        $this->persistenceAdapter->flush();
+
+        $this->roomRepository->remove($room);
         $this->persistenceAdapter->flush();
 
         $this->hub->publish(

@@ -53,7 +53,7 @@ readonly class RoomChangeAdminUseCase implements RoomUseCase
     private function saveNewAdmin(Room $room, ?Player $newAdmin = null): void
     {
         $room->setAdmin($newAdmin);
-        $newAdmin?->setRoles(['ROLE_ADMIN']);
+        $newAdmin?->setIsAdmin(true);
 
         $this->persistenceAdapter->flush();
     }

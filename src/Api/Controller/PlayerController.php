@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Api\Controller;
 
 use App\Api\Exception\KillerBadRequestHttpException;
-use App\Application\UseCase\Player\ChangeRoomUseCase;
 use App\Application\UseCase\Player\ContestKillUseCase;
 use App\Application\UseCase\Player\GuessKillerUseCase;
 use App\Application\UseCase\Player\KillRequestOnTargetUseCase;
@@ -19,15 +18,10 @@ use App\Domain\Player\Event\PlayerKilledEvent;
 use App\Domain\Player\Event\PlayerUpdatedEvent;
 use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
-use App\Domain\Room\RoomRepository;
 use App\Domain\Room\RoomWorkflowTransitionInterface;
-use App\Infrastructure\Http\Cookie\CookieProvider;
 use App\Infrastructure\Persistence\PersistenceAdapterInterface;
 use App\Infrastructure\Security\Voters\PlayerVoter;
 use App\Infrastructure\SSE\SseInterface;
-use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
-use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
-use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -35,8 +29,6 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -51,79 +43,18 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
 
     public function __construct(
         private readonly PlayerRepository $playerRepository,
-        private readonly RoomRepository $roomRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly SseInterface $hub,
         private readonly KillerSerializerInterface $serializer,
         private readonly KillerValidatorInterface $validator,
-        private readonly JWTTokenManagerInterface $tokenManager,
-        private readonly RefreshTokenGeneratorInterface $refreshTokenGenerator,
-        private readonly RefreshTokenManagerInterface $refreshTokenManager,
         private readonly RoomWorkflowTransitionInterface $roomStatusTransitionUseCase,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly Security $security,
-        private readonly ChangeRoomUseCase $changeRoomUseCase,
         private readonly KillRequestOnTargetUseCase $killRequestOnTargetUseCase,
         private readonly SwitchMissionUseCase $switchMissionUseCase,
         private readonly GuessKillerUseCase $guessKillerUseCase,
         private readonly ContestKillUseCase $contestKillUseCase,
     ) {
-    }
-
-    #[Route(name: 'create_player', methods: [Request::METHOD_POST])]
-    public function createPlayer(
-        #[MapRequestPayload(serializationContext: [AbstractNormalizer::GROUPS => 'post-player'])] Player $player,
-    ): JsonResponse {
-        $this->playerRepository->store($player);
-        $this->persistenceAdapter->flush();
-
-        $jwtToken = $this->tokenManager->create($player);
-        $refreshToken = $this->refreshTokenGenerator->createForUserWithTtl($player, 15552000);
-        $this->refreshTokenManager->save($refreshToken);
-
-        $player->setToken($jwtToken);
-        $player->setRefreshToken($refreshToken->getRefreshToken() ?? '');
-
-        $this->logger->info('Token and refresh token created for player {user_id}', ['user_id' => $player->getId()]);
-
-        return $this->json(
-            $player,
-            Response::HTTP_CREATED,
-            ['Location' => sprintf('/player/%s', $player->getUserIdentifier())],
-            [AbstractNormalizer::GROUPS => 'create-player'],
-        );
-    }
-
-    #[Route('/me', name: 'me', methods: [Request::METHOD_GET])]
-    public function me(): JsonResponse
-    {
-        $player = $this->getUser();
-
-        if ($player === null) {
-            throw new NotFoundHttpException('KILLER_PLAYER_NOT_FOUND');
-        }
-
-        $response = $this->json(
-            $player,
-            Response::HTTP_OK,
-            [],
-            [
-                AbstractNormalizer::GROUPS => 'me',
-                AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
-            ],
-        );
-
-        $response->headers->setCookie(CookieProvider::getJwtCookie(
-            ['mercure', ['subscribe' => ['*']]],
-            is_string($this->getParameter('mercure.jwt_secret')) ? $this->getParameter('mercure.jwt_secret') : '',
-            'mercureAuthorization',
-            null,
-            'Lax',
-            is_string($this->getParameter('mercure.path')) ? $this->getParameter('mercure.path') : '',
-            is_string($this->getParameter('mercure.domain')) ? $this->getParameter('mercure.domain') : '',
-        ));
-
-        return $response;
     }
 
     #[Route('/{id}', name: 'get_player', methods: [Request::METHOD_GET])]
@@ -146,17 +77,9 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
             throw new UnauthorizedHttpException('KILLER_CAN_NOT_UPDATE_PLAYER_ROLE');
         }
 
-        // If room is about to be updated, keep the reference of the previous one
-        $previousRoom = $player->getRoom();
-
+        // Players cannot change their room - use UserController to change user's room context
         if (array_key_exists('room', $data)) {
-            $newRoom = $this->roomRepository->find($data['room']);
-
-            if (!$newRoom && $data['room'] !== null) {
-                throw $this->createNotFoundException('ROOM_NOT_FOUND');
-            }
-
-            $this->changeRoomUseCase->execute($player, $newRoom);
+            throw new KillerBadRequestHttpException('PLAYER_CANNOT_CHANGE_ROOM');
         }
 
         if (isset($data['status']) && $data['status'] === PlayerStatus::KILLED->value) {
@@ -182,19 +105,12 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         $this->eventDispatcher->dispatch(new PlayerUpdatedEvent($player));
 
         $this->hub->publish(
-            sprintf('room/%s', $player->getRoom()),
+            sprintf('room/%s', $player->getRoom()?->getId()),
             $this->serializer->serialize(
                 (object) $player->getRoom(),
                 [AbstractNormalizer::GROUPS => 'publish-mercure'],
             ),
         );
-
-        if ($previousRoom !== $player->getRoom()) {
-            $this->hub->publish(
-                sprintf('room/%s', $previousRoom),
-                $this->serializer->serialize((object) $previousRoom, [AbstractNormalizer::GROUPS => 'publish-mercure']),
-            );
-        }
 
         $this->logger->info('Event mercure sent: post-PATCH for player {user_id}', ['user_id' => $player->getId()]);
 
@@ -218,7 +134,6 @@ class PlayerController extends AbstractController implements LoggerAwareInterfac
         );
         $this->logger->info('Event mercure sent: post-DELETE for player {user_id}', ['user_id' => $player->getId()]);
 
-        $this->security->logout(validateCsrfToken: false);
         $this->playerRepository->remove($player);
         $this->persistenceAdapter->flush();
 

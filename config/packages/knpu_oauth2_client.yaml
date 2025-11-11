@@ -1,0 +1,21 @@
+knpu_oauth2_client:
+    clients:
+        google:
+            type: google
+            client_id: '%env(GOOGLE_CLIENT_ID)%'
+            client_secret: '%env(GOOGLE_CLIENT_SECRET)%'
+            redirect_route: oauth_google_check
+            redirect_params: {}
+            use_state: true
+
+        apple:
+            type: generic
+            provider_class: League\OAuth2\Client\Provider\Apple
+            client_id: '%env(APPLE_CLIENT_ID)%'
+            client_secret: '%env(APPLE_CLIENT_SECRET)%'
+            redirect_route: oauth_apple_check
+            redirect_params: {}
+            provider_options:
+                teamId: '%env(APPLE_TEAM_ID)%'
+                keyFileId: '%env(APPLE_KEY_FILE_ID)%'
+                keyFilePath: '%env(APPLE_KEY_FILE_PATH)%'

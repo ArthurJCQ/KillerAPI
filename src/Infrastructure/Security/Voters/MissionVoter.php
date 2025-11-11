@@ -6,17 +6,18 @@ namespace App\Infrastructure\Security\Voters;
 
 use App\Domain\Mission\Entity\Mission;
 use App\Domain\Player\Entity\Player;
-use Symfony\Bundle\SecurityBundle\Security;
+use App\Domain\Player\PlayerRepository;
+use App\Domain\User\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class MissionVoter extends Voter
 {
-    public const EDIT_MISSION = 'edit_mission';
-    public const VIEW_MISSION = 'view_mission';
-    public const CREATE_MISSION = 'create_mission';
+    public const string EDIT_MISSION = 'edit_mission';
+    public const string VIEW_MISSION = 'view_mission';
+    public const string CREATE_MISSION = 'create_mission';
 
-    public function __construct(private readonly Security $security)
+    public function __construct(private readonly PlayerRepository $playerRepository)
     {
     }
 
@@ -31,16 +32,22 @@ class MissionVoter extends Voter
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
-        $player = $token->getUser();
+        $user = $token->getUser();
 
-        if (!$player instanceof Player) {
+        if (!$user instanceof User) {
+            return false;
+        }
+
+        $currentPlayer = $this->playerRepository->getCurrentUserPlayer($user);
+
+        if ($currentPlayer === null) {
             return false;
         }
 
         return match ($attribute) {
-            self::VIEW_MISSION => $this->canView($subject, $player),
-            self::EDIT_MISSION => $this->canEdit($subject, $player),
-            self::CREATE_MISSION => $this->canPost($player),
+            self::VIEW_MISSION => $this->canView($subject, $currentPlayer),
+            self::EDIT_MISSION => $this->canEdit($subject, $currentPlayer),
+            self::CREATE_MISSION => $this->canPost($currentPlayer),
             default => throw new \LogicException('This code should not be reached'),
         };
     }
@@ -64,6 +71,6 @@ class MissionVoter extends Voter
             return true;
         }
 
-        return $this->security->isGranted('ROLE_MASTER', $player);
+        return $player->isMaster();
     }
 }

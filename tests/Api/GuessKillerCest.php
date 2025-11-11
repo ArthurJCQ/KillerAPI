@@ -21,19 +21,19 @@ class GuessKillerCest
 
         // Get John's killer ID
         $I->setJwtHeader($I, 'John');
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
-        $johnTargetId = $response['target']['id'];
-        $johnId = $response['id'];
+        $johnTargetId = $response['currentPlayer']['target']['id'];
+        $johnId = $response['currentPlayer']['id'];
         /** @var string $targetName */
         $targetName = $I->grabFromRepository(Player::class, 'name', ['id' => $johnTargetId]);
 
         $I->setJwtHeader($I, $targetName);
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
 
         // Verify Target starts with 0 points
-        $I->seeResponseContainsJson(['points' => 0]);
+        $I->seeResponseContainsJson(['currentPlayer' => ['points' => 0]]);
 
         // Target guesses his killer correctly
         $I->sendPatchAsJson(sprintf('/player/%s/guess-killer', $johnTargetId), [
@@ -42,19 +42,23 @@ class GuessKillerCest
         $I->seeResponseCodeIs(200);
 
         // Verify Target now has 5 points
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'points' => 5,
-            'status' => PlayerStatus::ALIVE->value,
+            'currentPlayer' => [
+                'points' => 5,
+                'status' => PlayerStatus::ALIVE->value,
+            ],
         ]);
 
         // Verify John has been eliminated
         $I->setJwtHeader($I, 'John');
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'status' => PlayerStatus::KILLED->value,
-            'target' => null,
-            'assignedMission' => null,
+            'currentPlayer' => [
+                'status' => PlayerStatus::KILLED->value,
+                'target' => null,
+                'assignedMission' => null,
+            ],
         ]);
 
         $newKillerName = $johnTargetId === $data['adminId'] ? 'Doe' : 'Admin';
@@ -69,12 +73,12 @@ class GuessKillerCest
 
         $killersKillerName = $killersKiller->getName();
         $I->setJwtHeader($I, $killersKillerName);
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
 
         // The killer's killer should now have the eliminated player's target
         /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
-        assertNotNull($response['target'], 'Killer\'s killer should have a new target');
+        assertNotNull($response['currentPlayer']['target'], 'Killer\'s killer should have a new target');
     }
 
     public function testGuessKillerWrong(ApiTester $I): void
@@ -99,8 +103,8 @@ class GuessKillerCest
 
         // Verify John starts with 0 points
         $I->setJwtHeader($I, 'John');
-        $I->sendGetAsJson('/player/me');
-        $I->seeResponseContainsJson(['points' => 0]);
+        $I->sendGetAsJson('/user/me');
+        $I->seeResponseContainsJson(['currentPlayer' => ['points' => 0]]);
 
         // John guesses wrong
         $I->sendPatchAsJson(sprintf('/player/%s/guess-killer', $data['johnId']), [
@@ -109,27 +113,31 @@ class GuessKillerCest
         $I->seeResponseCodeIs(200);
 
         // Verify John is now eliminated
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'points' => 0,
-            'status' => PlayerStatus::KILLED->value,
-            'target' => null,
-            'assignedMission' => null,
+            'currentPlayer' => [
+                'points' => 0,
+                'status' => PlayerStatus::KILLED->value,
+                'target' => null,
+                'assignedMission' => null,
+            ],
         ]);
 
         // Verify John's actual killer received no points but got John's target
         $killerName = $johnKillerId === $data['adminId'] ? 'Admin' : 'Doe';
         $I->setJwtHeader($I, $killerName);
-        $I->sendGetAsJson('/player/me');
+        $I->sendGetAsJson('/user/me');
         $I->seeResponseContainsJson([
-            'points' => 0,
-            'status' => PlayerStatus::ALIVE->value,
+            'currentPlayer' => [
+                'points' => 0,
+                'status' => PlayerStatus::ALIVE->value,
+            ],
         ]);
 
         // The killer should have John's target now
         /** @var array $response */
         $response = json_decode($I->grabResponse(), true);
-        assertNotNull($response['target'], 'Killer should have received John\'s target');
+        assertNotNull($response['currentPlayer']['target'], 'Killer should have received John\'s target');
     }
 
     public function testGuessKillerWhenPlayerIsDead(ApiTester $I): void
@@ -160,13 +168,13 @@ class GuessKillerCest
 
         // Join room with player1
         $I->createPlayerAndUpdateHeaders($I, 'John');
-        /** @var int $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'John']);
-        $I->sendPatchAsJson(sprintf('/player/%d', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
 
         // Try to guess killer when game is not started
+        /** @var int $player1Id */
+        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'John', 'room' => $room->getId()]);
         /** @var int $adminId */
-        $adminId = $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin']);
+        $adminId = $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin', 'room' => $room->getId()]);
         $I->sendPatchAsJson(sprintf('/player/%d/guess-killer', $player1Id), [
             'guessedPlayerId' => $adminId,
         ]);
@@ -196,21 +204,15 @@ class GuessKillerCest
 
         // Create 3 more players
         $I->createPlayerAndUpdateHeaders($I, 'Player1');
-        /** @var int $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Player1']);
-        $I->sendPatchAsJson(sprintf('/player/%s', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Mission 2']);
 
         $I->createPlayerAndUpdateHeaders($I, 'Player2');
-        /** @var int $player2Id */
-        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Player2']);
-        $I->sendPatchAsJson(sprintf('/player/%s', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Mission 3']);
 
         $I->createPlayerAndUpdateHeaders($I, 'Player3');
-        /** @var int $player3Id */
-        $player3Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Player3']);
-        $I->sendPatchAsJson(sprintf('/player/%s', $player3Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Mission 4']);
 
         // Start the game
@@ -220,6 +222,8 @@ class GuessKillerCest
 
         // Player1 guesses their killer correctly
         $I->setJwtHeader($I, 'Player1');
+        /** @var int $player1Id */
+        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Player1', 'room' => $room->getId()]);
         $player1Entity = $I->grabEntityFromRepository(Player::class, ['id' => $player1Id]);
         /** @var PlayerRepository $playerRepository */
         $playerRepository = $I->grabService(PlayerRepository::class);
@@ -232,8 +236,8 @@ class GuessKillerCest
         $I->seeResponseCodeIs(200);
 
         // Verify Player1 has 5 points
-        $I->sendGetAsJson('/player/me');
-        $I->seeResponseContainsJson(['points' => 5]);
+        $I->sendGetAsJson('/user/me');
+        $I->seeResponseContainsJson(['currentPlayer' => ['points' => 5]]);
 
         // Verify the chain still works - Player1's killer is eliminated
         $killerEntity = $I->grabEntityFromRepository(Player::class, ['id' => $player1KillerId]);
@@ -273,16 +277,12 @@ class GuessKillerCest
 
         // Join room with player1 (John)
         $I->createPlayerAndUpdateHeaders($I, 'John');
-        /** @var int $player1Id */
-        $player1Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'John']);
-        $I->sendPatchAsJson(sprintf('/player/%d', $player1Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Mission 2']);
 
         // Join room with player2 (Doe)
         $I->createPlayerAndUpdateHeaders($I, 'Doe');
-        /** @var int $player2Id */
-        $player2Id = $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe']);
-        $I->sendPatchAsJson(sprintf('/player/%d', $player2Id), ['room' => $room->getId()]);
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
         $I->sendPostAsJson('/mission', ['content' => 'Mission 3']);
 
         // Start the game with admin
@@ -292,9 +292,9 @@ class GuessKillerCest
 
         return [
             'room' => $room,
-            'adminId' => $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin']),
-            'johnId' => $player1Id,
-            'doeId' => $player2Id,
+            'adminId' => $I->grabFromRepository(Player::class, 'id', ['name' => 'Admin', 'room' => $room->getId()]),
+            'johnId' => $I->grabFromRepository(Player::class, 'id', ['name' => 'John', 'room' => $room->getId()]),
+            'doeId' => $I->grabFromRepository(Player::class, 'id', ['name' => 'Doe', 'room' => $room->getId()]),
         ];
     }
 }
