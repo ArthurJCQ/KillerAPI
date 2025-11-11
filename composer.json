@@ -14,7 +14,7 @@
         "doctrine/annotations": "^2.0",
         "doctrine/doctrine-bundle": "^2.2",
         "doctrine/doctrine-migrations-bundle": "^3.2",
-        "doctrine/orm": "^2.12",
+        "doctrine/orm": "^3.5",
         "gesdinet/jwt-refresh-token-bundle": "^1.5",
         "knpuniversity/oauth2-client-bundle": "^2.19",
         "lcobucci/jwt": "^5.6",
