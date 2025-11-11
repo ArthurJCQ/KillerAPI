@@ -20,7 +20,7 @@
         "lcobucci/jwt": "^5.6",
         "league/oauth2-client": "^2.8",
         "league/oauth2-google": "^4.0",
-        "lexik/jwt-authentication-bundle": "^2.16",
+        "lexik/jwt-authentication-bundle": "^3.1",
         "marvin255/random-string-generator": "^v3.2.4",
         "nelmio/cors-bundle": "^2.3",
         "patrickbussmann/oauth2-apple": "^0.3.0",
