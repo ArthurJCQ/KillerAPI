@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Security\Voters;
 
 use App\Domain\Player\Entity\Player;
+use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
 use App\Domain\User\Entity\User;
@@ -16,6 +17,7 @@ class RoomVoter extends Voter
     public const string EDIT_ROOM = 'edit_room';
     public const string VIEW_ROOM = 'view_room';
     public const string CREATE_ROOM = 'create_room';
+    public const string SPECTATE_ROOM = 'spectate_room';
 
     public function __construct(
         private readonly PlayerRepository $playerRepository,
@@ -24,7 +26,7 @@ class RoomVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        if (!in_array($attribute, [self::EDIT_ROOM, self::VIEW_ROOM, self::CREATE_ROOM], true)) {
+        if (!in_array($attribute, [self::EDIT_ROOM, self::VIEW_ROOM, self::CREATE_ROOM, self::SPECTATE_ROOM], true)) {
             return false;
         }
 
@@ -49,6 +51,7 @@ class RoomVoter extends Voter
             self::VIEW_ROOM => $currentPlayer && $this->canView($subject, $currentPlayer),
             self::EDIT_ROOM => $currentPlayer && $this->canEdit($subject, $currentPlayer),
             self::CREATE_ROOM => !$currentPlayer && $this->canCreate($currentPlayer),
+            self::SPECTATE_ROOM => $currentPlayer && $this->canSpectate($subject, $currentPlayer),
             default => throw new \LogicException('This code should not be reached'),
         };
     }
@@ -67,5 +70,13 @@ class RoomVoter extends Voter
     private function canCreate(?Player $player = null): bool
     {
         return !$player?->getRoom();
+    }
+
+    private function canSpectate(mixed $room, Player $player): bool
+    {
+        return $room instanceof Room
+            && $room->isAllowSpectators()
+            && $player->getRoom() === $room
+            && $player->getStatus() === PlayerStatus::SPECTATING;
     }
 }
