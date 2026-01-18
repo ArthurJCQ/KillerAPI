@@ -28,11 +28,20 @@ class Player implements RecipientInterface
     #[ORM\Id]
     #[ORM\Column(type: 'integer', unique: true)]
     #[ORM\GeneratedValue(strategy: 'SEQUENCE')]
-    #[Groups(['get-player', 'create-player', 'get-room', 'get-mission', 'me', 'publish-mercure'])]
+    #[Groups(['get-player', 'create-player', 'get-room', 'get-mission', 'me', 'publish-mercure', 'get-room-spectator'])]
     private int $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['get-player', 'create-player', 'get-room', 'me', 'post-player', 'patch-player', 'publish-mercure'])]
+    #[Groups([
+        'get-player',
+        'create-player',
+        'get-room',
+        'me',
+        'post-player',
+        'patch-player',
+        'publish-mercure',
+        'get-room-spectator',
+    ])]
     #[Assert\Length(
         min: 2,
         max: 30,
@@ -53,7 +62,15 @@ class Player implements RecipientInterface
         enumType: PlayerStatus::class,
         options: ['default' => PlayerStatus::ALIVE],
     )]
-    #[Groups(['get-player', 'create-player', 'get-room', 'me', 'patch-player', 'publish-mercure'])]
+    #[Groups([
+        'get-player',
+        'create-player',
+        'get-room',
+        'me',
+        'patch-player',
+        'publish-mercure',
+        'get-room-spectator',
+    ])]
     private PlayerStatus $status = PlayerStatus::ALIVE;
 
     #[ORM\ManyToOne(targetEntity: Room::class, inversedBy: 'players')]
@@ -78,7 +95,7 @@ class Player implements RecipientInterface
     private ?Mission $assignedMission = null;
 
     #[ORM\Column(type: 'string', options: ['default' => self::DEFAULT_AVATAR])]
-    #[Groups(['me', 'get-room', 'post-player', 'create-player', 'get-player', 'patch-player'])]
+    #[Groups(['me', 'get-room', 'post-player', 'create-player', 'get-player', 'patch-player', 'get-room-spectator'])]
     private string $avatar = self::DEFAULT_AVATAR;
 
     #[ORM\Column(type: 'string', options: ['default' => ''])]
@@ -86,7 +103,7 @@ class Player implements RecipientInterface
     private string $expoPushToken = '';
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
-    #[Groups(['me', 'get-player', 'get-room'])]
+    #[Groups(['me', 'get-player', 'get-room', 'get-room-spectator'])]
     private int $points = 0;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
@@ -94,11 +111,11 @@ class Player implements RecipientInterface
     private bool $missionSwitchUsed = false;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    #[Groups(['me', 'get-player', 'get-room'])]
+    #[Groups(['me', 'get-player', 'get-room', 'get-room-spectator'])]
     private bool $isAdmin = false;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    #[Groups(['me', 'get-player', 'get-room'])]
+    #[Groups(['me', 'get-player', 'get-room', 'get-room-spectator'])]
     private bool $isMaster = false;
 
     public function __construct()

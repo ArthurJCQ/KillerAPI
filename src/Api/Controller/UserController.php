@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Api\Controller;
 
+use App\Api\Exception\KillerBadRequestHttpException;
 use App\Application\UseCase\Player\CreatePlayerUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
+use App\Domain\Player\Enum\PlayerStatus;
 use App\Domain\Player\Event\PlayerChangedRoomEvent;
 use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\RoomRepository;
@@ -145,6 +147,7 @@ class UserController extends AbstractController implements LoggerAwareInterface
         // Handle room change
         if (array_key_exists('room', $data)) {
             $newRoomId = $data['room'];
+            $joinAsSpectator = filter_var($data['spectate'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
             if ($newRoomId !== null) {
                 $newRoom = $this->roomRepository->findOneBy(['id' => $newRoomId]);
@@ -153,12 +156,21 @@ class UserController extends AbstractController implements LoggerAwareInterface
                     throw $this->createNotFoundException('ROOM_NOT_FOUND');
                 }
 
+                // Validate spectator access
+                if ($joinAsSpectator && !$newRoom->isAllowSpectators()) {
+                    throw new KillerBadRequestHttpException('ROOM_SPECTATORS_NOT_ALLOWED');
+                }
+
                 $existingPlayer = $this->playerRepository->findPlayerByUserAndRoom($user, $newRoom);
                 $user->setRoom($newRoom);
 
                 // Create a new player for this user in the room if one doesn't exist
                 if ($existingPlayer === null) {
-                    $this->createPlayerUseCase->execute($user, $newRoom);
+                    $player = $this->createPlayerUseCase->execute($user, $newRoom);
+
+                    if ($joinAsSpectator) {
+                        $player->setStatus(PlayerStatus::SPECTATING);
+                    }
                 }
             }
 

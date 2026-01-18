@@ -28,26 +28,26 @@ class Room
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(RoomIdGenerator::class)]
     #[Assert\Length(exactly: 5)]
-    #[Groups(['get-player', 'get-room', 'get-mission', 'me', 'publish-mercure', 'patch-player'])]
+    #[Groups(['get-player', 'get-room', 'get-mission', 'me', 'publish-mercure', 'patch-player', 'get-room-spectator'])]
     private string $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['get-room', 'me', 'patch-room', 'publish-mercure'])]
+    #[Groups(['get-room', 'me', 'patch-room', 'publish-mercure', 'get-room-spectator'])]
     #[Assert\Length(min: 2, max: 50, minMessage: 'TOO_SHORT_CONTENT', maxMessage: 'TOO_LONG_CONTENT')]
     private string $name;
 
     #[ORM\Column(type: 'string', length: 255, options: ['default' => self::PENDING])]
-    #[Groups(['get-room', 'me', 'publish-mercure'])]
+    #[Groups(['get-room', 'me', 'publish-mercure', 'get-room-spectator'])]
     private string $status = self::PENDING;
 
     /** @var Collection<int, Player> */
     #[ORM\OneToMany(mappedBy: 'room', targetEntity: Player::class, fetch: 'EAGER')]
     #[Assert\Unique]
-    #[Groups(['get-room', 'publish-mercure'])]
+    #[Groups(['get-room', 'publish-mercure', 'get-room-spectator'])]
     private Collection $players;
 
     #[ORM\OneToOne(targetEntity: Player::class)]
-    #[Groups(['get-room', 'publish-mercure'])]
+    #[Groups(['get-room', 'publish-mercure', 'get-room-spectator'])]
     private ?Player $admin = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
@@ -69,12 +69,16 @@ class Room
     private Collection $secondaryMissions;
 
     #[ORM\ManyToOne(targetEntity: Player::class)]
-    #[Groups(['get-room', 'publish-mercure'])]
+    #[Groups(['get-room', 'publish-mercure', 'get-room-spectator'])]
     private ?Player $winner = null;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    #[Groups(['get-room', 'publish-mercure', 'me'])]
+    #[Groups(['get-room', 'publish-mercure', 'me', 'get-room-spectator'])]
     private bool $isGameMastered = false;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    #[Groups(['get-room', 'patch-room', 'publish-mercure', 'get-room-spectator'])]
+    private bool $allowSpectators = false;
 
     public function __construct()
     {
@@ -291,6 +295,18 @@ class Room
         $this->removeSecondaryMission($mission);
 
         return $mission;
+    }
+
+    public function isAllowSpectators(): bool
+    {
+        return $this->allowSpectators;
+    }
+
+    public function setAllowSpectators(bool $allowSpectators): self
+    {
+        $this->allowSpectators = $allowSpectators;
+
+        return $this;
     }
 
     public function __toString(): string

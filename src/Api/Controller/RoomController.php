@@ -9,6 +9,7 @@ use App\Application\UseCase\Player\CreatePlayerUseCase;
 use App\Domain\KillerSerializerInterface;
 use App\Domain\KillerValidatorInterface;
 use App\Domain\Player\Enum\PlayerStatus;
+use App\Domain\Player\PlayerRepository;
 use App\Domain\Room\Entity\Room;
 use App\Domain\Room\RoomRepository;
 use App\Domain\Room\RoomWorkflowTransitionInterface;
@@ -33,6 +34,7 @@ class RoomController extends AbstractController
 
     public function __construct(
         private readonly RoomRepository $roomRepository,
+        private readonly PlayerRepository $playerRepository,
         private readonly PersistenceAdapterInterface $persistenceAdapter,
         private readonly RoomWorkflowTransitionInterface $roomStatusTransitionUseCase,
         private readonly SseInterface $hub,
@@ -83,7 +85,18 @@ class RoomController extends AbstractController
     #[IsGranted(RoomVoter::VIEW_ROOM, subject: 'room', message: 'KILLER_VIEW_ROOM_UNAUTHORIZED')]
     public function getRoom(Room $room): JsonResponse
     {
-        return $this->json($room, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => 'get-room']);
+        /** @var User|null $user */
+        $user = $this->getUser();
+        $currentPlayer = $user !== null ? $this->playerRepository->getCurrentUserPlayer($user) : null;
+
+        // Spectators get limited view (game masters see everything despite having SPECTATING status)
+        $isSpectator = $currentPlayer !== null
+            && $currentPlayer->getStatus() === PlayerStatus::SPECTATING
+            && !$currentPlayer->isMaster();
+
+        $groups = $isSpectator ? ['get-room-spectator'] : ['get-room'];
+
+        return $this->json($room, Response::HTTP_OK, [], [AbstractNormalizer::GROUPS => $groups]);
     }
 
     #[Route('/{id}', name: 'patch_room', methods: [Request::METHOD_PATCH])]
