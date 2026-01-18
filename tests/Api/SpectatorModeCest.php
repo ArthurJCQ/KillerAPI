@@ -66,7 +66,7 @@ class SpectatorModeCest
         $I->createPlayerAndUpdateHeaders($I, 'Spectator');
         $I->sendPatchAsJson('/user', ['room' => $room->getId(), 'spectate' => true]);
         $I->seeResponseCodeIs(400);
-        $I->seeResponseContainsJson(['message' => 'ROOM_SPECTATORS_NOT_ALLOWED']);
+        $I->seeResponseContainsJson(['detail' => 'ROOM_SPECTATORS_NOT_ALLOWED']);
     }
 
     public function testSpectatorSeesLimitedRoomData(ApiTester $I): void
@@ -75,8 +75,6 @@ class SpectatorModeCest
         $I->createAdminAndUpdateHeaders($I);
         $I->sendPostAsJson('room');
         $I->sendPostAsJson('/mission', ['content' => 'Secret mission 1']);
-        $I->sendPostAsJson('/mission', ['content' => 'Secret mission 2']);
-        $I->sendPostAsJson('/mission', ['content' => 'Secret mission 3']);
 
         $room = $I->grabEntityFromRepository(Room::class, ['name' => 'Admin\'s room']);
 
@@ -86,9 +84,11 @@ class SpectatorModeCest
         // Add regular players
         $I->createPlayerAndUpdateHeaders($I, 'John');
         $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
+        $I->sendPostAsJson('/mission', ['content' => 'Secret mission 2']);
 
         $I->createPlayerAndUpdateHeaders($I, 'Jane');
         $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
+        $I->sendPostAsJson('/mission', ['content' => 'Secret mission 3']);
 
         // Start the game
         $I->setAdminJwtHeader($I);
@@ -144,17 +144,17 @@ class SpectatorModeCest
         $I->createAdminAndUpdateHeaders($I);
         $I->sendPostAsJson('room');
         $I->sendPostAsJson('/mission', ['content' => 'mission 1']);
-        $I->sendPostAsJson('/mission', ['content' => 'mission 2']);
-        $I->sendPostAsJson('/mission', ['content' => 'mission 3']);
 
         $room = $I->grabEntityFromRepository(Room::class, ['name' => 'Admin\'s room']);
 
         // Add regular players
         $I->createPlayerAndUpdateHeaders($I, 'John');
         $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
+        $I->sendPostAsJson('/mission', ['content' => 'mission 2']);
 
         $I->createPlayerAndUpdateHeaders($I, 'Jane');
         $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
+        $I->sendPostAsJson('/mission', ['content' => 'mission 3']);
 
         // Start the game
         $I->setAdminJwtHeader($I);
