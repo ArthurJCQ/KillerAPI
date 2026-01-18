@@ -147,7 +147,7 @@ class UserController extends AbstractController implements LoggerAwareInterface
         // Handle room change
         if (array_key_exists('room', $data)) {
             $newRoomId = $data['room'];
-            $joinAsSpectator = $data['spectate'] ?? false;
+            $joinAsSpectator = filter_var($data['spectate'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
             if ($newRoomId !== null) {
                 $newRoom = $this->roomRepository->findOneBy(['id' => $newRoomId]);

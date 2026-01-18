@@ -215,7 +215,7 @@ class SpectatorModeCest
         Assert::assertArrayHasKey('missions', $response);
     }
 
-    public function testSpectatorCannotJoinRegularWhenAlreadySpectating(ApiTester $I): void
+    public function testSpectatorStatusPersistsAfterJoining(ApiTester $I): void
     {
         // Create admin and room with spectators allowed
         $I->createAdminAndUpdateHeaders($I);
@@ -235,6 +235,47 @@ class SpectatorModeCest
         $I->seeInRepository(Player::class, [
             'name' => 'Spectator',
             'status' => PlayerStatus::SPECTATING,
+        ]);
+
+        // Verify status persists when fetching user info
+        $I->sendGetAsJson('/user/me');
+        $I->seeResponseContainsJson([
+            'currentPlayer' => [
+                'status' => PlayerStatus::SPECTATING->value,
+            ],
+        ]);
+    }
+
+    public function testExistingPlayerCannotRejoinAsSpectator(ApiTester $I): void
+    {
+        // Create admin and room with spectators allowed
+        $I->createAdminAndUpdateHeaders($I);
+        $I->sendPostAsJson('room');
+
+        $room = $I->grabEntityFromRepository(Room::class, ['name' => 'Admin\'s room']);
+
+        // Enable spectators
+        $I->sendPatchAsJson(sprintf('/room/%s', $room->getId()), ['allowSpectators' => true]);
+
+        // First join as regular player
+        $I->createPlayerAndUpdateHeaders($I, 'RegularPlayer');
+        $I->sendPatchAsJson('/user', ['room' => $room->getId()]);
+        $I->seeResponseCodeIsSuccessful();
+
+        // Verify player is ALIVE (not spectating)
+        $I->seeInRepository(Player::class, [
+            'name' => 'RegularPlayer',
+            'status' => PlayerStatus::ALIVE,
+        ]);
+
+        // Try to rejoin the same room as spectator (should keep existing player, not change status)
+        $I->sendPatchAsJson('/user', ['room' => $room->getId(), 'spectate' => true]);
+        $I->seeResponseCodeIsSuccessful();
+
+        // Player should still be ALIVE since they already exist in the room
+        $I->seeInRepository(Player::class, [
+            'name' => 'RegularPlayer',
+            'status' => PlayerStatus::ALIVE,
         ]);
     }
 }
