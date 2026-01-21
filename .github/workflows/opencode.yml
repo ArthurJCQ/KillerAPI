@@ -30,4 +30,4 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         with:
-          model: openrouter/z-ai/glm-4.7
+          model: openrouter/openai/gpt-5-codex
